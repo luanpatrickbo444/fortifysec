@@ -16,11 +16,6 @@ type Course = {
 type AreaData = {
   user?: { name: string; email: string; role: string };
   courses?: Course[];
-  summary?: {
-    totalLessons: number;
-    completedLessons: number;
-    progressPercent: number;
-  };
 };
 
 export default function AreaPage() {
@@ -44,7 +39,6 @@ export default function AreaPage() {
     return identity.split(/[ @]/)[0];
   }, [data.user]);
   const initials = firstName.slice(0, 2).toUpperCase();
-  const summary = data.summary || { totalLessons: 0, completedLessons: 0, progressPercent: 0 };
 
   async function logout() {
     await browserSupabase().auth.signOut();
@@ -72,15 +66,15 @@ export default function AreaPage() {
                 <h1 className="dashboard-title">CONTINUE SUA<br /><em>MISSÃO.</em></h1>
                 <p>Bem-vindo de volta, <strong>{firstName}</strong>. Escolha uma formação e continue de onde parou.</p>
               </div>
-              <div className="dashboard-progress-ring" style={{ "--progress": summary.progressPercent } as React.CSSProperties}>
-                <div><strong>{summary.progressPercent}%</strong><small>PROGRESSO GERAL</small></div>
+              <div className="dashboard-progress-ring" style={{ "--progress": 18 } as React.CSSProperties}>
+                <div><strong>18%</strong><small>PROGRESSO GERAL</small></div>
               </div>
             </section>
 
             <section className="dashboard-stats" aria-label="Resumo da formação">
-              <div className="dashboard-stat"><small>CURSOS LIBERADOS</small><strong>{data.courses?.length || 0}</strong></div>
+              <div className="dashboard-stat"><small>CURSOS LIBERADOS</small><strong>{data.courses?.length || 0}<span>+</span></strong></div>
               <div className="dashboard-stat"><small>CARGA HORÁRIA</small><strong>{data.courses?.reduce((total, course) => total + course.workload_hours, 0) || 0}<span>h</span></strong></div>
-              <div className="dashboard-stat"><small>AULAS CONCLUÍDAS</small><strong>{summary.completedLessons}<span>/{summary.totalLessons}</span></strong></div>
+              <div className="dashboard-stat"><small>AULAS CONCLUÍDAS</small><strong>—</strong></div>
               <div className="dashboard-stat"><small>CERTIFICAÇÕES</small><strong>0<span>/5</span></strong></div>
             </section>
 
