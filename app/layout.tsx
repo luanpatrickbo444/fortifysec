@@ -1,5 +1,41 @@
-"use client";
-import {useEffect,useState} from "react";
-import {usePathname,useRouter} from "next/navigation";
-import {apiFetch} from "@/lib/api-client";
-export default function AdminLayout({children}:{children:React.ReactNode}){const path=usePathname();const router=useRouter();const[ready,setReady]=useState(false);useEffect(()=>{if(path!=="/admin/login"&&path!=="/admin/logout")apiFetch("/api/admin/content").then(()=>setReady(true)).catch(()=>router.replace("/admin/login"))},[path,router]);if(path==="/admin/login"||path==="/admin/logout")return children;if(!ready)return <main className="portal-root portal-loading"><div><div className="portal-loader"/><p className="portal-label">VALIDANDO PERMISSÃO ADMINISTRATIVA...</p></div></main>;return children}
+import type { Metadata } from "next";
+import localFont from "next/font/local";
+import "./globals.css";
+import "./portal.css";
+
+const geistSans = localFont({
+  src: "./fonts/Geist.woff2",
+  variable: "--font-geist-sans",
+  display: "swap",
+});
+
+const geistMono = localFont({
+  src: "./fonts/GeistMono.woff2",
+  variable: "--font-geist-mono",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: "FortifySec — Formação em Cybersecurity",
+  description: "Formação profissional em Cybersecurity, Ethical Hacking e Red Team com laboratórios, certificação prática e CTF.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="pt-BR">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        {children}
+      </body>
+    </html>
+  );
+}
