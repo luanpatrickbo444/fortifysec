@@ -17,7 +17,7 @@ export async function loginAction(formData: FormData) {
   if(error||!data.user) redirect('/login?erro='+encodeURIComponent('E-mail ou senha inválidos'))
   const {data:profile}=await supabase.from('profiles').select('role,blocked').eq('id',data.user.id).maybeSingle()
   if(profile?.blocked){await supabase.auth.signOut();redirect('/login?erro='+encodeURIComponent('Esta conta está temporariamente indisponível.'))}
-  redirect(profile?.role==='admin'?'/admin':'/painel')
+  redirect(profile?.role==='admin'?'/admin':'/dashboard')
 }
 
 export async function adminLoginAction(formData: FormData) {
@@ -43,7 +43,7 @@ export async function registerAction(formData: FormData) {
   redirect('/login?sucesso='+encodeURIComponent('Cadastro realizado. Confirme seu e-mail para entrar.'))
 }
 export async function resetPasswordAction(formData: FormData) {const email=String(formData.get('email')||'').trim().toLowerCase();const supabase=await createClient();const site=process.env.NEXT_PUBLIC_SITE_URL||'http://localhost:3000';await supabase.auth.resetPasswordForEmail(email,{redirectTo:`${site}/auth/callback?next=/atualizar-senha`});redirect('/recuperar-senha?sucesso=1')}
-export async function updatePasswordAction(formData: FormData) {const password=String(formData.get('password')||'');if(password.length<8) redirect('/atualizar-senha?erro=Senha%20muito%20curta');const supabase=await createClient();const {error}=await supabase.auth.updateUser({password});if(error) redirect('/atualizar-senha?erro='+encodeURIComponent(error.message));redirect('/painel')}
+export async function updatePasswordAction(formData: FormData) {const password=String(formData.get('password')||'');if(password.length<8) redirect('/atualizar-senha?erro=Senha%20muito%20curta');const supabase=await createClient();const {error}=await supabase.auth.updateUser({password});if(error) redirect('/atualizar-senha?erro='+encodeURIComponent(error.message));redirect('/dashboard')}
 
 export async function updateProfileAction(formData:FormData){
  const {supabase,user}=await requireUser(); const name=String(formData.get('name')||'').trim(); if(name.length<2)redirect('/painel/perfil?erro=nome')
@@ -72,7 +72,7 @@ export async function stopLabAction(formData:FormData){
 }
 
 
-export async function submitChallengeAction(formData:FormData){const {supabase}=await requireUser();const challengeId=String(formData.get('challenge_id')||'');const slug=String(formData.get('slug')||'');const flag=String(formData.get('flag')||'').trim();if(!challengeId||!flag)redirect(`/painel/desafios/${slug}?result=invalid`);const {data,error}=await supabase.rpc('submit_challenge_flag',{challenge_uuid:challengeId,candidate_flag:flag});if(error||!data)redirect(`/painel/desafios/${slug}?result=invalid`);revalidatePath('/painel');revalidatePath('/painel/ranking');redirect(`/painel/desafios/${slug}?result=solved`)}
+export async function submitChallengeAction(formData:FormData){const {supabase}=await requireUser();const challengeId=String(formData.get('challenge_id')||'');const slug=String(formData.get('slug')||'');const flag=String(formData.get('flag')||'').trim();if(!challengeId||!flag)redirect(`/painel/desafios/${slug}?result=invalid`);const {data,error}=await supabase.rpc('submit_challenge_flag',{challenge_uuid:challengeId,candidate_flag:flag});if(error||!data)redirect(`/painel/desafios/${slug}?result=invalid`);revalidatePath('/dashboard');revalidatePath('/painel/ranking');redirect(`/painel/desafios/${slug}?result=solved`)}
 
 export async function adminSetEnrollmentAction(formData:FormData){await requireAdmin();const userId=String(formData.get('user_id')||'');const courseId=String(formData.get('course_id')||'');const status=String(formData.get('status')||'active');if(!userId||!courseId||!['active','pending','blocked','expired'].includes(status))return;const admin=createAdminClient();await admin.from('enrollments').upsert({user_id:userId,course_id:courseId,status,source:'admin',activated_at:status==='active'?new Date().toISOString():null},{onConflict:'user_id,course_id'});revalidatePath('/admin/matriculas');revalidatePath('/painel/cursos')}
 export async function adminCreateCourseAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');const description=String(formData.get('description')||'').trim();const price=Number(formData.get('price')||0);if(!title||!slug)return;await admin.from('courses').insert({title,slug,description,price_cents:Math.round(price*100),published:true});revalidatePath('/admin/cursos');revalidatePath('/painel/cursos')}

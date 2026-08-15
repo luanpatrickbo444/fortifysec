@@ -1,22 +1,22 @@
-# FortifySec V7 — Rotas
+# FortifySec V7.1 — Rotas
 
 ## Público
-- `/`
-- `/academy`
-- `/labs`
-- `/ctf`
-- `/planos`
-- `/talentos`
-- `/login`
-- `/cadastro`
-- `/recuperar-senha`
-- `/atualizar-senha`
-- `/admin/login`
+- `/` — Academy (home principal)
+- `/academy` — Academy
+- `/labs` — apresentação dos Labs
+- `/ctf` — CTF público
+- `/planos` — planos
+- `/talentos` — Talent Network
+- `/login` — login de aluno
+- `/cadastro` — cadastro
+- `/recuperar-senha` — recuperação de senha
+- `/admin/login` — login administrativo
 
-## Área do aluno
-- `/painel` — Command Center
+## Aluno
+- `/dashboard` — Command Center principal após login
+- `/painel` — alias que redireciona para `/dashboard`
 - `/painel/cursos`
-- `/curso/[slug]` — curso com módulos e aulas
+- `/curso/[slug]`
 - `/painel/labs`
 - `/painel/labs/[slug]`
 - `/painel/desafios`
@@ -26,15 +26,15 @@
 - `/painel/pagamentos`
 - `/painel/perfil`
 
-## Administração
-- `/admin` — Operations Console
+## Admin
+- `/admin`
 - `/admin/cursos`
-- `/admin/cursos/[id]` — Course Studio: curso, módulos e aulas
-- `/admin/aulas` — biblioteca global / quick publish
+- `/admin/cursos/[id]`
+- `/admin/aulas`
 - `/admin/labs`
 - `/admin/desafios`
-- `/admin/ctf` — eventos, status e Challenges vinculados
+- `/admin/ctf`
 - `/admin/usuarios`
 - `/admin/matriculas`
 - `/admin/pagamentos`
-- `/admin/site` — conteúdo/configurações globais
+- `/admin/site`

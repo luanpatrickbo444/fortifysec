@@ -1,24 +1,21 @@
-import { notFound, redirect } from 'next/navigation'
-import { CheckCircle2, Flag, ShieldCheck, Swords, TerminalSquare } from 'lucide-react'
+import Link from 'next/link'
+import { CheckCircle2, LockKeyhole, Swords, Trophy } from 'lucide-react'
 import { DashboardShell } from '@/components/DashboardShell'
 import { DifficultyMeter } from '@/components/ui/DifficultyMeter'
-import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireUser } from '@/lib/auth'
-import { submitChallengeAction } from '@/app/actions'
 
-export default async function ChallengePage({params,searchParams}:{params:Promise<{slug:string}>,searchParams:Promise<{result?:string}>}){
- const {slug}=await params;const query=await searchParams;const {supabase,user}=await requireUser()
- const [{data:p},{data:access},{data:c}]=await Promise.all([
+export default async function Challenges(){
+ const {supabase,user}=await requireUser()
+ const [{data:p},{data:challenges},{data:solves},{data:access}]=await Promise.all([
   supabase.from('profiles').select('role').eq('id',user.id).single(),
-  supabase.from('enrollments').select('id').eq('user_id',user.id).eq('status','active').limit(1).maybeSingle(),
-  supabase.from('challenges').select('id,title,slug,description,category,difficulty,xp_reward,briefing').eq('slug',slug).eq('published',true).maybeSingle()
+  supabase.from('challenges').select('id,title,slug,description,category,difficulty,xp_reward').eq('published',true).order('created_at',{ascending:false}),
+  supabase.from('challenge_solves').select('challenge_id').eq('user_id',user.id),
+  supabase.from('enrollments').select('id').eq('user_id',user.id).eq('status','active').limit(1).maybeSingle()
  ])
- if(!c)notFound();if(!access)redirect('/painel/cursos')
- const {data:solve}=await supabase.from('challenge_solves').select('id,solved_at').eq('user_id',user.id).eq('challenge_id',c.id).maybeSingle()
+ const solved=new Set((solves||[]).map((s:any)=>s.challenge_id));
  return <DashboardShell admin={p?.role==='admin'}>
-   <div className="challenge-workspace-head"><div><div className="kicker">MISSION / {c.category.toUpperCase()}</div><h1>{c.title}</h1><p>{c.description}</p></div><div className="mission-score"><span>REWARD</span><strong>+{c.xp_reward} XP</strong></div></div>
-   <div className="mission-meta-bar"><DifficultyMeter difficulty={c.difficulty}/><span className="mission-divider"/><span className="mono"><Swords size={13}/> {c.category.toUpperCase()}</span><span className="mission-divider"/><span className={`mono ${solve?'terminal-green':''}`}>{solve?'PWNED':'UNSOLVED'}</span></div>
-   {query.result==='invalid'&&<div className="alert danger-alert">Flag inválida. Revise sua exploração e tente novamente.</div>}{query.result==='solved'&&<div className="alert success-alert"><CheckCircle2 size={16}/> Flag correta. XP creditado no seu perfil.</div>}
-   <div className="challenge-workspace-grid"><section className="card mission-briefing"><div className="panel-head"><div><span className="section-index">01 / BRIEFING</span><h3>Objetivo da missão</h3></div><Flag size={19}/></div><p className="muted briefing-text" style={{whiteSpace:'pre-wrap'}}>{c.briefing||'Analise o cenário e encontre a flag dentro do escopo proposto. Use somente os ativos disponibilizados pela FortifySec.'}</p><div className="scope-box"><ShieldCheck size={17}/><div><strong>Escopo autorizado</strong><span>Somente ambiente disponibilizado neste Challenge.</span></div></div></section><aside className="card flag-terminal"><div className="terminal-toolbar"><span><TerminalSquare size={15}/> FLAG SUBMISSION</span><span className={`pill ${solve?'active':''}`}>{solve?'VERIFIED':'AWAITING FLAG'}</span></div>{solve?<div className="pwned-state"><CheckCircle2 size={38}/><strong>CHALLENGE PWNED</strong><p>Resolvido em {solve.solved_at?new Date(solve.solved_at).toLocaleString('pt-BR'):'sessão anterior'}.</p><small>O XP desta missão já foi contabilizado.</small></div>:<><div className="terminal-instructions"><span className="terminal-green">fortify@challenge</span>:~$ submit --flag</div><form action={submitChallengeAction} className="flag-submit-form"><input type="hidden" name="challenge_id" value={c.id}/><input type="hidden" name="slug" value={c.slug}/><div className="field"><label>FLAG</label><input required name="flag" autoComplete="off" spellCheck={false} placeholder="FORTIFY{...}"/></div><SubmitButton className="btn full-btn" idleLabel="ENVIAR FLAG →" pendingLabel="VALIDANDO FLAG..."/></form><p className="security-copy">Envie a flag encontrada para concluir a missão e registrar sua pontuação.</p></>}</aside></div>
+   <div className="page-head internal-page-head"><div><div className="kicker">CYBER RANGE / CHALLENGES</div><h1>Challenges</h1><p>Resolva missões, envie flags e acumule XP comprovado.</p></div><div className="head-stats"><span className={`pill ${access?'active':'locked'}`}>{access?'ACCESS ACTIVE':'LOCKED'}</span><span className="pill"><Trophy size={12}/>{solved.size} PWNED</span></div></div>
+   <div className="challenge-grid enhanced-grid">{(challenges||[]).map((c:any)=><article className={`challenge-card product-card ${solved.has(c.id)?'is-solved':''}`} key={c.id}><div className="challenge-top"/><div className="challenge-body"><div className="panel-head"><span className={`pill ${solved.has(c.id)?'active':''}`}>{solved.has(c.id)?<><CheckCircle2 size={12}/> PWNED</>:c.category}</span><DifficultyMeter difficulty={c.difficulty}/></div><h3>{c.title}</h3><p className="muted card-copy">{c.description}</p><div className="challenge-reward"><span>REWARD</span><strong>+{c.xp_reward} XP</strong></div><div className="card-actions"><Link className={`btn ${!access?'secondary':''}`} href={access?`/painel/desafios/${c.slug}`:'/painel/cursos'}>{access?(solved.has(c.id)?'REVISAR MISSÃO':'ABRIR CHALLENGE'):<><LockKeyhole size={14}/> LIBERAR ACESSO</>} →</Link></div></div></article>)}</div>
+   {!challenges?.length&&<div className="empty-state">Nenhum Challenge publicado.</div>}
  </DashboardShell>
 }

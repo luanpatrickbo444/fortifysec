@@ -13,7 +13,7 @@ export async function requireUser() {
 export async function requireAdmin() {
   const { supabase, user } = await requireUser()
   const { data: profile } = await supabase.from('profiles').select('role,name').eq('id', user.id).single()
-  if (!profile || profile.role !== 'admin') redirect('/painel')
+  if (!profile || profile.role !== 'admin') redirect('/dashboard')
   return { supabase, user, profile }
 }
 
