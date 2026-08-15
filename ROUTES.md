@@ -44,3 +44,9 @@
 - `/admin/matriculas`
 - `/admin/pagamentos`
 - `/admin/site`
+
+## V7.8 — Cyber Range
+- `/painel/labs` — catálogo interno de Labs; exige matrícula ativa para aluno.
+- `/painel/labs/[slug]` — workspace do Lab; exige matrícula ativa para aluno.
+- `/painel/desafios` — missões/Challenges; exige acesso ativo da plataforma.
+- `/painel/desafios/[slug]` — detalhe e submissão de flag.

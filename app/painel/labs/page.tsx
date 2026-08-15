@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { Clock3, Copy, Crosshair, Network, Power, Radio, ShieldCheck, TerminalSquare } from 'lucide-react'
 import { DashboardShell } from '@/components/DashboardShell'
 import { DifficultyMeter } from '@/components/ui/DifficultyMeter'
@@ -6,17 +6,17 @@ import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireUser } from '@/lib/auth'
 import { startLabAction, stopLabAction } from '@/app/actions'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getPlatformAccess } from '@/lib/platform-access'
 
 export default async function LabPage({params,searchParams}:{params:Promise<{slug:string}>,searchParams:Promise<{erro?:string}>}){
- const {slug}=await params;const query=await searchParams; const {supabase,user}=await requireUser()
- const [{data:profile},{data:lab},{data:access}]=await Promise.all([
-  supabase.from('profiles').select('role,xp').eq('id',user.id).single(),
-  supabase.from('labs').select('id,title,slug,description,difficulty,estimated_minutes,tags,instructions').eq('slug',slug).eq('published',true).maybeSingle(),
-  supabase.from('enrollments').select('id').eq('user_id',user.id).eq('status','active').limit(1).maybeSingle()
- ])
- if(!lab)notFound(); if(!access)return <DashboardShell admin={profile?.role==='admin'}><div className="lockedbox"><h2>Lab bloqueado</h2><p className="muted">Este Lab faz parte da experiência Pro da FortifySec.</p></div></DashboardShell>
- const admin=createAdminClient(); const {data:session}=await admin.from('lab_sessions').select('id,status,started_at,expires_at,connection_url').eq('user_id',user.id).eq('lab_id',lab.id).eq('status','running').gt('expires_at',new Date().toISOString()).order('started_at',{ascending:false}).limit(1).maybeSingle()
- return <DashboardShell admin={profile?.role==='admin'}>
+ const {slug}=await params;const query=await searchParams; const {user}=await requireUser()
+ const access=await getPlatformAccess(user.id)
+ if(!access.canAccessCyberRange)redirect('/painel/labs')
+ const admin=createAdminClient();
+ const {data:lab}=await admin.from('labs').select('id,title,slug,description,difficulty,estimated_minutes,tags,instructions').eq('slug',slug).eq('published',true).maybeSingle()
+ if(!lab)notFound();
+ const {data:session}=await admin.from('lab_sessions').select('id,status,started_at,expires_at,connection_url').eq('user_id',user.id).eq('lab_id',lab.id).eq('status','running').gt('expires_at',new Date().toISOString()).order('started_at',{ascending:false}).limit(1).maybeSingle()
+ return <DashboardShell admin={access.isAdmin}>
    <div className="lab-workspace-head"><div><div className="kicker">CYBER RANGE / ACTIVE TARGET</div><h1>{lab.title}</h1><p>{lab.description}</p></div><div className="workspace-status"><span className={`status-orb ${session?'online':'offline'}`}/><div><small>SESSION STATUS</small><strong>{session?'RUNNING':'OFFLINE'}</strong></div></div></div>
    {query.erro==='provider'&&<div className="alert danger-alert">Não foi possível provisionar o laboratório. Verifique o provider ou tente novamente.</div>}
    <div className="lab-workspace-grid">

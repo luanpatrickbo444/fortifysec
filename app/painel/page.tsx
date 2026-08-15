@@ -5,17 +5,18 @@ import { DifficultyMeter } from '@/components/ui/DifficultyMeter'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireUser } from '@/lib/auth'
 import { submitChallengeAction } from '@/app/actions'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getPlatformAccess } from '@/lib/platform-access'
 
 export default async function ChallengePage({params,searchParams}:{params:Promise<{slug:string}>,searchParams:Promise<{result?:string}>}){
- const {slug}=await params;const query=await searchParams;const {supabase,user}=await requireUser()
- const [{data:p},{data:access},{data:c}]=await Promise.all([
-  supabase.from('profiles').select('role').eq('id',user.id).single(),
-  supabase.from('enrollments').select('id').eq('user_id',user.id).eq('status','active').limit(1).maybeSingle(),
-  supabase.from('challenges').select('id,title,slug,description,category,difficulty,xp_reward,briefing').eq('slug',slug).eq('published',true).maybeSingle()
- ])
- if(!c)notFound();if(!access)redirect('/painel/cursos')
- const {data:solve}=await supabase.from('challenge_solves').select('id,solved_at').eq('user_id',user.id).eq('challenge_id',c.id).maybeSingle()
- return <DashboardShell admin={p?.role==='admin'}>
+ const {slug}=await params;const query=await searchParams;const {user}=await requireUser()
+ const access=await getPlatformAccess(user.id)
+ if(!access.canAccessCyberRange)redirect('/painel/desafios')
+ const admin=createAdminClient()
+ const {data:c}=await admin.from('challenges').select('id,title,slug,description,category,difficulty,xp_reward,briefing').eq('slug',slug).eq('published',true).maybeSingle()
+ if(!c)notFound()
+ const {data:solve}=await admin.from('challenge_solves').select('id,solved_at').eq('user_id',user.id).eq('challenge_id',c.id).maybeSingle()
+ return <DashboardShell admin={access.isAdmin}>
    <div className="challenge-workspace-head"><div><div className="kicker">MISSION / {c.category.toUpperCase()}</div><h1>{c.title}</h1><p>{c.description}</p></div><div className="mission-score"><span>REWARD</span><strong>+{c.xp_reward} XP</strong></div></div>
    <div className="mission-meta-bar"><DifficultyMeter difficulty={c.difficulty}/><span className="mission-divider"/><span className="mono"><Swords size={13}/> {c.category.toUpperCase()}</span><span className="mission-divider"/><span className={`mono ${solve?'terminal-green':''}`}>{solve?'PWNED':'UNSOLVED'}</span></div>
    {query.result==='invalid'&&<div className="alert danger-alert">Flag inválida. Revise sua exploração e tente novamente.</div>}{query.result==='solved'&&<div className="alert success-alert"><CheckCircle2 size={16}/> Flag correta. XP creditado no seu perfil.</div>}
