@@ -1,7 +1,8 @@
-import { AcademyPublic } from '@/components/AcademyPublic'
+import Link from 'next/link'
+import { Check, Crown, Shield, Sparkles } from 'lucide-react'
 
-// Fallback da raiz. Em produção, next.config.ts também garante `/` -> `/academy`
-// via rewrite beforeFiles, mantendo a URL `/` no navegador.
-export default function HomePage() {
-  return <AcademyPublic />
+export default function Planos(){
+ const free=['Conta e perfil técnico','Acesso à comunidade e ranking','Conteúdos e experiências liberados como gratuitos','Visão da plataforma e trilhas disponíveis']
+ const pro=['Academy e trilhas premium','Cyber Labs e máquinas práticas','Challenges com XP','CTFs e ranking completo','Perfil técnico para Talent Network','Novos labs e conteúdos durante o acesso']
+ return <main><section className="section pricing-hero"><div className="container"><div className="pricing-intro"><div className="kicker">ACCESS PLANS</div><h1>Escolha seu nível de acesso.</h1><p>Comece no ecossistema gratuitamente ou desbloqueie a experiência completa FortifySec.</p></div><div className="pricing-grid"><article className="pricing-card free-plan"><div className="plan-icon"><Shield size={24}/></div><span className="section-index">STARTER ACCESS</span><h2>Grátis</h2><div className="plan-price"><strong>R$ 0</strong><span>/ para começar</span></div><p className="muted">Entre na plataforma, construa seu perfil e conheça o ecossistema FortifySec.</p><div className="plan-features">{free.map(item=><div key={item}><Check size={15}/><span>{item}</span></div>)}</div><Link className="btn secondary full-btn" href="/cadastro">CRIAR CONTA GRÁTIS →</Link></article><article className="pricing-card pro-plan"><div className="recommended-badge"><Sparkles size={12}/> MAIS COMPLETO</div><div className="plan-icon"><Crown size={24}/></div><span className="section-index">FULL RANGE ACCESS</span><h2>FortifySec Pro</h2><div className="plan-price"><strong>R$ 99,90</strong><span>/ mês</span></div><p className="muted">Para quem quer aprender, praticar e construir prova real de habilidade.</p><div className="plan-features">{pro.map(item=><div key={item}><Check size={15}/><span>{item}</span></div>)}</div><Link className="btn full-btn" href="/cadastro">COMEÇAR NO PRO →</Link><div className="plan-note">Academy, Labs, Challenges, CTF e evolução em uma única experiência.</div></article></div></div></section></main>
 }

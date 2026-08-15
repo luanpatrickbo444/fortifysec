@@ -1,3 +1,5 @@
+'use client'
+
 import { BookOpen, Boxes, CreditCard, Flag, Gauge, Trophy, UserRound, UsersRound, Wrench, GraduationCap, Swords, LayoutDashboard, Settings, Layers3, RadioTower } from 'lucide-react'
 import { DashboardNav } from '@/components/DashboardNav'
 
