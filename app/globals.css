@@ -115,3 +115,7 @@
   .app-main{padding:20px 16px 32px}
   .internal-route-page{min-height:0}
 }
+
+/* V7.11 unified student panel + explicit route failure state */
+.route-error-panel{border-style:solid;border-color:rgba(255,101,119,.32)}
+.route-error-code{margin:14px 0;padding:10px 12px;border:1px solid rgba(255,101,119,.22);background:#090d12;color:#ff9da8;font-size:10px;word-break:break-word}

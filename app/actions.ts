@@ -132,9 +132,35 @@ export async function resetPasswordAction(formData: FormData) {const email=Strin
 export async function updatePasswordAction(formData: FormData) {const password=String(formData.get('password')||'');if(password.length<8) redirect('/atualizar-senha?erro=Senha%20muito%20curta');const supabase=await createClient();const {error}=await supabase.auth.updateUser({password});if(error) redirect('/atualizar-senha?erro='+encodeURIComponent(error.message));redirect('/dashboard')}
 
 export async function updateProfileAction(formData:FormData){
- const {supabase,user}=await requireUser(); const name=String(formData.get('name')||'').trim(); if(name.length<2)redirect('/painel/perfil?erro=nome')
- const payload={name,headline:String(formData.get('headline')||'').trim(),github_url:safeExternalUrl(String(formData.get('github_url')||'').trim()),linkedin_url:safeExternalUrl(String(formData.get('linkedin_url')||'').trim()),profile_public:asBool(formData.get('profile_public')),open_to_work:asBool(formData.get('open_to_work'))}
- const {error}=await supabase.from('profiles').update(payload).eq('id',user.id);if(error)redirect('/painel/perfil?erro=salvar'); revalidatePath('/painel/perfil'); revalidatePath('/talentos');redirect('/painel/perfil?salvo=1')
+ const {supabase,user}=await requireUser()
+ const name=String(formData.get('name')||'').trim()
+ if(name.length<2)redirect('/painel/perfil?erro=nome')
+ const payload={
+  name,
+  headline:String(formData.get('headline')||'').trim(),
+  github_url:safeExternalUrl(String(formData.get('github_url')||'').trim()),
+  linkedin_url:safeExternalUrl(String(formData.get('linkedin_url')||'').trim()),
+  profile_public:asBool(formData.get('profile_public')),
+  open_to_work:asBool(formData.get('open_to_work')),
+  updated_at:new Date().toISOString(),
+ }
+ // Server-side own-profile write: authenticated user is fixed to user.id, so legacy RLS
+ // cannot silently discard profile changes while another user's profile remains unreachable.
+ const admin=createAdminClient()
+ const {data:updated,error}=await admin.from('profiles')
+  .update(payload)
+  .eq('id',user.id)
+  .select('id,name,headline,github_url,linkedin_url,profile_public,open_to_work')
+  .maybeSingle()
+ if(error||!updated){
+  console.error('[profile:update]',error)
+  redirect('/painel/perfil?erro=salvar')
+ }
+ await supabase.auth.updateUser({data:{name}}).catch(()=>null)
+ revalidatePath('/painel/perfil')
+ revalidatePath('/dashboard')
+ revalidatePath('/talentos')
+ redirect('/painel/perfil?salvo=1')
 }
 
 
@@ -163,7 +189,7 @@ export async function stopLabAction(formData:FormData){
 export async function submitChallengeAction(formData:FormData){const {supabase}=await requireUser();const challengeId=String(formData.get('challenge_id')||'');const slug=String(formData.get('slug')||'');const flag=String(formData.get('flag')||'').trim();if(!challengeId||!flag)redirect(`/painel/desafios/${slug}?result=invalid`);const {data,error}=await supabase.rpc('submit_challenge_flag',{challenge_uuid:challengeId,candidate_flag:flag});if(error||!data)redirect(`/painel/desafios/${slug}?result=invalid`);revalidatePath('/dashboard');revalidatePath('/painel/ranking');redirect(`/painel/desafios/${slug}?result=solved`)}
 
 export async function adminSetEnrollmentAction(formData:FormData){await requireAdmin();const userId=String(formData.get('user_id')||'');const courseId=String(formData.get('course_id')||'');const status=String(formData.get('status')||'active');if(!userId||!courseId||!['active','pending','blocked','expired'].includes(status))return;const admin=createAdminClient();await admin.from('enrollments').upsert({user_id:userId,course_id:courseId,status,source:'admin',activated_at:status==='active'?new Date().toISOString():null},{onConflict:'user_id,course_id'});revalidatePath('/admin/matriculas');revalidatePath('/painel/cursos');revalidatePath('/painel/labs');revalidatePath('/painel/desafios');revalidatePath('/dashboard')}
-export async function adminCreateCourseAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');const description=String(formData.get('description')||'').trim();const price=Number(formData.get('price')||0);if(!title||!slug)return;await admin.from('courses').insert({title,slug,description,price_cents:Math.round(price*100),published:true});revalidatePath('/admin/cursos');revalidatePath('/painel/cursos')}
+export async function adminCreateCourseAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');const description=String(formData.get('description')||'').trim();const price=slug==='formacao-fortifysec'?99.90:Number(formData.get('price')||0);if(!title||!slug)return;await admin.from('courses').insert({title,slug,description,price_cents:Math.round(price*100),published:true});revalidatePath('/admin/cursos');revalidatePath('/painel/cursos')}
 export async function adminToggleUserAction(formData:FormData){const {user}=await requireAdmin();const userId=String(formData.get('user_id')||'');if(userId===user.id)return;const blocked=String(formData.get('blocked')||'false')==='true';const admin=createAdminClient();await admin.from('profiles').update({blocked:!blocked}).eq('id',userId);if(!blocked)await admin.from('lab_sessions').update({status:'revoked',stopped_at:new Date().toISOString()}).eq('user_id',userId).eq('status','running');revalidatePath('/admin/usuarios')}
 export async function adminCreateLabAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');if(!title||!slug)return;await admin.from('labs').insert({title,slug,description:String(formData.get('description')||''),difficulty:String(formData.get('difficulty')||'Easy'),estimated_minutes:Number(formData.get('estimated_minutes')||60),connection_url:String(formData.get('connection_url')||'')||null,provider_lab_id:String(formData.get('provider_lab_id')||'')||null,instructions:String(formData.get('instructions')||''),tags:String(formData.get('tags')||'').split(',').map(s=>s.trim()).filter(Boolean),published:true});revalidatePath('/admin/labs');revalidatePath('/painel/labs')}
 export async function adminCreateChallengeAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');const flag=String(formData.get('flag')||'').trim();if(!title||!slug||!flag)return;await admin.rpc('admin_create_challenge',{p_title:title,p_slug:slug,p_description:String(formData.get('description')||''),p_category:String(formData.get('category')||'Web'),p_difficulty:String(formData.get('difficulty')||'Easy'),p_xp_reward:Number(formData.get('xp_reward')||50),p_briefing:String(formData.get('briefing')||''),p_flag:flag});revalidatePath('/admin/desafios');revalidatePath('/painel/desafios')}
@@ -185,7 +211,7 @@ export async function adminCreateModuleAction(formData:FormData){
 }
 
 export async function adminUpdateCourseAction(formData:FormData){
- await requireAdmin();const admin=createAdminClient();const courseId=String(formData.get('course_id')||'');const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');const price=Math.max(0,Number(formData.get('price')||0));if(!courseId||!title||!slug)return;await admin.from('courses').update({title,slug,description:String(formData.get('description')||'').trim(),price_cents:Math.round(price*100),published:asBool(formData.get('published')),updated_at:new Date().toISOString()}).eq('id',courseId);revalidatePath('/admin/cursos');revalidatePath(`/admin/cursos/${courseId}`);revalidatePath('/painel/cursos')
+ await requireAdmin();const admin=createAdminClient();const courseId=String(formData.get('course_id')||'');const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');const price=slug==='formacao-fortifysec'?99.90:Math.max(0,Number(formData.get('price')||0));if(!courseId||!title||!slug)return;await admin.from('courses').update({title,slug,description:String(formData.get('description')||'').trim(),price_cents:Math.round(price*100),published:asBool(formData.get('published')),updated_at:new Date().toISOString()}).eq('id',courseId);revalidatePath('/admin/cursos');revalidatePath(`/admin/cursos/${courseId}`);revalidatePath('/painel/cursos')
 }
 
 export async function adminToggleModuleAction(formData:FormData){
