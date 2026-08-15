@@ -1,5 +1,16 @@
-import { PanelSectionShell } from '@/components/PanelSectionShell'
+import { DashboardShell } from '@/components/DashboardShell'
+import { requireUser } from '@/lib/auth'
 
-export default function DesafiosLayout({ children }: { children: React.ReactNode }) {
-  return <PanelSectionShell>{children}</PanelSectionShell>
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+export default async function PainelLayout({ children }: { children: React.ReactNode }) {
+  const { supabase, user } = await requireUser()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  return <DashboardShell admin={String(profile?.role || '') === 'admin'}>{children}</DashboardShell>
 }
