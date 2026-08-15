@@ -1,0 +1,31 @@
+# FortifySec Unified — checklist de produção
+
+- [ ] Executar `001_final_schema.sql` no Supabase.
+- [ ] Executar `002_labs_challenges_ctf.sql` depois da migration 001.
+- [ ] Configurar Site URL e redirects do Supabase Auth.
+- [ ] Configurar `NEXT_PUBLIC_SUPABASE_URL`.
+- [ ] Configurar `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- [ ] Configurar `SUPABASE_SERVICE_ROLE_KEY` somente como variável server-side.
+- [ ] Configurar `NEXT_PUBLIC_SITE_URL=https://www.fortifysec.com.br`.
+- [ ] Criar/promover a primeira conta administradora.
+- [ ] Configurar `MERCADO_PAGO_ACCESS_TOKEN`.
+- [ ] Configurar `MERCADO_PAGO_WEBHOOK_SECRET`.
+- [ ] Registrar `https://www.fortifysec.com.br/api/webhooks/mercadopago` no Mercado Pago.
+- [ ] Testar assinatura inválida do webhook: deve retornar 401.
+- [ ] Testar webhook sem secret: deve retornar 503, nunca liberar matrícula.
+- [ ] Testar pagamento com valor divergente: não deve ativar matrícula.
+- [ ] Criar conta estudante nova: deve iniciar com zero matrículas.
+- [ ] Tentar `INSERT/UPDATE` direto em `enrollments` usando token estudante: deve falhar.
+- [ ] Tentar ler `lessons` sem matrícula ativa: deve falhar.
+- [ ] Bloquear estudante e tentar ler aulas diretamente pelo Supabase: deve falhar.
+- [ ] Bloquear estudante com sessão de Lab ativa: sessão local deve ser revogada.
+- [ ] Testar conclusão de aula duas vezes: XP deve ser creditado uma vez.
+- [ ] Testar flag correta duas vezes: XP do challenge deve ser creditado uma vez.
+- [ ] Verificar que `flag_hash` não está disponível para o usuário autenticado.
+- [ ] Verificar que `connection_url`/`provider_session_id` não estão disponíveis no catálogo do Lab.
+- [ ] Configurar `LAB_PROVIDER_API_URL` e `LAB_PROVIDER_API_KEY` se houver provedor de VM.
+- [ ] Testar start/stop/expiração de Lab.
+- [ ] Testar recuperação e atualização de senha.
+- [ ] Testar perfil público desligado: não deve aparecer em `/talentos`.
+- [ ] Testar perfil público ligado: deve aparecer em `/talentos`.
+- [ ] Rodar `npm run build` no CI/Vercel antes de apontar o domínio principal.

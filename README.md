@@ -1,16 +1,61 @@
-# FortifySec
+# FortifySec Unified — Academy + Labs + Challenges + CTF
 
-Plataforma da formação FortifySec pronta para a Vercel. Inclui landing page,
-login por e-mail e senha, área do aluno, player do YouTube, progresso, painel
-administrativo e liberação automática após pagamento aprovado no Mercado Pago.
+Versão unificada da plataforma FortifySec em Next.js + Supabase + Mercado Pago, com a identidade visual do novo **FortifySec Labs / cyber range** aplicada também à Academy e à administração.
 
-## Requisitos
+## O que está incluído
 
-- Node.js 22 ou superior
-- Projeto no Supabase
-- Aplicação no Mercado Pago
+### Conta e acesso
+- Cadastro por e-mail e senha.
+- Confirmação de e-mail.
+- Login/logout.
+- Recuperação e troca de senha.
+- Perfil `student` e `admin`.
+- Bloqueio administrativo validado nas páginas **e nas RLS policies**.
+- Service Role somente em código server-side.
 
-## Executar localmente
+### Academy
+- Catálogo de cursos.
+- Aulas com texto e URL de vídeo/YouTube/streaming.
+- Matrícula `pending`, `active`, `blocked` ou `expired`.
+- Aluno **não possui permissão de banco para criar/ativar matrícula**.
+- Checkout Mercado Pago cria apenas estado pendente.
+- Webhook assinado consulta o pagamento no Mercado Pago e confere valor/moeda antes da liberação.
+- Progresso por aula.
+- XP por conclusão sem possibilidade de marcar/desmarcar repetidamente para farmar XP.
+
+### Cyber Range
+- Catálogo de Labs.
+- Acesso aos Labs exige matrícula ativa.
+- Endpoint do Lab não é liberado no catálogo.
+- Sessão iniciada por Server Action após nova validação de acesso.
+- Suporte a endpoint fixo/VPN por Lab.
+- Suporte opcional a provedor real de VM/cyber range via `LAB_PROVIDER_API_URL`.
+- Encerramento, expiração e revogação de sessão.
+
+### Challenges
+- Categorias e dificuldade.
+- XP por resolução.
+- Flag armazenada como SHA-256 no banco.
+- Flag correta é validada em função `security definer`; o hash não é enviado ao frontend.
+- Uma resolução só premia XP uma vez.
+
+### CTF, Ranking e Talentos
+- Eventos CTF com início, fim, status e premiação.
+- Ranking global por XP real.
+- Perfil técnico com headline, GitHub e LinkedIn.
+- `profile_public` e `open_to_work` são opt-in.
+- Talent Network mostra apenas perfis que o próprio aluno tornou públicos.
+
+### Administração
+- Cursos: criar, publicar e retirar do catálogo.
+- Aulas: criar e associar a cursos.
+- Matrículas: conceder/alterar status.
+- Usuários: bloquear/desbloquear e mudar role.
+- Labs: cadastrar endpoint/fallback e Provider Lab ID.
+- Challenges: cadastrar flag sem expô-la ao frontend.
+- CTF: cadastrar eventos.
+
+## Instalação local
 
 ```bash
 npm install
@@ -20,87 +65,144 @@ npm run dev
 
 Abra `http://localhost:3000`.
 
-## 1. Configurar o Supabase
+## Banco Supabase
 
-1. Crie um projeto no Supabase.
-2. Abra **SQL Editor**, cole o conteúdo de `supabase/schema.sql` e execute.
-3. Em **Authentication > URL Configuration**, defina a URL pública do site e
-   adicione `https://seu-dominio.vercel.app/**` às URLs permitidas.
-4. Em **Authentication > Providers > Email**, mantenha e-mail e senha ativos.
-5. Copie a URL, a chave pública e a service role em **Project Settings > API**.
+Em um projeto novo, execute no SQL Editor, nessa ordem:
 
-Depois de criar sua conta pelo site, torne seu usuário administrador no SQL
-Editor:
+```text
+supabase/migrations/001_final_schema.sql
+supabase/migrations/002_labs_challenges_ctf.sql
+```
+
+Depois crie sua conta pelo próprio site e promova **somente o primeiro administrador** manualmente:
 
 ```sql
 update public.profiles
 set role = 'admin'
-where email = 'seu@email.com';
+where email = 'seu-email@dominio.com';
 ```
 
-Nunca exponha a `SUPABASE_SERVICE_ROLE_KEY` no navegador ou no GitHub.
+A partir daí, roles dos demais usuários podem ser administradas pelo painel.
 
-## 2. Configurar o Mercado Pago
-
-Preencha a variável abaixo no arquivo `.env.local`:
+## Variáveis Supabase
 
 ```env
-MERCADO_PAGO_ACCESS_TOKEN=SEU_ACCESS_TOKEN
-MERCADO_PAGO_WEBHOOK_SECRET=SEGREDO_DA_ASSINATURA_WEBHOOK
-NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA_CHAVE_PUBLICA
-SUPABASE_SERVICE_ROLE_KEY=SUA_SERVICE_ROLE
-NEXT_PUBLIC_SITE_URL=https://seu-dominio.vercel.app
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
-No painel do Mercado Pago, cadastre o Webhook de pagamentos:
+Nunca crie variável `NEXT_PUBLIC_...` para a Service Role.
+
+## Mercado Pago
+
+```env
+MERCADO_PAGO_ACCESS_TOKEN=...
+MERCADO_PAGO_WEBHOOK_SECRET=...
+```
+
+Webhook:
 
 ```text
-https://seu-dominio.vercel.app/api/mercadopago/webhook
+https://SEU_DOMINIO/api/webhooks/mercadopago
 ```
 
-Ative eventos de **Pagamentos** e copie a assinatura secreta para
-`MERCADO_PAGO_WEBHOOK_SECRET`. A aplicação valida a assinatura, consulta o
-pagamento diretamente no Mercado Pago, confere o valor de R$ 2.997 e libera o
-curso para o usuário vinculado à compra.
+A integração espera notificações de `payment`. Sem `MERCADO_PAGO_WEBHOOK_SECRET`, o endpoint de webhook recusa a liberação.
 
-Não envie `.env.local` ao GitHub. Ele já está protegido pelo `.gitignore`.
+## Provedor real de Labs — opcional
 
-## 3. Publicar na Vercel
+Sem provedor, o administrador pode cadastrar um endpoint/VPN fixo em cada Lab.
 
-1. Envie esta pasta para um repositório no GitHub.
-2. Na Vercel, escolha **Add New > Project** e importe o repositório.
-3. Confirme o preset **Next.js**.
-4. Em **Environment Variables**, cadastre todas as variáveis de `.env.example`.
-5. Clique em **Deploy**.
+Com provedor, configure:
 
-## Comandos
-
-```bash
-npm run dev
-npm run build
-npm start
-npm run lint
+```env
+LAB_PROVIDER_API_URL=https://seu-range-provider.exemplo/api
+LAB_PROVIDER_API_KEY=...
 ```
 
-## Arquivos principais
+Contrato esperado para iniciar uma sessão:
 
-- `app/page.tsx`: página da FortifySec
-- `app/globals.css`: layout, animações e responsividade
-- `app/portal.css`: design completo do login, dashboard, player e painel admin
-- `app/api/checkout/route.ts`: criação do checkout Mercado Pago
-- `app/api/mercadopago/webhook/route.ts`: confirmação e liberação automática
-- `app/login/`: login, cadastro e recuperação de senha
-- `app/area/`: catálogo particular do aluno
-- `app/curso/[id]/`: player, aulas e progresso
-- `app/admin/`: cadastro de cursos, módulos, vídeos e acessos
-- `supabase/schema.sql`: banco de dados completo
-- `app/layout.tsx`: metadados, idioma e fontes locais
-- `SECURITY.md`: controles aplicados e checklist obrigatório de lançamento
+```http
+POST /sessions
+Authorization: Bearer <LAB_PROVIDER_API_KEY>
+Content-Type: application/json
+```
 
-## Cadastrar vídeos
+Body:
 
-Entre com o usuário administrador, acesse `/admin`, crie o módulo e cole o
-link do YouTube no formulário **Nova aula**. São aceitos links públicos, não
-listados, `youtu.be`, Shorts e URLs de incorporação. O aluno assiste dentro da
-plataforma pelo player com privacidade aprimorada do YouTube.
+```json
+{
+  "user_id": "uuid-do-aluno",
+  "lab_id": "provider-lab-id",
+  "ttl_minutes": 60
+}
+```
+
+Resposta:
+
+```json
+{
+  "session_id": "provider-session-id",
+  "connection_url": "https://... ou vpn://...",
+  "expires_at": "2026-08-15T18:00:00Z"
+}
+```
+
+Para encerrar:
+
+```http
+DELETE /sessions/{session_id}
+```
+
+## Regras de matrícula
+
+O bloqueio existe em duas camadas:
+
+1. **Aplicação:** Server Components e Server Actions validam o usuário e a matrícula.
+2. **Banco:** RLS impede o token de estudante de inserir ou atualizar `enrollments` e impede acesso a aulas/progresso quando a conta estiver bloqueada ou sem matrícula ativa.
+
+Alterar HTML, remover `disabled`, forjar uma requisição no DevTools ou chamar a API do Supabase diretamente não cria uma matrícula ativa.
+
+## Design
+
+A identidade está centralizada em `app/globals.css` e usa o novo conceito FortifySec Labs:
+- fundo preto/grafite;
+- verde ácido;
+- grid técnico;
+- terminal/cyber range;
+- cards retos e densos;
+- sidebar operacional;
+- Academy, Labs, Challenges e Admin com a mesma linguagem visual.
+
+## Estrutura principal
+
+```text
+app/
+  admin/
+    aulas/
+    ctf/
+    cursos/
+    desafios/
+    labs/
+    matriculas/
+    usuarios/
+  api/
+    checkout/
+    webhooks/mercadopago/
+  curso/[slug]/
+  painel/
+    cursos/
+    ctf/
+    desafios/
+    labs/
+    perfil/
+    ranking/
+  talentos/
+components/
+lib/
+supabase/migrations/
+```
+
+## Antes de produção
+
+Use `VERCEL_CHECKLIST.md` e teste o fluxo completo com uma conta estudante separada da conta administradora.

@@ -1,41 +1,14 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
-import "./globals.css";
-import "./portal.css";
+import './globals.css'
+import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
 
-const geistSans = localFont({
-  src: "./fonts/Geist.woff2",
-  variable: "--font-geist-sans",
-  display: "swap",
-});
+export const metadata = { title: 'FortifySec — Learn. Hack. Prove.', description: 'Academy, cyber labs, challenges, CTF e ranking técnico em uma única plataforma.' }
 
-const geistMono = localFont({
-  src: "./fonts/GeistMono.woff2",
-  variable: "--font-geist-mono",
-  display: "swap",
-});
-
-export const metadata: Metadata = {
-  title: "FortifySec — Formação em Cybersecurity",
-  description: "Formação profissional em Cybersecurity, Ethical Hacking e Red Team com laboratórios, certificação prática e CTF.",
-  icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-  },
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="pt-BR">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
-    </html>
-  );
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  return <html lang="pt-BR"><body>
+    <header className="topnav"><div className="nav-wrap"><Link className="brand" href="/"><span className="brand-bracket">[</span>FORTIFY<span>SEC</span><span className="brand-bracket">]</span></Link><nav className="nav-links"><Link href="/#academy">Academy</Link><Link href="/#labs">Labs</Link><Link href="/#ctf">CTF</Link><Link href="/talentos">Talentos</Link>{user ? <Link className="nav-cta" href="/painel">ENTRAR NO RANGE</Link> : <Link className="nav-cta" href="/login">LOGIN</Link>}</nav></div></header>
+    {children}
+  </body></html>
 }
