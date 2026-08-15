@@ -1,6 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
 import { Clock3, Copy, Crosshair, Network, Power, Radio, ShieldCheck, TerminalSquare } from 'lucide-react'
-import { DashboardShell } from '@/components/DashboardShell'
 import { DifficultyMeter } from '@/components/ui/DifficultyMeter'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireUser } from '@/lib/auth'
@@ -14,7 +13,7 @@ export default async function LabPage({params,searchParams}:{params:Promise<{slu
  const {data:lab}=await supabase.from('labs').select('id,title,slug,description,difficulty,estimated_minutes,tags,instructions').eq('slug',slug).eq('published',true).maybeSingle()
  if(!lab)notFound();
  const {data:session}=await supabase.from('lab_sessions').select('id,status,started_at,expires_at,connection_url').eq('user_id',user.id).eq('lab_id',lab.id).eq('status','running').gt('expires_at',new Date().toISOString()).order('started_at',{ascending:false}).limit(1).maybeSingle()
- return <DashboardShell admin={access.isAdmin}>
+ return <>
    <div className="lab-workspace-head"><div><div className="kicker">CYBER RANGE / ACTIVE TARGET</div><h1>{lab.title}</h1><p>{lab.description}</p></div><div className="workspace-status"><span className={`status-orb ${session?'online':'offline'}`}/><div><small>SESSION STATUS</small><strong>{session?'RUNNING':'OFFLINE'}</strong></div></div></div>
    {query.erro==='provider'&&<div className="alert danger-alert">Não foi possível provisionar o laboratório. Verifique o provider ou tente novamente.</div>}
    <div className="lab-workspace-grid">
@@ -27,5 +26,5 @@ export default async function LabPage({params,searchParams}:{params:Promise<{slu
        <div className="card session-control"><span className="section-index">SESSION CONTROL</span><h3>{session?'Ambiente em execução':'Pronto para iniciar'}</h3><p className="muted">{session?'Encerre a sessão quando terminar para liberar os recursos do range.':'Prepare-se: o ambiente será provisionado para sua sessão.'}</p>{session?<form action={stopLabAction}><input type="hidden" name="lab_id" value={lab.id}/><input type="hidden" name="slug" value={lab.slug}/><SubmitButton className="btn danger full-btn" idleLabel="ENCERRAR SESSÃO" pendingLabel="ENCERRANDO..."/></form>:<form action={startLabAction}><input type="hidden" name="lab_id" value={lab.id}/><input type="hidden" name="slug" value={lab.slug}/><SubmitButton className="btn full-btn" idleLabel="INICIAR LAB →" pendingLabel="PROVISIONANDO LAB..."/></form>}<div className="security-note"><Power size={14}/><span>Sessão isolada e temporária para sua prática.</span></div></div>
      </aside>
    </div>
- </DashboardShell>
+ </>
 }

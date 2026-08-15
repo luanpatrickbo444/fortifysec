@@ -73,8 +73,9 @@ export function SiteHeader() {
         </Link>
         <nav className="nav-links">
           <Link href="/academy">Academy</Link>
-          <Link href="/labs">Labs</Link>
-          <Link href="/ctf">CTF</Link>
+          <Link href={session.authenticated ? '/painel/labs' : '/labs'}>Labs</Link>
+          {session.authenticated && <Link href="/painel/desafios">Challenges</Link>}
+          <Link href={session.authenticated ? '/painel/ctf' : '/ctf'}>CTF</Link>
           <Link href="/planos">Planos</Link>
           <Link href="/talentos">Talentos</Link>
           {!session.ready ? (
