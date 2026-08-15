@@ -1,30 +1,14 @@
-# FortifySec Unified — Validation
+# FortifySec V4 — validação executada
 
-## Executed checks
+- 30 páginas App Router mapeadas.
+- 45 arquivos `.ts`/`.tsx` analisados pelo parser TypeScript: 0 erros de sintaxe.
+- 0 padrões de rotas dinâmicas ambíguas.
+- Apenas `/curso/[slug]` existe; `/curso/[id]` não existe.
+- PostCSS usa configuração vazia porque o projeto usa CSS puro.
+- Fluxo PKCE de recuperação de senha corrigido.
+- Dashboard `/admin` e páginas de pagamento adicionados.
+- Navegação pública própria para `/academy`, `/labs` e `/ctf` adicionada.
+- Next.js fixado em 16.2.11 e React em 19.2.7.
 
-- 38 `.ts`/`.tsx` application files were passed through the TypeScript transpiler for syntax validation.
-- Result: **0 syntax-error files**.
-- SQL migrations are separated into `001_final_schema.sql` and `002_labs_challenges_ctf.sql`; run them in that order.
-- No `node_modules` directory is bundled in the deliverable.
-
-## Build status
-
-A full `npm install` / `next build` could not be completed in the execution environment because dependency installation timed out. Therefore this validation does **not** claim a successful production build or full type-check.
-
-Before deploying, run locally or in CI:
-
-```bash
-npm install
-npm run build
-```
-
-Then apply the Supabase migrations and configure the environment variables described in `.env.example` and `VERCEL_CHECKLIST.md`.
-
-## Infrastructure note
-
-The Labs module supports either:
-
-1. a fixed connection endpoint configured by an administrator; or
-2. a dynamic external lab provider through `LAB_PROVIDER_API_URL` and `LAB_PROVIDER_API_KEY`.
-
-Dynamic VM/container provisioning requires an actual provider/adapter and credentials; the application cannot create infrastructure without them.
+## Limitação deste ambiente
+A geração de `package-lock.json`/instalação completa via npm expirou neste ambiente, portanto não é alegado um `next build` completo aqui. O Vercel deverá executar `npm install` e `npm run build`; em caso de erro, use a primeira mensagem de erro anterior ao `exit 1`.

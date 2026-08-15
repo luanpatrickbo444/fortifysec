@@ -22,7 +22,7 @@ export async function registerAction(formData: FormData) {
   if(error) redirect('/cadastro?erro='+encodeURIComponent(error.message))
   redirect('/login?sucesso='+encodeURIComponent('Cadastro realizado. Confirme seu e-mail para entrar.'))
 }
-export async function resetPasswordAction(formData: FormData) {const email=String(formData.get('email')||'').trim().toLowerCase();const supabase=await createClient();const site=process.env.NEXT_PUBLIC_SITE_URL||'http://localhost:3000';await supabase.auth.resetPasswordForEmail(email,{redirectTo:`${site}/atualizar-senha`});redirect('/recuperar-senha?sucesso=1')}
+export async function resetPasswordAction(formData: FormData) {const email=String(formData.get('email')||'').trim().toLowerCase();const supabase=await createClient();const site=process.env.NEXT_PUBLIC_SITE_URL||'http://localhost:3000';await supabase.auth.resetPasswordForEmail(email,{redirectTo:`${site}/auth/callback?next=/atualizar-senha`});redirect('/recuperar-senha?sucesso=1')}
 export async function updatePasswordAction(formData: FormData) {const password=String(formData.get('password')||'');if(password.length<8) redirect('/atualizar-senha?erro=Senha%20muito%20curta');const supabase=await createClient();const {error}=await supabase.auth.updateUser({password});if(error) redirect('/atualizar-senha?erro='+encodeURIComponent(error.message));redirect('/painel')}
 
 export async function updateProfileAction(formData:FormData){
