@@ -1,0 +1,26 @@
+FORTIFYSEC — RESTAURACAO EXATA V7.12
+
+1. Extraia TODO o conteudo deste ZIP na RAIZ do repositorio e aceite sobrescrever.
+2. Windows: execute CLEAN_V13_V17_RESIDUES.bat na raiz do repositorio.
+   Linux/macOS: execute bash CLEAN_V13_V17_RESIDUES.sh
+3. Confirme que NAO existem:
+   app/painel/panel.css
+   scripts/prebuild-ui-guard.mjs
+   components/PanelSectionShell.tsx
+   app/painel/cursos/layout.tsx
+   app/painel/ctf/layout.tsx
+   app/painel/pagamentos/layout.tsx
+   app/painel/perfil/layout.tsx
+   app/painel/ranking/layout.tsx
+4. Confirme que EXISTEM:
+   app/globals.css
+   app/layout.tsx
+   app/painel/layout.tsx
+   app/painel/labs/layout.tsx
+   app/painel/desafios/layout.tsx
+5. Rode:
+   git add -A
+   git commit -m "restore exact FortifySec V7.12"
+   git push
+
+IMPORTANTE: app/globals.css neste pacote e o arquivo ORIGINAL da V7.12, sem alteracao.
