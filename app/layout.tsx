@@ -1,5 +1,17 @@
-// V7.14: pass-through layout.
-// The single visual shell/sidebar is mounted only by app/painel/layout.tsx.
-export default function SectionLayout({ children }: { children: React.ReactNode }) {
-  return children
+import './panel.css'
+import { DashboardShell } from '@/components/DashboardShell'
+import { requireUser } from '@/lib/auth'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+export default async function PainelLayout({ children }: { children: React.ReactNode }) {
+  const { supabase, user } = await requireUser()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  return <DashboardShell admin={String(profile?.role || '') === 'admin'}>{children}</DashboardShell>
 }

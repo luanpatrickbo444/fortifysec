@@ -1,3 +1,4 @@
+import './panel.css'
 import { DashboardShell } from '@/components/DashboardShell'
 import { requireUser } from '@/lib/auth'
 
