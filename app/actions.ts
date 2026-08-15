@@ -26,10 +26,11 @@ export async function resetPasswordAction(formData: FormData) {const email=Strin
 export async function updatePasswordAction(formData: FormData) {const password=String(formData.get('password')||'');if(password.length<8) redirect('/atualizar-senha?erro=Senha%20muito%20curta');const supabase=await createClient();const {error}=await supabase.auth.updateUser({password});if(error) redirect('/atualizar-senha?erro='+encodeURIComponent(error.message));redirect('/painel')}
 
 export async function updateProfileAction(formData:FormData){
- const {supabase,user}=await requireUser(); const name=String(formData.get('name')||'').trim(); if(name.length<2)return
+ const {supabase,user}=await requireUser(); const name=String(formData.get('name')||'').trim(); if(name.length<2)redirect('/painel/perfil?erro=nome')
  const payload={name,headline:String(formData.get('headline')||'').trim(),github_url:safeExternalUrl(String(formData.get('github_url')||'').trim()),linkedin_url:safeExternalUrl(String(formData.get('linkedin_url')||'').trim()),profile_public:asBool(formData.get('profile_public')),open_to_work:asBool(formData.get('open_to_work'))}
- await supabase.from('profiles').update(payload).eq('id',user.id); revalidatePath('/painel/perfil'); revalidatePath('/talentos')
+ const {error}=await supabase.from('profiles').update(payload).eq('id',user.id);if(error)redirect('/painel/perfil?erro=salvar'); revalidatePath('/painel/perfil'); revalidatePath('/talentos');redirect('/painel/perfil?salvo=1')
 }
+
 
 export async function startLabAction(formData:FormData){
  const {user}=await requireUser(); const labId=String(formData.get('lab_id')||''); const slug=String(formData.get('slug')||'')
@@ -42,7 +43,14 @@ export async function startLabAction(formData:FormData){
  if(!running){let connectionUrl=lab.connection_url;let providerSessionId:string|null=null;let expires=new Date(Date.now()+Math.max(15,lab.estimated_minutes||60)*60_000).toISOString();const provider=process.env.LAB_PROVIDER_API_URL;if(provider){const res=await fetch(`${provider.replace(/\/$/,'')}/sessions`,{method:'POST',headers:{'Content-Type':'application/json',...(process.env.LAB_PROVIDER_API_KEY?{Authorization:`Bearer ${process.env.LAB_PROVIDER_API_KEY}`}:{})},body:JSON.stringify({user_id:user.id,lab_id:lab.provider_lab_id||lab.id,ttl_minutes:lab.estimated_minutes||60}),cache:'no-store'});if(!res.ok)redirect(`/painel/labs/${slug}?erro=provider`);const data=await res.json();connectionUrl=String(data.connection_url||connectionUrl||'');providerSessionId=data.session_id?String(data.session_id):null;if(data.expires_at)expires=String(data.expires_at)}await admin.from('lab_sessions').insert({user_id:user.id,lab_id:labId,status:'running',connection_url:connectionUrl,provider_session_id:providerSessionId,expires_at:expires})}
  revalidatePath(`/painel/labs/${slug}`);redirect(`/painel/labs/${slug}`)
 }
-export async function stopLabAction(formData:FormData){const {user}=await requireUser();const labId=String(formData.get('lab_id')||'');const admin=createAdminClient();const {data:session}=await admin.from('lab_sessions').select('id,provider_session_id').eq('user_id',user.id).eq('lab_id',labId).eq('status','running').maybeSingle();if(session?.provider_session_id&&process.env.LAB_PROVIDER_API_URL){await fetch(`${process.env.LAB_PROVIDER_API_URL.replace(/\/$/,'')}/sessions/${encodeURIComponent(session.provider_session_id)}`,{method:'DELETE',headers:process.env.LAB_PROVIDER_API_KEY?{Authorization:`Bearer ${process.env.LAB_PROVIDER_API_KEY}`}:{},cache:'no-store'}).catch(()=>null)}await admin.from('lab_sessions').update({status:'stopped',stopped_at:new Date().toISOString()}).eq('user_id',user.id).eq('lab_id',labId).eq('status','running');revalidatePath('/painel/labs')}
+export async function stopLabAction(formData:FormData){
+ const {user}=await requireUser();const labId=String(formData.get('lab_id')||'');const slug=String(formData.get('slug')||'');const admin=createAdminClient();
+ const {data:session}=await admin.from('lab_sessions').select('id,provider_session_id').eq('user_id',user.id).eq('lab_id',labId).eq('status','running').maybeSingle();
+ if(session?.provider_session_id&&process.env.LAB_PROVIDER_API_URL){await fetch(`${process.env.LAB_PROVIDER_API_URL.replace(/\/$/,'')}/sessions/${encodeURIComponent(session.provider_session_id)}`,{method:'DELETE',headers:process.env.LAB_PROVIDER_API_KEY?{Authorization:`Bearer ${process.env.LAB_PROVIDER_API_KEY}`}:{},cache:'no-store'}).catch(()=>null)}
+ await admin.from('lab_sessions').update({status:'stopped',stopped_at:new Date().toISOString()}).eq('user_id',user.id).eq('lab_id',labId).eq('status','running');
+ revalidatePath('/painel/labs');if(slug){revalidatePath(`/painel/labs/${slug}`);redirect(`/painel/labs/${slug}`)}
+}
+
 
 export async function submitChallengeAction(formData:FormData){const {supabase}=await requireUser();const challengeId=String(formData.get('challenge_id')||'');const slug=String(formData.get('slug')||'');const flag=String(formData.get('flag')||'').trim();if(!challengeId||!flag)redirect(`/painel/desafios/${slug}?result=invalid`);const {data,error}=await supabase.rpc('submit_challenge_flag',{challenge_uuid:challengeId,candidate_flag:flag});if(error||!data)redirect(`/painel/desafios/${slug}?result=invalid`);revalidatePath('/painel');revalidatePath('/painel/ranking');redirect(`/painel/desafios/${slug}?result=solved`)}
 
@@ -54,6 +62,10 @@ export async function adminCreateChallengeAction(formData:FormData){await requir
 
 export async function adminCreateCtfAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const title=String(formData.get('title')||'').trim();const starts=String(formData.get('starts_at')||'');const ends=String(formData.get('ends_at')||'');if(!title||!starts||!ends)return;await admin.from('ctf_events').insert({title,description:String(formData.get('description')||''),starts_at:new Date(starts).toISOString(),ends_at:new Date(ends).toISOString(),prize_text:String(formData.get('prize_text')||''),status:String(formData.get('status')||'scheduled')});revalidatePath('/admin/ctf');revalidatePath('/painel/ctf')}
 
-export async function adminCreateLessonAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const courseId=String(formData.get('course_id')||'');const title=String(formData.get('title')||'').trim();const position=Number(formData.get('position')||1);if(!courseId||!title||position<1)return;await admin.from('lessons').insert({course_id:courseId,title,content:String(formData.get('content')||''),video_url:safeExternalUrl(String(formData.get('video_url')||'').trim()),position,xp_reward:Math.max(0,Number(formData.get('xp_reward')||10))});revalidatePath('/admin/aulas')}
+export async function adminCreateLessonAction(formData:FormData){
+ await requireAdmin();const admin=createAdminClient();const courseId=String(formData.get('course_id')||'');const title=String(formData.get('title')||'').trim();const position=Number(formData.get('position')||1);if(!courseId||!title||position<1)redirect('/admin/aulas?erro=dados');
+ const {error}=await admin.from('lessons').insert({course_id:courseId,title,content:String(formData.get('content')||''),video_url:safeExternalUrl(String(formData.get('video_url')||'').trim()),position,xp_reward:Math.max(0,Number(formData.get('xp_reward')||10))});if(error)redirect('/admin/aulas?erro=salvar');revalidatePath('/admin/aulas');redirect('/admin/aulas?criada=1')
+}
+
 export async function adminToggleCourseAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const courseId=String(formData.get('course_id')||'');const published=String(formData.get('published')||'false')==='true';await admin.from('courses').update({published:!published}).eq('id',courseId);revalidatePath('/admin/cursos');revalidatePath('/painel/cursos')}
 export async function adminSetUserRoleAction(formData:FormData){const {user}=await requireAdmin();const target=String(formData.get('user_id')||'');const role=String(formData.get('role')||'student');if(!target||target===user.id||!['student','admin'].includes(role))return;const admin=createAdminClient();await admin.from('profiles').update({role}).eq('id',target);revalidatePath('/admin/usuarios')}

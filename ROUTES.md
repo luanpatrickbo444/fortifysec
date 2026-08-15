@@ -1,43 +1,37 @@
-# FortifySec V4 — mapa de páginas
+# FortifySec V5 — mapa de rotas
 
-## Públicas
-- `/` — home
+## Público
+- `/` — landing page
 - `/academy` — visão pública da Academy
-- `/labs` — visão pública do Cyber Range
-- `/ctf` — visão pública do CTF
+- `/labs` — visão pública dos Labs
+- `/ctf` — CTF
+- `/planos` — planos Grátis e FortifySec Pro R$ 99,90
 - `/talentos` — Talent Network
 - `/login` — login
 - `/cadastro` — cadastro
 - `/recuperar-senha` — recuperação
-- `/atualizar-senha` — definição da nova senha após callback
-- `/bloqueado` — conta bloqueada
+- `/atualizar-senha` — nova senha
 
-## Aluno / operador
-- `/painel` — dashboard
-- `/painel/cursos` — catálogo, matrícula e checkout
-- `/curso/[slug]` — aulas, vídeo, progresso e XP
-- `/painel/labs` — catálogo de Labs
-- `/painel/labs/[slug]` — sessão do Lab
-- `/painel/desafios` — catálogo de Challenges
-- `/painel/desafios/[slug]` — submissão de flag
-- `/painel/ctf` — eventos CTF
-- `/painel/ranking` — ranking
-- `/painel/pagamentos` — histórico de pagamento
-- `/painel/perfil` — perfil técnico e Talent Network
+## Painel do aluno
+- `/painel` — visão geral
+- `/painel/cursos` — Academy com status, progresso e checkout
+- `/curso/[slug]` — player/trilha e conclusão de aulas
+- `/painel/labs` — catálogo de máquinas com dificuldade
+- `/painel/labs/[slug]` — workspace do laboratório e controle de sessão
+- `/painel/desafios` — catálogo de Challenges com dificuldade e XP
+- `/painel/desafios/[slug]` — missão e envio de flag
+- `/painel/ctf` — CTF
+- `/painel/ranking` — pódio Top 3 + classificação geral
+- `/painel/pagamentos` — histórico de pagamentos
+- `/painel/perfil` — perfil técnico, XP e Talent Network
 
-## Admin
-- `/admin` — dashboard administrativo
+## Administração
+- `/admin` — dashboard
 - `/admin/cursos` — cursos
-- `/admin/aulas` — aulas
+- `/admin/aulas` — Content Studio / postagem de aulas
 - `/admin/matriculas` — matrículas
-- `/admin/usuarios` — usuários, bloqueio e role
+- `/admin/usuarios` — usuários e roles
 - `/admin/labs` — Labs
 - `/admin/desafios` — Challenges
-- `/admin/ctf` — eventos CTF
+- `/admin/ctf` — CTF
 - `/admin/pagamentos` — pagamentos
-
-## Backend
-- `POST /api/checkout` — cria preferência Mercado Pago + matrícula pending
-- `POST /api/webhooks/mercadopago` — valida assinatura, consulta pagamento e ativa matrícula
-- `GET /auth/callback` — troca PKCE code por sessão e respeita `next`
-- `GET /auth/confirm` — confirmação OTP/token hash

@@ -1,14 +1,13 @@
-# FortifySec V4 — validação executada
+# FortifySec V5 — Validation
 
-- 30 páginas App Router mapeadas.
-- 45 arquivos `.ts`/`.tsx` analisados pelo parser TypeScript: 0 erros de sintaxe.
-- 0 padrões de rotas dinâmicas ambíguas.
-- Apenas `/curso/[slug]` existe; `/curso/[id]` não existe.
-- PostCSS usa configuração vazia porque o projeto usa CSS puro.
-- Fluxo PKCE de recuperação de senha corrigido.
-- Dashboard `/admin` e páginas de pagamento adicionados.
-- Navegação pública própria para `/academy`, `/labs` e `/ctf` adicionada.
-- Next.js fixado em 16.2.11 e React em 19.2.7.
+## Checks executados
+- 50 arquivos `.ts`/`.tsx` de aplicação (excluindo `.d.ts`) passaram pelo transpiler TypeScript para validação sintática.
+- Resultado: **0 erros de sintaxe**.
+- Imports locais verificados: **0 imports quebrados**.
+- Rotas `page.tsx`: **31**.
+- Padrões de rota dinâmica ambíguos: **0**.
+- Balanço de chaves do `app/globals.css`: **0** (balanceado).
+- `/curso/[id]` não existe; a rota única é `/curso/[slug]`.
 
-## Limitação deste ambiente
-A geração de `package-lock.json`/instalação completa via npm expirou neste ambiente, portanto não é alegado um `next build` completo aqui. O Vercel deverá executar `npm install` e `npm run build`; em caso de erro, use a primeira mensagem de erro anterior ao `exit 1`.
+## Build
+`npm install` voltou a exceder o limite de execução deste ambiente. Portanto o pacote não declara falsamente um `next build` completo. O próximo build real deve ser feito pelo Vercel/CI após o push.

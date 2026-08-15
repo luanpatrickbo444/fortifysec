@@ -37,6 +37,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Link href="/academy">Academy</Link>
               <Link href="/labs">Labs</Link>
               <Link href="/ctf">CTF</Link>
+              <Link href="/planos">Planos</Link>
               <Link href="/talentos">Talentos</Link>
               {authenticated ? (
                 <Link className="nav-cta" href="/painel">
