@@ -1,39 +1,40 @@
-# FortifySec V5 — mapa de rotas
+# FortifySec V7 — Rotas
 
 ## Público
-- `/` — landing page
-- `/academy` — visão pública da Academy
-- `/labs` — visão pública dos Labs
-- `/ctf` — CTF
-- `/planos` — planos Grátis e FortifySec Pro R$ 99,90
-- `/talentos` — Talent Network
-- `/login` — login
-- `/cadastro` — cadastro
-- `/recuperar-senha` — recuperação
-- `/atualizar-senha` — nova senha
+- `/`
+- `/academy`
+- `/labs`
+- `/ctf`
+- `/planos`
+- `/talentos`
+- `/login`
+- `/cadastro`
+- `/recuperar-senha`
+- `/atualizar-senha`
+- `/admin/login`
 
-## Painel do aluno
-- `/painel` — visão geral
-- `/painel/cursos` — Academy com status, progresso e checkout
-- `/curso/[slug]` — player/trilha e conclusão de aulas
-- `/painel/labs` — catálogo de máquinas com dificuldade
-- `/painel/labs/[slug]` — workspace do laboratório e controle de sessão
-- `/painel/desafios` — catálogo de Challenges com dificuldade e XP
-- `/painel/desafios/[slug]` — missão e envio de flag
-- `/painel/ctf` — CTF
-- `/painel/ranking` — pódio Top 3 + classificação geral
-- `/painel/pagamentos` — histórico de pagamentos
-- `/painel/perfil` — perfil técnico, XP e Talent Network
+## Área do aluno
+- `/painel` — Command Center
+- `/painel/cursos`
+- `/curso/[slug]` — curso com módulos e aulas
+- `/painel/labs`
+- `/painel/labs/[slug]`
+- `/painel/desafios`
+- `/painel/desafios/[slug]`
+- `/painel/ctf`
+- `/painel/ranking`
+- `/painel/pagamentos`
+- `/painel/perfil`
 
 ## Administração
-
-- `/admin/login` — acesso administrativo dedicado
-- `/admin` — dashboard
-- `/admin/cursos` — cursos
-- `/admin/aulas` — Content Studio / postagem de aulas
-- `/admin/matriculas` — matrículas
-- `/admin/usuarios` — usuários e roles
-- `/admin/labs` — Labs
-- `/admin/desafios` — Challenges
-- `/admin/ctf` — CTF
-- `/admin/pagamentos` — pagamentos
+- `/admin` — Operations Console
+- `/admin/cursos`
+- `/admin/cursos/[id]` — Course Studio: curso, módulos e aulas
+- `/admin/aulas` — biblioteca global / quick publish
+- `/admin/labs`
+- `/admin/desafios`
+- `/admin/ctf` — eventos, status e Challenges vinculados
+- `/admin/usuarios`
+- `/admin/matriculas`
+- `/admin/pagamentos`
+- `/admin/site` — conteúdo/configurações globais

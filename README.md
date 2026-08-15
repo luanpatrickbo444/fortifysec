@@ -1,45 +1,37 @@
-# FortifySec V5 COMPLETE
+# FortifySec V7 — Operations Console
 
-Plataforma Next.js + Supabase + Mercado Pago com identidade visual FortifySec Labs / cyber range.
+Projeto Next.js + Supabase + Mercado Pago com Academy, Cyber Labs, Challenges, CTF, ranking, área do aluno e administração operacional.
 
-## V5
+## O que mudou na V7
 
-A V5 restaura e padroniza as páginas internas que faltavam:
+A área do aluno agora funciona como Command Center: formação, progresso, Labs, Challenges, CTF, ranking e atividade em uma única home interna.
 
-- Academy/cursos com progresso real e checkout com loading;
-- Lab catalog + workspace individual;
-- Challenges + missão individual e envio de flag;
-- ranking com pódio Top 3;
-- perfil técnico com XP, nível, rank e métricas;
-- Admin Content Studio para postagem de aulas;
-- página de planos Grátis e Pro R$ 99,90;
-- feedback de carregamento em ações reais.
-
-Leia `V5_CHANGES.md`, `ROUTES.md` e `VERCEL_CHECKLIST.md` antes do deploy.
+O administrador ganhou uma Operations Console completa com:
+- cursos e trilhas;
+- Course Studio individual por curso;
+- módulos e aulas dentro da grade;
+- vídeo, conteúdo, XP, posição e status de publicação;
+- Labs e Challenges;
+- CTF com estado e Challenges vinculados;
+- usuários, roles, matrículas e pagamentos;
+- configurações públicas da plataforma.
 
 ## Banco
 
-Execute as migrations existentes na ordem:
+Execute as migrations em ordem:
 
-1. `supabase/migrations/001_final_schema.sql`
-2. `supabase/migrations/002_labs_challenges_ctf.sql`
+```text
+001_final_schema.sql
+002_labs_challenges_ctf.sql
+003_operations_console.sql
+```
 
-## Vercel
+A migration 003 cria `course_modules`, adiciona metadados/publicação às aulas, cria `site_settings` e vinculação `ctf_event_challenges`.
 
-Configure as variáveis de ambiente conforme `.env.example` e `VERCEL_CHECKLIST.md`.
+## Admin
 
-## Segurança
+Acesse `/admin/login`. Sua conta precisa ter `profiles.role = 'admin'`. Use `supabase/ADMIN_SETUP.sql` para promover a conta inicial.
 
-- estudante não cria/ativa matrícula pelo navegador;
-- conteúdo exige matrícula ativa;
-- flags são verificadas server-side;
-- endpoint de Lab só é obtido depois de autorização;
-- Service Role/Secret Key é somente server-side.
+## Deploy
 
-## V6 — Login admin e Academy completa
-
-- Login geral redireciona por `profiles.role`: `admin` → `/admin`, estudante → `/painel`.
-- Gateway administrativo dedicado: `/admin/login`.
-- Para a primeira conta admin, execute `supabase/ADMIN_SETUP.sql` após criar e confirmar o usuário.
-- A página `/academy` contém 6 trilhas, 37 cursos e 633 horas.
-- Textos públicos foram revisados para comunicar benefícios e jornada, sem expor regras internas de RLS/webhook/liberação.
+Consulte `VERCEL_CHECKLIST.md`.

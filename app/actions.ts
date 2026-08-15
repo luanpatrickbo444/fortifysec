@@ -7,6 +7,7 @@ import { requireAdmin, requireUser } from '@/lib/auth'
 
 function asBool(v:FormDataEntryValue|null){return String(v||'false')==='true'}
 function safeExternalUrl(value:string){try{const u=new URL(value);return u.protocol==='https:'||u.protocol==='http:'?u.toString():null}catch{return null}}
+function safeAdminReturn(value:FormDataEntryValue|null,fallback='/admin'){const v=String(value||'');return v.startsWith('/admin/')||v==='/admin'?v:fallback}
 
 export async function loginAction(formData: FormData) {
   const email=String(formData.get('email')||'').trim().toLowerCase()
@@ -82,9 +83,55 @@ export async function adminCreateChallengeAction(formData:FormData){await requir
 export async function adminCreateCtfAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const title=String(formData.get('title')||'').trim();const starts=String(formData.get('starts_at')||'');const ends=String(formData.get('ends_at')||'');if(!title||!starts||!ends)return;await admin.from('ctf_events').insert({title,description:String(formData.get('description')||''),starts_at:new Date(starts).toISOString(),ends_at:new Date(ends).toISOString(),prize_text:String(formData.get('prize_text')||''),status:String(formData.get('status')||'scheduled')});revalidatePath('/admin/ctf');revalidatePath('/painel/ctf')}
 
 export async function adminCreateLessonAction(formData:FormData){
- await requireAdmin();const admin=createAdminClient();const courseId=String(formData.get('course_id')||'');const title=String(formData.get('title')||'').trim();const position=Number(formData.get('position')||1);if(!courseId||!title||position<1)redirect('/admin/aulas?erro=dados');
- const {error}=await admin.from('lessons').insert({course_id:courseId,title,content:String(formData.get('content')||''),video_url:safeExternalUrl(String(formData.get('video_url')||'').trim()),position,xp_reward:Math.max(0,Number(formData.get('xp_reward')||10))});if(error)redirect('/admin/aulas?erro=salvar');revalidatePath('/admin/aulas');redirect('/admin/aulas?criada=1')
+ await requireAdmin();const admin=createAdminClient();const courseId=String(formData.get('course_id')||'');const moduleId=String(formData.get('module_id')||'')||null;const title=String(formData.get('title')||'').trim();const position=Number(formData.get('position')||1);const returnTo=safeAdminReturn(formData.get('return_to'),'/admin/aulas');if(!courseId||!title||position<1)redirect(`${returnTo}?erro=dados`);
+ if(moduleId){const {data:module}=await admin.from('course_modules').select('id').eq('id',moduleId).eq('course_id',courseId).maybeSingle();if(!module)redirect(`${returnTo}?erro=modulo`)}
+ const {error}=await admin.from('lessons').insert({course_id:courseId,module_id:moduleId,title,summary:String(formData.get('summary')||'').trim(),content:String(formData.get('content')||''),video_url:safeExternalUrl(String(formData.get('video_url')||'').trim()),position,xp_reward:Math.max(0,Number(formData.get('xp_reward')||10)),published:asBool(formData.get('published'))});if(error)redirect(`${returnTo}?erro=salvar`);revalidatePath('/admin/aulas');revalidatePath(returnTo);revalidatePath('/painel/cursos');redirect(`${returnTo}?criada=1`)
 }
 
 export async function adminToggleCourseAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const courseId=String(formData.get('course_id')||'');const published=String(formData.get('published')||'false')==='true';await admin.from('courses').update({published:!published}).eq('id',courseId);revalidatePath('/admin/cursos');revalidatePath('/painel/cursos')}
 export async function adminSetUserRoleAction(formData:FormData){const {user}=await requireAdmin();const target=String(formData.get('user_id')||'');const role=String(formData.get('role')||'student');if(!target||target===user.id||!['student','admin'].includes(role))return;const admin=createAdminClient();await admin.from('profiles').update({role}).eq('id',target);revalidatePath('/admin/usuarios')}
+
+
+export async function adminCreateModuleAction(formData:FormData){
+ await requireAdmin();const admin=createAdminClient();const courseId=String(formData.get('course_id')||'');const title=String(formData.get('title')||'').trim();const position=Number(formData.get('position')||1);const returnTo=safeAdminReturn(formData.get('return_to'),'/admin/cursos');if(!courseId||!title||position<1)redirect(`${returnTo}?erro=modulo`);const {error}=await admin.from('course_modules').insert({course_id:courseId,title,description:String(formData.get('description')||'').trim(),position,published:true});if(error)redirect(`${returnTo}?erro=modulo`);revalidatePath(returnTo);redirect(`${returnTo}?modulo=1`)
+}
+
+export async function adminUpdateCourseAction(formData:FormData){
+ await requireAdmin();const admin=createAdminClient();const courseId=String(formData.get('course_id')||'');const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');const price=Math.max(0,Number(formData.get('price')||0));if(!courseId||!title||!slug)return;await admin.from('courses').update({title,slug,description:String(formData.get('description')||'').trim(),price_cents:Math.round(price*100),published:asBool(formData.get('published')),updated_at:new Date().toISOString()}).eq('id',courseId);revalidatePath('/admin/cursos');revalidatePath(`/admin/cursos/${courseId}`);revalidatePath('/painel/cursos')
+}
+
+export async function adminToggleModuleAction(formData:FormData){
+ await requireAdmin();const admin=createAdminClient();const id=String(formData.get('module_id')||'');const published=asBool(formData.get('published'));const returnTo=safeAdminReturn(formData.get('return_to'),'/admin/cursos');if(!id)return;await admin.from('course_modules').update({published:!published,updated_at:new Date().toISOString()}).eq('id',id);revalidatePath(returnTo)
+}
+
+export async function adminToggleLessonAction(formData:FormData){
+ await requireAdmin();const admin=createAdminClient();const id=String(formData.get('lesson_id')||'');const published=asBool(formData.get('published'));const returnTo=safeAdminReturn(formData.get('return_to'),'/admin/aulas');if(!id)return;await admin.from('lessons').update({published:!published}).eq('id',id);revalidatePath('/admin/aulas');revalidatePath(returnTo);revalidatePath('/painel/cursos')
+}
+
+export async function adminDeleteLessonAction(formData:FormData){
+ await requireAdmin();const admin=createAdminClient();const id=String(formData.get('lesson_id')||'');const returnTo=safeAdminReturn(formData.get('return_to'),'/admin/aulas');if(!id)return;await admin.from('lessons').delete().eq('id',id);revalidatePath('/admin/aulas');revalidatePath(returnTo);revalidatePath('/painel/cursos')
+}
+
+export async function adminToggleLabPublishedAction(formData:FormData){
+ await requireAdmin();const admin=createAdminClient();const id=String(formData.get('lab_id')||'');const published=asBool(formData.get('published'));if(!id)return;await admin.from('labs').update({published:!published,updated_at:new Date().toISOString()}).eq('id',id);revalidatePath('/admin/labs');revalidatePath('/painel/labs')
+}
+
+export async function adminToggleChallengePublishedAction(formData:FormData){
+ await requireAdmin();const admin=createAdminClient();const id=String(formData.get('challenge_id')||'');const published=asBool(formData.get('published'));if(!id)return;await admin.from('challenges').update({published:!published,updated_at:new Date().toISOString()}).eq('id',id);revalidatePath('/admin/desafios');revalidatePath('/painel/desafios')
+}
+
+export async function adminUpdateCtfStatusAction(formData:FormData){
+ await requireAdmin();const admin=createAdminClient();const id=String(formData.get('event_id')||'');const status=String(formData.get('status')||'scheduled');if(!id||!['scheduled','live','finished'].includes(status))return;await admin.from('ctf_events').update({status}).eq('id',id);revalidatePath('/admin/ctf');revalidatePath('/painel/ctf')
+}
+
+export async function adminLinkChallengeToCtfAction(formData:FormData){
+ await requireAdmin();const admin=createAdminClient();const eventId=String(formData.get('event_id')||'');const challengeId=String(formData.get('challenge_id')||'');const position=Math.max(1,Number(formData.get('position')||1));if(!eventId||!challengeId)return;await admin.from('ctf_event_challenges').upsert({event_id:eventId,challenge_id:challengeId,position},{onConflict:'event_id,challenge_id'});revalidatePath('/admin/ctf');revalidatePath('/painel/ctf')
+}
+
+export async function adminUnlinkChallengeFromCtfAction(formData:FormData){
+ await requireAdmin();const admin=createAdminClient();const eventId=String(formData.get('event_id')||'');const challengeId=String(formData.get('challenge_id')||'');if(!eventId||!challengeId)return;await admin.from('ctf_event_challenges').delete().eq('event_id',eventId).eq('challenge_id',challengeId);revalidatePath('/admin/ctf');revalidatePath('/painel/ctf')
+}
+
+export async function adminUpdateSiteSettingsAction(formData:FormData){
+ await requireAdmin();const admin=createAdminClient();const payload={announcement:String(formData.get('announcement')||'').trim().slice(0,180),support_email:String(formData.get('support_email')||'').trim().toLowerCase(),academy_cta:String(formData.get('academy_cta')||'').trim().slice(0,60),labs_cta:String(formData.get('labs_cta')||'').trim().slice(0,60),ctf_prize_label:String(formData.get('ctf_prize_label')||'').trim().slice(0,60),maintenance_mode:asBool(formData.get('maintenance_mode'))};await admin.from('site_settings').upsert({key:'platform',value:payload,updated_at:new Date().toISOString()},{onConflict:'key'});revalidatePath('/admin/site');revalidatePath('/');revalidatePath('/academy');revalidatePath('/labs');revalidatePath('/ctf')
+}

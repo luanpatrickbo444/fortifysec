@@ -2,6 +2,7 @@ import './globals.css'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { hasSupabasePublicConfig } from '@/lib/supabase/config'
+import { getPlatformSettings } from '@/lib/site-settings'
 
 export const metadata = {
   title: 'FortifySec — Learn. Hack. Prove.',
@@ -12,6 +13,7 @@ export const metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let authenticated = false
   let authenticatedDestination = '/painel'
+  const platform = await getPlatformSettings()
 
   if (hasSupabasePublicConfig()) {
     try {
@@ -56,6 +58,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </nav>
           </div>
         </header>
+        {platform.announcement && <div className="announcement-bar"><span>FORTIFYSEC // NOTICE</span>{platform.announcement}</div>}
+        {platform.maintenance_mode && <div className="maintenance-bar">PLATAFORMA EM MANUTENÇÃO PROGRAMADA</div>}
         {children}
       </body>
     </html>

@@ -1,10 +1,11 @@
-import { BookOpen, Boxes, CreditCard, Flag, Gauge, Trophy, UserRound, UsersRound, Wrench, GraduationCap, Swords, LayoutDashboard } from 'lucide-react'
+import { BookOpen, Boxes, CreditCard, Flag, Gauge, Trophy, UserRound, UsersRound, Wrench, GraduationCap, Swords, LayoutDashboard, Settings, Layers3, RadioTower } from 'lucide-react'
 import { DashboardNav } from '@/components/DashboardNav'
 
 export function DashboardShell({children,admin=false}:{children:React.ReactNode,admin?:boolean}){
  const main=[
-  ['Visão geral','/painel',Gauge],['Academy','/painel/cursos',GraduationCap],['Labs','/painel/labs',Boxes],['Desafios','/painel/desafios',Swords],['CTF','/painel/ctf',Flag],['Ranking','/painel/ranking',Trophy],['Pagamentos','/painel/pagamentos',CreditCard],['Perfil','/painel/perfil',UserRound]
+  ['Command Center','/painel',Gauge],['Minha formação','/painel/cursos',GraduationCap],['Cyber Labs','/painel/labs',Boxes],['Challenges','/painel/desafios',Swords],['CTF','/painel/ctf',Flag],['Ranking','/painel/ranking',Trophy],['Pagamentos','/painel/pagamentos',CreditCard],['Perfil','/painel/perfil',UserRound]
  ] as const
- const adm=[['Dashboard','/admin',LayoutDashboard],['Cursos','/admin/cursos',BookOpen],['Aulas','/admin/aulas',GraduationCap],['Matrículas','/admin/matriculas',CreditCard],['Usuários','/admin/usuarios',UsersRound],['Labs','/admin/labs',Boxes],['Desafios','/admin/desafios',Wrench],['CTF','/admin/ctf',Flag],['Pagamentos','/admin/pagamentos',CreditCard]] as const
- return <div className="app-shell"><aside className="sidebar"><div className="side-brand"><span className="brand-mark">F</span><div><strong>FORTIFYSEC</strong><small>CYBER RANGE</small></div></div><div className="side-label">PLATAFORMA</div><DashboardNav items={main}/>{admin&&<><div className="side-label admin-label">ADMINISTRAÇÃO</div><DashboardNav items={adm} admin/></>}<div className="side-foot"><span className="status-dot"/> Operação normal</div></aside><main className="app-main">{children}</main></div>
+ const content=[['Admin Home','/admin',LayoutDashboard],['Cursos & Trilhas','/admin/cursos',Layers3],['Biblioteca de Aulas','/admin/aulas',BookOpen],['Cyber Labs','/admin/labs',Boxes],['Challenges','/admin/desafios',Wrench],['CTF Control','/admin/ctf',RadioTower]] as const
+ const ops=[['Usuários','/admin/usuarios',UsersRound],['Matrículas','/admin/matriculas',GraduationCap],['Pagamentos','/admin/pagamentos',CreditCard],['Configurações','/admin/site',Settings]] as const
+ return <div className="app-shell"><aside className="sidebar"><div className="side-brand"><span className="brand-mark">F</span><div><strong>FORTIFYSEC</strong><small>{admin?'OPERATIONS CONSOLE':'CYBER RANGE'}</small></div></div><div className="side-label">PLATAFORMA</div><DashboardNav items={main}/>{admin&&<><div className="side-label admin-label">CONTEÚDO & RANGE</div><DashboardNav items={content} admin/><div className="side-label admin-label">OPERAÇÃO</div><DashboardNav items={ops} admin/></>}<div className="side-foot"><span className="status-dot"/> Operação normal</div></aside><main className="app-main">{children}</main></div>
 }
