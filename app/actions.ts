@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireAdmin, requireUser } from '@/lib/auth'
+import { ensureApplicationProfile } from '@/lib/profile-sync'
 
 function asBool(v:FormDataEntryValue|null){return String(v||'false')==='true'}
 function safeExternalUrl(value:string){try{const u=new URL(value);return u.protocol==='https:'||u.protocol==='http:'?u.toString():null}catch{return null}}
@@ -21,18 +22,25 @@ export async function loginAction(formData: FormData) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (!error && data.user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role,blocked')
-      .eq('id', data.user.id)
-      .maybeSingle()
+    const synced = await ensureApplicationProfile(data.user)
+
+    // Se a sincronização server-side estiver indisponível, ainda tentamos a leitura do próprio perfil.
+    let profile = synced
+    if (!profile) {
+      const own = await supabase
+        .from('profiles')
+        .select('role,blocked')
+        .eq('id', data.user.id)
+        .maybeSingle()
+      profile = own.data
+    }
 
     if (profile?.blocked) {
       await supabase.auth.signOut()
       redirect('/login?erro=' + encodeURIComponent('Esta conta está temporariamente indisponível.'))
     }
 
-    redirect(profile?.role === 'admin' ? '/admin' : '/dashboard')
+    redirect(String(profile?.role) === 'admin' ? '/admin' : '/dashboard')
   }
 
   const authMessage = String(error?.message || '').toLowerCase()
@@ -43,9 +51,6 @@ export async function loginAction(formData: FormData) {
     redirect('/login?erro=' + encodeURIComponent('Muitas tentativas. Aguarde um pouco e tente novamente.'))
   }
 
-  // Se a autenticação falhar, verificamos no servidor se o e-mail já pertence
-  // a uma conta. Assim, e-mail novo segue para cadastro; conta existente com
-  // senha incorreta permanece no login.
   let accountExists = true
   try {
     const admin = createAdminClient()
@@ -56,8 +61,6 @@ export async function loginAction(formData: FormData) {
       .maybeSingle()
     accountExists = Boolean(existingProfile)
   } catch {
-    // Sem chave administrativa/configuração disponível, mantemos mensagem
-    // genérica em vez de bloquear o login por causa da checagem auxiliar.
     accountExists = true
   }
 
@@ -69,26 +72,50 @@ export async function loginAction(formData: FormData) {
 }
 
 export async function adminLoginAction(formData: FormData) {
-  const email=String(formData.get('email')||'').trim().toLowerCase()
-  const password=String(formData.get('password')||'')
-  const supabase=await createClient()
-  const {data,error}=await supabase.auth.signInWithPassword({email,password})
-  if(error||!data.user) redirect('/admin/login?erro='+encodeURIComponent('Credenciais inválidas.'))
-  const {data:profile}=await supabase.from('profiles').select('role,blocked').eq('id',data.user.id).maybeSingle()
-  if(profile?.blocked){await supabase.auth.signOut();redirect('/admin/login?erro='+encodeURIComponent('Esta conta está temporariamente indisponível.'))}
-  if(profile?.role!=='admin'){
-    await supabase.auth.signOut()
-    redirect('/admin/login?erro='+encodeURIComponent('Esta conta não possui acesso administrativo.'))
+  const email = String(formData.get('email') || '').trim().toLowerCase()
+  const password = String(formData.get('password') || '')
+  const supabase = await createClient()
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+
+  if (error || !data.user) {
+    redirect('/admin/login?erro=' + encodeURIComponent('Credenciais inválidas.'))
   }
+
+  const profile = await ensureApplicationProfile(data.user)
+  if (!profile) {
+    await supabase.auth.signOut()
+    redirect('/admin/login?erro=' + encodeURIComponent('Perfil administrativo não está sincronizado. Execute o patch de usuários no Supabase.'))
+  }
+  if (profile.blocked) {
+    await supabase.auth.signOut()
+    redirect('/admin/login?erro=' + encodeURIComponent('Esta conta está temporariamente indisponível.'))
+  }
+  if (String(profile.role) !== 'admin') {
+    await supabase.auth.signOut()
+    redirect('/admin/login?erro=' + encodeURIComponent('Esta conta existe, mas ainda não possui role admin.'))
+  }
+
   redirect('/admin')
 }
 export async function registerAction(formData: FormData) {
-  const name=String(formData.get('name')||'').trim(); const email=String(formData.get('email')||'').trim().toLowerCase(); const password=String(formData.get('password')||'')
-  if(name.length<2||password.length<8) redirect('/cadastro?erro='+encodeURIComponent('Informe nome e senha com pelo menos 8 caracteres'))
-  const supabase=await createClient(); const site=process.env.NEXT_PUBLIC_SITE_URL||'http://localhost:3000'
-  const {error}=await supabase.auth.signUp({email,password,options:{data:{name},emailRedirectTo:`${site}/auth/callback`}})
-  if(error) redirect('/cadastro?erro='+encodeURIComponent(error.message))
-  redirect('/login?sucesso='+encodeURIComponent('Cadastro realizado. Confirme seu e-mail para entrar.'))
+  const name = String(formData.get('name') || '').trim()
+  const email = String(formData.get('email') || '').trim().toLowerCase()
+  const password = String(formData.get('password') || '')
+  if (name.length < 2 || password.length < 8) {
+    redirect('/cadastro?erro=' + encodeURIComponent('Informe nome e senha com pelo menos 8 caracteres'))
+  }
+
+  const supabase = await createClient()
+  const site = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { data: { name }, emailRedirectTo: `${site}/auth/callback` },
+  })
+  if (error) redirect('/cadastro?erro=' + encodeURIComponent(error.message))
+
+  if (data.user) await ensureApplicationProfile(data.user)
+  redirect('/login?sucesso=' + encodeURIComponent('Cadastro realizado. Confirme seu e-mail para entrar.'))
 }
 export async function resetPasswordAction(formData: FormData) {const email=String(formData.get('email')||'').trim().toLowerCase();const supabase=await createClient();const site=process.env.NEXT_PUBLIC_SITE_URL||'http://localhost:3000';await supabase.auth.resetPasswordForEmail(email,{redirectTo:`${site}/auth/callback?next=/atualizar-senha`});redirect('/recuperar-senha?sucesso=1')}
 export async function updatePasswordAction(formData: FormData) {const password=String(formData.get('password')||'');if(password.length<8) redirect('/atualizar-senha?erro=Senha%20muito%20curta');const supabase=await createClient();const {error}=await supabase.auth.updateUser({password});if(error) redirect('/atualizar-senha?erro='+encodeURIComponent(error.message));redirect('/dashboard')}
