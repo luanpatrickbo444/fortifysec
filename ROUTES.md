@@ -1,3 +1,9 @@
+# V7.4 — rota principal
+
+- `/` — Academy (rewrite interno para `/academy`, URL permanece `/`)
+- `/academy` — Academy
+- `/planos` — Planos
+
 # FortifySec V7.1 — Rotas
 
 ## Público
