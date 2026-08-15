@@ -1,7 +1,5 @@
 import './globals.css'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
-import { hasSupabasePublicConfig } from '@/lib/supabase/config'
 import { getPlatformSettings } from '@/lib/site-settings'
 
 export const metadata = {
@@ -11,25 +9,7 @@ export const metadata = {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  let authenticated = false
-  let authenticatedDestination = '/dashboard'
   const platform = await getPlatformSettings()
-
-  if (hasSupabasePublicConfig()) {
-    try {
-      const supabase = await createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      authenticated = Boolean(user)
-      if (user) {
-        const { data: profile } = await supabase.from('profiles').select('role,blocked').eq('id', user.id).maybeSingle()
-        authenticatedDestination = profile?.blocked ? '/bloqueado' : profile?.role === 'admin' ? '/admin' : '/dashboard'
-      }
-    } catch (error) {
-      console.error('[FortifySec] Supabase auth check failed in root layout:', error)
-    }
-  }
 
   return (
     <html lang="pt-BR">
@@ -46,15 +26,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Link href="/ctf">CTF</Link>
               <Link href="/planos">Planos</Link>
               <Link href="/talentos">Talentos</Link>
-              {authenticated ? (
-                <Link className="nav-cta" href={authenticatedDestination}>
-                  ENTRAR NO RANGE
-                </Link>
-              ) : (
-                <Link className="nav-cta" href="/login">
-                  LOGIN
-                </Link>
-              )}
+              <Link className="nav-cta" href="/login">LOGIN</Link>
             </nav>
           </div>
         </header>

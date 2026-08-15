@@ -10,14 +10,62 @@ function safeExternalUrl(value:string){try{const u=new URL(value);return u.proto
 function safeAdminReturn(value:FormDataEntryValue|null,fallback='/admin'){const v=String(value||'');return v.startsWith('/admin/')||v==='/admin'?v:fallback}
 
 export async function loginAction(formData: FormData) {
-  const email=String(formData.get('email')||'').trim().toLowerCase()
-  const password=String(formData.get('password')||'')
-  const supabase=await createClient()
-  const {data,error}=await supabase.auth.signInWithPassword({email,password})
-  if(error||!data.user) redirect('/login?erro='+encodeURIComponent('E-mail ou senha inválidos'))
-  const {data:profile}=await supabase.from('profiles').select('role,blocked').eq('id',data.user.id).maybeSingle()
-  if(profile?.blocked){await supabase.auth.signOut();redirect('/login?erro='+encodeURIComponent('Esta conta está temporariamente indisponível.'))}
-  redirect(profile?.role==='admin'?'/admin':'/dashboard')
+  const email = String(formData.get('email') || '').trim().toLowerCase()
+  const password = String(formData.get('password') || '')
+
+  if (!email || !password) {
+    redirect('/login?erro=' + encodeURIComponent('Informe e-mail e senha.'))
+  }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+
+  if (!error && data.user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role,blocked')
+      .eq('id', data.user.id)
+      .maybeSingle()
+
+    if (profile?.blocked) {
+      await supabase.auth.signOut()
+      redirect('/login?erro=' + encodeURIComponent('Esta conta está temporariamente indisponível.'))
+    }
+
+    redirect(profile?.role === 'admin' ? '/admin' : '/dashboard')
+  }
+
+  const authMessage = String(error?.message || '').toLowerCase()
+  if (authMessage.includes('email not confirmed') || authMessage.includes('email_not_confirmed')) {
+    redirect('/login?erro=' + encodeURIComponent('Confirme seu e-mail antes de entrar.'))
+  }
+  if (authMessage.includes('rate limit') || authMessage.includes('too many')) {
+    redirect('/login?erro=' + encodeURIComponent('Muitas tentativas. Aguarde um pouco e tente novamente.'))
+  }
+
+  // Se a autenticação falhar, verificamos no servidor se o e-mail já pertence
+  // a uma conta. Assim, e-mail novo segue para cadastro; conta existente com
+  // senha incorreta permanece no login.
+  let accountExists = true
+  try {
+    const admin = createAdminClient()
+    const { data: existingProfile } = await admin
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle()
+    accountExists = Boolean(existingProfile)
+  } catch {
+    // Sem chave administrativa/configuração disponível, mantemos mensagem
+    // genérica em vez de bloquear o login por causa da checagem auxiliar.
+    accountExists = true
+  }
+
+  if (!accountExists) {
+    redirect('/cadastro?novo=1&email=' + encodeURIComponent(email))
+  }
+
+  redirect('/login?erro=' + encodeURIComponent('Senha incorreta. Tente novamente ou recupere sua senha.'))
 }
 
 export async function adminLoginAction(formData: FormData) {
