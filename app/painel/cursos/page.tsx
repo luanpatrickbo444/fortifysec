@@ -20,7 +20,7 @@ export default async function Cursos(){
  const activeCount=(enrollments||[]).filter((e:any)=>e.status==='active').length
 
  return <DashboardShell admin={profile?.role==='admin'}>
-  <div className="page-head internal-page-head"><div><div className="kicker">ACADEMY / COURSES</div><h1>FortifySec Academy</h1><p>Trilhas técnicas com progresso validado pelo servidor e acesso protegido por matrícula.</p></div><div className="head-stats"><span className="pill active"><BookOpenCheck size={13}/> {activeCount} ATIVAS</span><span className="pill"><Zap size={13}/> {profile?.xp||0} XP</span></div></div>
+  <div className="page-head internal-page-head"><div><div className="kicker">ACADEMY / COURSES</div><h1>FortifySec Academy</h1><p>Trilhas técnicas com progresso, XP e continuidade entre Academy e Cyber Range.</p></div><div className="head-stats"><span className="pill active"><BookOpenCheck size={13}/> {activeCount} ATIVAS</span><span className="pill"><Zap size={13}/> {profile?.xp||0} XP</span></div></div>
   <div className="coursegrid enhanced-grid">{(courses||[]).map((c:any)=>{
     const status=enrollmentMap.get(c.id);const active=status==='active';const ids=lessonIdsByCourse.get(c.id)||[];const completed=ids.filter(id=>done.has(id)).length;const pct=active&&ids.length?Math.round(completed/ids.length*100):0
     return <article className={`coursecard product-card ${active?'is-active':''}`} key={c.id}>

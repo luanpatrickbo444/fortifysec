@@ -35,3 +35,11 @@ Configure as variáveis de ambiente conforme `.env.example` e `VERCEL_CHECKLIST.
 - flags são verificadas server-side;
 - endpoint de Lab só é obtido depois de autorização;
 - Service Role/Secret Key é somente server-side.
+
+## V6 — Login admin e Academy completa
+
+- Login geral redireciona por `profiles.role`: `admin` → `/admin`, estudante → `/painel`.
+- Gateway administrativo dedicado: `/admin/login`.
+- Para a primeira conta admin, execute `supabase/ADMIN_SETUP.sql` após criar e confirmar o usuário.
+- A página `/academy` contém 6 trilhas, 37 cursos e 633 horas.
+- Textos públicos foram revisados para comunicar benefícios e jornada, sem expor regras internas de RLS/webhook/liberação.

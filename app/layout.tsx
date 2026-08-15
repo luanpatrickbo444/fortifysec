@@ -11,6 +11,7 @@ export const metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let authenticated = false
+  let authenticatedDestination = '/painel'
 
   if (hasSupabasePublicConfig()) {
     try {
@@ -19,6 +20,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         data: { user },
       } = await supabase.auth.getUser()
       authenticated = Boolean(user)
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('role,blocked').eq('id', user.id).maybeSingle()
+        authenticatedDestination = profile?.blocked ? '/bloqueado' : profile?.role === 'admin' ? '/admin' : '/painel'
+      }
     } catch (error) {
       console.error('[FortifySec] Supabase auth check failed in root layout:', error)
     }
@@ -40,7 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Link href="/planos">Planos</Link>
               <Link href="/talentos">Talentos</Link>
               {authenticated ? (
-                <Link className="nav-cta" href="/painel">
+                <Link className="nav-cta" href={authenticatedDestination}>
                   ENTRAR NO RANGE
                 </Link>
               ) : (

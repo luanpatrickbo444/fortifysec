@@ -26,6 +26,8 @@
 - `/painel/perfil` — perfil técnico, XP e Talent Network
 
 ## Administração
+
+- `/admin/login` — acesso administrativo dedicado
 - `/admin` — dashboard
 - `/admin/cursos` — cursos
 - `/admin/aulas` — Content Studio / postagem de aulas

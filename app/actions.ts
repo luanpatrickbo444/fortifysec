@@ -9,10 +9,29 @@ function asBool(v:FormDataEntryValue|null){return String(v||'false')==='true'}
 function safeExternalUrl(value:string){try{const u=new URL(value);return u.protocol==='https:'||u.protocol==='http:'?u.toString():null}catch{return null}}
 
 export async function loginAction(formData: FormData) {
-  const email=String(formData.get('email')||'').trim().toLowerCase(); const password=String(formData.get('password')||'')
-  const supabase=await createClient(); const {error}=await supabase.auth.signInWithPassword({email,password})
-  if(error) redirect('/login?erro='+encodeURIComponent('E-mail ou senha inválidos'))
-  redirect('/painel')
+  const email=String(formData.get('email')||'').trim().toLowerCase()
+  const password=String(formData.get('password')||'')
+  const supabase=await createClient()
+  const {data,error}=await supabase.auth.signInWithPassword({email,password})
+  if(error||!data.user) redirect('/login?erro='+encodeURIComponent('E-mail ou senha inválidos'))
+  const {data:profile}=await supabase.from('profiles').select('role,blocked').eq('id',data.user.id).maybeSingle()
+  if(profile?.blocked){await supabase.auth.signOut();redirect('/login?erro='+encodeURIComponent('Esta conta está temporariamente indisponível.'))}
+  redirect(profile?.role==='admin'?'/admin':'/painel')
+}
+
+export async function adminLoginAction(formData: FormData) {
+  const email=String(formData.get('email')||'').trim().toLowerCase()
+  const password=String(formData.get('password')||'')
+  const supabase=await createClient()
+  const {data,error}=await supabase.auth.signInWithPassword({email,password})
+  if(error||!data.user) redirect('/admin/login?erro='+encodeURIComponent('Credenciais inválidas.'))
+  const {data:profile}=await supabase.from('profiles').select('role,blocked').eq('id',data.user.id).maybeSingle()
+  if(profile?.blocked){await supabase.auth.signOut();redirect('/admin/login?erro='+encodeURIComponent('Esta conta está temporariamente indisponível.'))}
+  if(profile?.role!=='admin'){
+    await supabase.auth.signOut()
+    redirect('/admin/login?erro='+encodeURIComponent('Esta conta não possui acesso administrativo.'))
+  }
+  redirect('/admin')
 }
 export async function registerAction(formData: FormData) {
   const name=String(formData.get('name')||'').trim(); const email=String(formData.get('email')||'').trim().toLowerCase(); const password=String(formData.get('password')||'')
