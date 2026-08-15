@@ -1,17 +1,3 @@
-import './panel.css'
-import { DashboardShell } from '@/components/DashboardShell'
-import { requireUser } from '@/lib/auth'
-
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
-export default async function PainelLayout({ children }: { children: React.ReactNode }) {
-  const { supabase, user } = await requireUser()
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle()
-
-  return <DashboardShell admin={String(profile?.role || '') === 'admin'}>{children}</DashboardShell>
+export default function SectionLayout({ children }: { children: React.ReactNode }) {
+  return children
 }
