@@ -24,15 +24,26 @@ export async function loginAction(formData: FormData) {
   if (!error && data.user) {
     const synced = await ensureApplicationProfile(data.user)
 
-    // Se a sincronização server-side estiver indisponível, ainda tentamos a leitura do próprio perfil.
-    let profile = synced
+    // O login só precisa destes campos para decidir acesso e destino.
+    // Usar um tipo mínimo evita incompatibilidade entre o perfil completo
+    // retornado pela sincronização e o fallback consultado pelo próprio usuário.
+    let profile: { role: string | null; blocked: boolean | null } | null = synced
+      ? { role: synced.role, blocked: synced.blocked }
+      : null
+
     if (!profile) {
       const own = await supabase
         .from('profiles')
         .select('role,blocked')
         .eq('id', data.user.id)
         .maybeSingle()
+
       profile = own.data
+        ? {
+            role: own.data.role == null ? null : String(own.data.role),
+            blocked: own.data.blocked == null ? null : Boolean(own.data.blocked),
+          }
+        : null
     }
 
     if (profile?.blocked) {
@@ -78,24 +89,24 @@ export async function adminLoginAction(formData: FormData) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error || !data.user) {
-    redirect('/admin/login?erro=' + encodeURIComponent('Credenciais inválidas.'))
+    return redirect('/admin/login?erro=' + encodeURIComponent('Credenciais inválidas.'))
   }
 
   const profile = await ensureApplicationProfile(data.user)
   if (!profile) {
     await supabase.auth.signOut()
-    redirect('/admin/login?erro=' + encodeURIComponent('Perfil administrativo não está sincronizado. Execute o patch de usuários no Supabase.'))
+    return redirect('/admin/login?erro=' + encodeURIComponent('Perfil administrativo não está sincronizado. Execute o patch de usuários no Supabase.'))
   }
   if (profile.blocked) {
     await supabase.auth.signOut()
-    redirect('/admin/login?erro=' + encodeURIComponent('Esta conta está temporariamente indisponível.'))
+    return redirect('/admin/login?erro=' + encodeURIComponent('Esta conta está temporariamente indisponível.'))
   }
   if (String(profile.role) !== 'admin') {
     await supabase.auth.signOut()
-    redirect('/admin/login?erro=' + encodeURIComponent('Esta conta existe, mas ainda não possui role admin.'))
+    return redirect('/admin/login?erro=' + encodeURIComponent('Esta conta existe, mas ainda não possui role admin.'))
   }
 
-  redirect('/admin')
+  return redirect('/admin')
 }
 export async function registerAction(formData: FormData) {
   const name = String(formData.get('name') || '').trim()
