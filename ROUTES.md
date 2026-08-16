@@ -50,3 +50,13 @@
 - `/painel/labs/[slug]` — workspace do Lab; exige matrícula ativa para aluno.
 - `/painel/desafios` — missões/Challenges; exige acesso ativo da plataforma.
 - `/painel/desafios/[slug]` — detalhe e submissão de flag.
+
+## V8.1 — Employer Console
+- `/empresa/login` — login empresarial redesenhado.
+- `/empresa/cadastro` — criação de conta empresarial.
+- `/empresa` — Command Center da empresa.
+- `/empresa/vagas` — gestão e filtros de vagas.
+- `/empresa/vagas/nova` — cadastro de vaga/rascunho.
+- `/empresa/vagas/[id]/editar` — edição da oportunidade.
+- `/empresa/talentos` — Talent Search e shortlist empresarial.
+- `/empresa/candidatos` — pipeline e gestão de candidaturas.

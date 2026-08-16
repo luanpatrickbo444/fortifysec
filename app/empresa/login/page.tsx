@@ -1,9 +1,43 @@
 import Link from 'next/link'
-import { Building2, ShieldCheck } from 'lucide-react'
+import { KeyRound, ShieldCheck } from 'lucide-react'
 import { companyLoginAction } from '@/app/actions'
+import { CompanyAuthShell } from '@/components/CompanyAuthShell'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 
 export default async function CompanyLogin({searchParams}:{searchParams:Promise<{erro?:string,sucesso?:string}>}){
- const q=await searchParams
- return <main className="auth-page"><section className="auth-card"><div className="auth-mark"><Building2 size={26}/></div><div className="kicker">FORTIFYSEC / EMPLOYER</div><h1>Área da empresa</h1><p className="muted">Acesse para publicar vagas e acompanhar candidatos.</p>{q.erro&&<div className="alert danger-alert">{q.erro}</div>}{q.sucesso&&<div className="alert success-alert">{q.sucesso}</div>}<form action={companyLoginAction}><div className="field"><label>E-mail corporativo</label><input type="email" name="email" required autoComplete="email"/></div><div className="field"><label>Senha</label><input type="password" name="password" required autoComplete="current-password"/></div><SubmitButton className="btn full-btn" idleLabel="ENTRAR COMO EMPRESA →" pendingLabel="AUTENTICANDO..."/></form><div className="security-note"><ShieldCheck size={14}/><span>Empresas precisam ser validadas antes de publicar vagas.</span></div><p className="auth-foot">Ainda não cadastrou a empresa? <Link href="/empresa/cadastro">Criar conta empresarial</Link></p></section></main>
+  const q=await searchParams
+
+  return (
+    <CompanyAuthShell
+      eyebrow="FORTIFYSEC / EMPLOYER"
+      title="Área da empresa"
+      description="Entre no Employer Console para gerenciar vagas, candidatos e talentos."
+    >
+      {q.erro&&<div className="alert danger-alert">{q.erro}</div>}
+      {q.sucesso&&<div className="alert success-alert">{q.sucesso}</div>}
+
+      <form action={companyLoginAction} className="company-auth-form">
+        <div className="field">
+          <label>E-mail corporativo</label>
+          <input type="email" name="email" required autoComplete="email" placeholder="voce@empresa.com.br"/>
+        </div>
+        <div className="field">
+          <label>Senha</label>
+          <input type="password" name="password" required autoComplete="current-password" placeholder="••••••••"/>
+        </div>
+        <SubmitButton className="btn full-btn company-login-btn" idleLabel="ENTRAR NO EMPLOYER CONSOLE →" pendingLabel="AUTENTICANDO..."/>
+      </form>
+
+      <div className="company-security-note">
+        <ShieldCheck size={15}/>
+        <span>Publicações ficam disponíveis somente após a validação da empresa.</span>
+      </div>
+
+      <div className="company-auth-switch">
+        <KeyRound size={14}/>
+        <span>Ainda não tem acesso?</span>
+        <Link href="/empresa/cadastro">CRIAR CONTA EMPRESARIAL</Link>
+      </div>
+    </CompanyAuthShell>
+  )
 }
