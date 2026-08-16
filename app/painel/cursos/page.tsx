@@ -28,7 +28,7 @@ export default async function Cursos(){
         <div className="panel-head"><span className={`pill ${active?'active':status==='pending'?'locked':''}`}>{active?'ACESSO ATIVO':status==='pending'?'PAGAMENTO PENDENTE':'LOCKED'}</span><span className="mono tiny-label">{active?`${completed}/${ids.length} AULAS`:'PREMIUM'}</span></div>
         <h3>{c.title}</h3><p className="muted card-copy">{c.description}</p>
         {active&&<><div className="progress course-progress"><span style={{width:`${pct}%`}}/></div><div className="progress-caption"><span>{completed} concluídas</span><span>{pct}%</span></div></>}
-        <div className="card-actions">{active?<Link className="btn" href={`/curso/${c.slug}`}>{pct>0?'CONTINUAR TRILHA':'INICIAR TRILHA'} →</Link>:status==='pending'?<button className="btn secondary" disabled>AGUARDANDO PAGAMENTO</button>:<CheckoutForm courseId={c.id} label={`COMPRAR · R$ ${(displayPriceCents/100).toFixed(2).replace('.',',')}`}/>}</div>
+        <div className="card-actions">{active?<Link className="btn" href={`/painel/curso/${c.slug}`}>{pct>0?'CONTINUAR TRILHA':'INICIAR TRILHA'} →</Link>:status==='pending'?<button className="btn secondary" disabled>AGUARDANDO PAGAMENTO</button>:<CheckoutForm courseId={c.id} label={`COMPRAR · R$ ${(displayPriceCents/100).toFixed(2).replace('.',',')}`}/>}</div>
       </div>
     </article>
   })}</div>

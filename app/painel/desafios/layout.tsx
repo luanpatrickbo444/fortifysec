@@ -1,3 +1,3 @@
-export default function SectionLayout({ children }: { children: React.ReactNode }) {
+export default function ChallengesLayout({ children }: { children: React.ReactNode }) {
   return children
 }

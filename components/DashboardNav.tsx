@@ -16,7 +16,7 @@ export function DashboardNav({
   return (
     <nav className={`side-nav${admin ? ' admin-nav' : ''}`}>
       {items.map(([label, href, Icon]) => {
-        const active = pathname === href || (href !== '/dashboard' && href !== '/admin' && pathname.startsWith(`${href}/`))
+        const active = pathname === href || (href !== '/painel' && href !== '/admin' && pathname.startsWith(`${href}/`))
         return (
           <Link key={href} href={href} className={active ? 'active' : ''} aria-current={active ? 'page' : undefined}>
             <Icon size={17} />
