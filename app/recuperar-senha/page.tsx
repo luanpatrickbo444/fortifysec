@@ -1,2 +1,2 @@
-import { resetPasswordAction } from '@/lib/actions'
+import { resetPasswordAction } from '@/app/actions'
 export default async function Reset({searchParams}:{searchParams:Promise<{sucesso?:string}>}){const p=await searchParams;return <div className="authwrap"><div className="authcard"><h1>Recuperar senha</h1>{p.sucesso?<p className="success">Se a conta existir, enviaremos um link de recuperação.</p>:<form action={resetPasswordAction}><div className="field"><label>E-mail</label><input required type="email" name="email"/></div><button className="btn">Enviar link</button></form>}</div></div>}

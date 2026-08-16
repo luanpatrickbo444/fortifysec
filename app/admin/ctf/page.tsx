@@ -2,7 +2,7 @@ import { Flag, Link2, RadioTower, Trophy, Unlink } from 'lucide-react'
 import { DashboardShell } from '@/components/DashboardShell'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireAdmin } from '@/lib/auth'
-import { adminCreateCtfAction, adminLinkChallengeToCtfAction, adminUnlinkChallengeFromCtfAction, adminUpdateCtfStatusAction } from '@/lib/actions'
+import { adminCreateCtfAction, adminLinkChallengeToCtfAction, adminUnlinkChallengeFromCtfAction, adminUpdateCtfStatusAction } from '@/app/actions'
 
 export default async function AdminCtf(){
  const {supabase}=await requireAdmin();const [{data:events},{data:challenges},{data:links}]=await Promise.all([

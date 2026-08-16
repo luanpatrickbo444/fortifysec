@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { LockKeyhole, ShieldCheck } from 'lucide-react'
-import { loginAction } from '@/lib/actions'
+import { loginAction } from '@/app/actions'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 
 export default async function Login({searchParams}:{searchParams:Promise<{erro?:string,sucesso?:string}>}){

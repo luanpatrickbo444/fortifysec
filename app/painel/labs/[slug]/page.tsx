@@ -3,7 +3,7 @@ import { Clock3, Copy, Crosshair, Network, Power, Radio, ShieldCheck, TerminalSq
 import { DifficultyMeter } from '@/components/ui/DifficultyMeter'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireUser } from '@/lib/auth'
-import { startLabAction, stopLabAction } from '@/lib/actions'
+import { startLabAction, stopLabAction } from '@/app/actions'
 import { getPlatformAccess } from '@/lib/platform-access'
 
 export default async function LabPage({params,searchParams}:{params:Promise<{slug:string}>,searchParams:Promise<{erro?:string}>}){

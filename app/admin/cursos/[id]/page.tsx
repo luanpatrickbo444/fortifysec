@@ -4,7 +4,7 @@ import { BookOpenCheck, Eye, EyeOff, Film, Layers3, PlusCircle, Save, Trash2, Za
 import { DashboardShell } from '@/components/DashboardShell'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireAdmin } from '@/lib/auth'
-import { adminCreateLessonAction, adminCreateModuleAction, adminDeleteLessonAction, adminToggleLessonAction, adminToggleModuleAction, adminUpdateCourseAction } from '@/lib/actions'
+import { adminCreateLessonAction, adminCreateModuleAction, adminDeleteLessonAction, adminToggleLessonAction, adminToggleModuleAction, adminUpdateCourseAction } from '@/app/actions'
 
 export default async function CourseStudio({params,searchParams}:{params:Promise<{id:string}>,searchParams:Promise<{criada?:string,modulo?:string,erro?:string}>}){
  const {id}=await params;const query=await searchParams;const {supabase}=await requireAdmin()

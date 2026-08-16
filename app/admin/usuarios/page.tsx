@@ -2,7 +2,7 @@ import { ShieldCheck, UserCog, UsersRound } from 'lucide-react'
 import { DashboardShell } from '@/components/DashboardShell'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireAdmin } from '@/lib/auth'
-import { adminSetUserRoleAction, adminToggleUserAction } from '@/lib/actions'
+import { adminSetUserRoleAction, adminToggleUserAction } from '@/app/actions'
 
 export default async function AdminUsers(){
  const {supabase,user}=await requireAdmin();const {data:users}=await supabase.from('profiles').select('id,name,email,role,blocked,xp,created_at').order('created_at',{ascending:false})

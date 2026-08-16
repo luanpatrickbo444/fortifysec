@@ -1,16 +1,23 @@
-import { DashboardShell } from '@/components/DashboardShell'
-import { requireUser } from '@/lib/auth'
+import './globals.css'
+import { getPlatformSettings } from '@/lib/site-settings'
+import { SiteHeader } from '@/components/SiteHeader'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+export const metadata = {
+  title: 'FortifySec — Learn. Hack. Prove.',
+  description: 'Academy, cyber labs, challenges, CTF e ranking técnico em uma única plataforma.',
+}
 
-export default async function PainelLayout({ children }: { children: React.ReactNode }) {
-  const { supabase, user } = await requireUser()
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle()
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const platform = await getPlatformSettings()
 
-  return <DashboardShell admin={String(profile?.role || '') === 'admin'}>{children}</DashboardShell>
+  return (
+    <html lang="pt-BR">
+      <body>
+        <SiteHeader />
+        {platform.announcement && <div className="announcement-bar"><span>FORTIFYSEC // NOTICE</span>{platform.announcement}</div>}
+        {platform.maintenance_mode && <div className="maintenance-bar">PLATAFORMA EM MANUTENÇÃO PROGRAMADA</div>}
+        {children}
+      </body>
+    </html>
+  )
 }

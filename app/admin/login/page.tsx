@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Activity, KeyRound, LockKeyhole, ShieldCheck, TerminalSquare } from 'lucide-react'
-import { adminLoginAction } from '@/lib/actions'
+import { adminLoginAction } from '@/app/actions'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 
 export default async function AdminLogin({searchParams}:{searchParams:Promise<{erro?:string}>}){

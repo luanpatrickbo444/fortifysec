@@ -1,2 +1,2 @@
-import { updatePasswordAction } from '@/lib/actions'
+import { updatePasswordAction } from '@/app/actions'
 export default async function Update({searchParams}:{searchParams:Promise<{erro?:string}>}){const p=await searchParams;return <div className="authwrap"><div className="authcard"><h1>Definir nova senha</h1>{p.erro&&<p className="error">{p.erro}</p>}<form action={updatePasswordAction}><div className="field"><label>Nova senha</label><input required minLength={8} type="password" name="password"/></div><button className="btn">Atualizar senha</button></form></div></div>}

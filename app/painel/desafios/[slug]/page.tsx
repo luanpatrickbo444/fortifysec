@@ -3,7 +3,7 @@ import { CheckCircle2, Flag, ShieldCheck, Swords, TerminalSquare } from 'lucide-
 import { DifficultyMeter } from '@/components/ui/DifficultyMeter'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireUser } from '@/lib/auth'
-import { submitChallengeAction } from '@/lib/actions'
+import { submitChallengeAction } from '@/app/actions'
 import { getPlatformAccess } from '@/lib/platform-access'
 
 export default async function ChallengePage({params,searchParams}:{params:Promise<{slug:string}>,searchParams:Promise<{result?:string}>}){

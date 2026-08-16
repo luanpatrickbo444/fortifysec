@@ -3,7 +3,7 @@ import { DashboardShell } from '@/components/DashboardShell'
 import { DifficultyMeter } from '@/components/ui/DifficultyMeter'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireAdmin } from '@/lib/auth'
-import { adminCreateChallengeAction, adminToggleChallengePublishedAction } from '@/lib/actions'
+import { adminCreateChallengeAction, adminToggleChallengePublishedAction } from '@/app/actions'
 
 export default async function AdminChallenges(){
  const {supabase}=await requireAdmin();const {data:rows}=await supabase.from('challenges').select('id,title,slug,description,category,difficulty,xp_reward,published').order('created_at',{ascending:false})

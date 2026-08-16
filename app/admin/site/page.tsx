@@ -2,7 +2,7 @@ import { Megaphone, Save, Settings, ShieldAlert } from 'lucide-react'
 import { DashboardShell } from '@/components/DashboardShell'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireAdmin } from '@/lib/auth'
-import { adminUpdateSiteSettingsAction } from '@/lib/actions'
+import { adminUpdateSiteSettingsAction } from '@/app/actions'
 
 export default async function AdminSite(){
  const {supabase}=await requireAdmin();const {data:row}=await supabase.from('site_settings').select('value,updated_at').eq('key','platform').maybeSingle();const v:any=row?.value||{}
