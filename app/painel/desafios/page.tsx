@@ -1,40 +1,129 @@
 import Link from 'next/link'
-import { notFound, redirect } from 'next/navigation'
-import { CheckCircle2, Download, Flag, Network, Power, ShieldCheck, Swords, TerminalSquare } from 'lucide-react'
+import { CheckCircle2, GraduationCap, LockKeyhole, Swords, Trophy, Zap, Flag, Target, ArrowRight } from 'lucide-react'
 import { DifficultyMeter } from '@/components/ui/DifficultyMeter'
-import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireUser } from '@/lib/auth'
-import { startChallengeTargetAction, stopChallengeTargetAction, submitChallengeAction } from '@/app/actions'
 import { getPlatformAccess } from '@/lib/platform-access'
-import { createAdminClient } from '@/lib/supabase/admin'
 
-export default async function ChallengePage({params,searchParams}:{params:Promise<{slug:string}>,searchParams:Promise<{result?:string,ctf?:string}>}){
- const {slug}=await params;const query=await searchParams;const {user,supabase}=await requireUser();const eventId=String(query.ctf||'')
- const access=await getPlatformAccess(user.id)
- if(!access.canAccessCyberRange)redirect('/painel/desafios')
- const {data:c}=await supabase.from('challenges').select('id,title,slug,description,category,difficulty,xp_reward,briefing,lab_id').eq('slug',slug).eq('published',true).maybeSingle()
- if(!c)notFound()
- const admin=createAdminClient()
- const [{data:solve},{data:lab},{data:session},{data:eventLink}]=await Promise.all([
-  supabase.from('challenge_solves').select('id,solved_at').eq('user_id',user.id).eq('challenge_id',c.id).maybeSingle(),
-  c.lab_id?admin.from('labs').select('id,title,estimated_minutes,published').eq('id',c.lab_id).maybeSingle():Promise.resolve({data:null} as any),
-  c.lab_id?admin.from('lab_sessions').select('id,status,started_at,expires_at,target_address,vpn_download_url,connection_url').eq('user_id',user.id).eq('lab_id',c.lab_id).eq('status','running').gt('expires_at',new Date().toISOString()).order('started_at',{ascending:false}).limit(1).maybeSingle():Promise.resolve({data:null} as any),
-  eventId?admin.from('ctf_event_challenges').select('event_id,challenge_id,ctf_events(id,title,status,starts_at,ends_at)').eq('event_id',eventId).eq('challenge_id',c.id).maybeSingle():Promise.resolve({data:null} as any)
- ])
- if(eventId&&!eventLink)redirect('/painel/ctf')
- const event=Array.isArray((eventLink as any)?.ctf_events)?(eventLink as any).ctf_events[0]:(eventLink as any)?.ctf_events
- const activeCtf=Boolean(eventId&&event)
- const ctfLive=Boolean(activeCtf&&event?.status==='live'&&Date.now()>=new Date(event.starts_at).getTime()&&Date.now()<=new Date(event.ends_at).getTime())
- return <>
-   <div className="challenge-workspace-head"><div><div className="kicker">{activeCtf?`CTF / ${String(event?.title||'EVENTO').toUpperCase()}`:`MISSION / ${c.category.toUpperCase()}`}</div><h1>{c.title}</h1><p>{c.description}</p></div><div className="mission-score"><span>{activeCtf?'CTF REWARD':'REWARD'}</span><strong>+{c.xp_reward} XP</strong></div></div>
-   <div className="mission-meta-bar"><DifficultyMeter difficulty={c.difficulty}/><span className="mission-divider"/><span className="mono"><Swords size={13}/> {c.category.toUpperCase()}</span><span className="mission-divider"/><span className={`mono ${solve?'terminal-green':''}`}>{solve?'PWNED':'UNSOLVED'}</span>{activeCtf&&<><span className="mission-divider"/><Link className="mono" href={`/painel/ctf/${eventId}`}>VOLTAR AO CTF</Link></>}</div>
-   {query.result==='invalid'&&<div className="alert danger-alert">Flag inválida ou CTF indisponível. Revise a exploração e tente novamente.</div>}
-   {query.result==='provider'&&<div className="alert danger-alert">Não foi possível provisionar o alvo/VPN. Verifique o Range Provider.</div>}
-   {query.result==='solved'&&<div className="alert success-alert"><CheckCircle2 size={16}/> Flag correta. {activeCtf?'Pontuação do evento registrada.':'XP creditado no seu perfil.'}</div>}
-   <div className="challenge-workspace-grid"><section>
-     <div className="card mission-briefing"><div className="panel-head"><div><span className="section-index">01 / BRIEFING</span><h3>Objetivo da missão</h3></div><Flag size={19}/></div><p className="muted briefing-text" style={{whiteSpace:'pre-wrap'}}>{c.briefing||'Analise o cenário e encontre a flag dentro do escopo proposto. Use somente os ativos disponibilizados pela FortifySec.'}</p><div className="scope-box"><ShieldCheck size={17}/><div><strong>Escopo autorizado</strong><span>Somente ambiente disponibilizado neste Challenge.</span></div></div></div>
-     {lab&&(!activeCtf||ctfLive)&&<div className="card" style={{marginTop:18}}><div className="panel-head"><div><span className="section-index">02 / TARGET</span><h3>Alvo isolado + VPN</h3></div><Network size={19}/></div>{session?<><div className="target-row"><span>STATUS</span><strong className="terminal-green">RUNNING</strong></div><div className="target-row"><span>TARGET</span><strong>{session.target_address||'Aguardando endereço'}</strong></div><div className="target-row"><span>EXPIRA</span><strong>{session.expires_at?new Date(session.expires_at).toLocaleString('pt-BR'):'—'}</strong></div><div className="hero-actions" style={{marginTop:16}}>{(session.vpn_download_url||session.connection_url)&&<a className="btn" href={session.vpn_download_url||session.connection_url||'#'}><Download size={15}/> BAIXAR VPN</a>}<form action={stopChallengeTargetAction}><input type="hidden" name="lab_id" value={c.lab_id||''}/><input type="hidden" name="slug" value={c.slug}/>{activeCtf&&<input type="hidden" name="ctf_event_id" value={eventId}/>}<SubmitButton className="btn danger" idleLabel="ENCERRAR ALVO" pendingLabel="ENCERRANDO..."/></form></div></>:<><p className="muted">Inicie o alvo para criar uma máquina isolada e uma configuração WireGuard exclusiva da sua sessão.</p><form action={startChallengeTargetAction}><input type="hidden" name="challenge_id" value={c.id}/><input type="hidden" name="slug" value={c.slug}/>{activeCtf&&<input type="hidden" name="ctf_event_id" value={eventId}/>}<SubmitButton className="btn full-btn" idleLabel="INICIAR ALVO + VPN →" pendingLabel="PROVISIONANDO..."/></form></>}<div className="security-note"><Power size={14}/><span>A VPN recebe rota apenas para o alvo desta sessão.</span></div></div>}
-     {lab&&activeCtf&&!ctfLive&&<div className="card" style={{marginTop:18}}><div className="panel-head"><div><span className="section-index">02 / TARGET</span><h3>Alvo bloqueado</h3></div><Network size={19}/></div><p className="muted">O alvo e a VPN serão liberados quando o CTF estiver ao vivo.</p></div>}
-   </section><aside className="card flag-terminal"><div className="terminal-toolbar"><span><TerminalSquare size={15}/> FLAG SUBMISSION</span><span className={`pill ${solve?'active':''}`}>{solve?'VERIFIED':'AWAITING FLAG'}</span></div>{activeCtf&&!ctfLive?<div className="pwned-state"><Flag size={38}/><strong>CTF BLOQUEADO</strong><p>A submissão será liberada quando o evento estiver ao vivo.</p></div>:solve&&!activeCtf?<div className="pwned-state"><CheckCircle2 size={38}/><strong>CHALLENGE PWNED</strong><p>Resolvido em {solve.solved_at?new Date(solve.solved_at).toLocaleString('pt-BR'):'sessão anterior'}.</p><small>O XP desta missão já foi contabilizado.</small></div>:<><div className="terminal-instructions"><span className="terminal-green">fortify@challenge</span>:~$ submit --flag</div><form action={submitChallengeAction} className="flag-submit-form"><input type="hidden" name="challenge_id" value={c.id}/><input type="hidden" name="slug" value={c.slug}/>{activeCtf&&<input type="hidden" name="ctf_event_id" value={eventId}/>}<div className="field"><label>FLAG</label><input required name="flag" autoComplete="off" spellCheck={false} placeholder="FORTIFY{...}"/></div><SubmitButton className="btn full-btn" idleLabel="ENVIAR FLAG →" pendingLabel="VALIDANDO FLAG..."/></form><p className="security-copy">{activeCtf?'A flag vale pontos dentro deste evento.':'Envie a flag encontrada para concluir a missão e registrar sua pontuação.'}</p></>}</aside></div>
- </>
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+type Challenge = {
+  id: string
+  title: string
+  slug: string
+  description: string
+  category: string
+  difficulty: string
+  xp_reward: number
+}
+
+function ChallengeEmpty() {
+  return (
+    <section className="range-empty-panel">
+      <div className="range-empty-icon"><Flag size={30} /></div>
+      <div>
+        <span className="section-index">MISSION QUEUE</span>
+        <h2>Nenhum Challenge publicado ainda</h2>
+        <p>Seu acesso está ativo. Novas missões aparecerão aqui quando forem liberadas pelo administrador.</p>
+      </div>
+      <div className="range-empty-steps">
+        <div><strong>01</strong><span>Leia o briefing</span></div>
+        <div><strong>02</strong><span>Encontre a flag</span></div>
+        <div><strong>03</strong><span>Envie e receba XP</span></div>
+      </div>
+    </section>
+  )
+}
+
+export default async function ChallengesPage() {
+  const { user, supabase } = await requireUser()
+  const access = await getPlatformAccess(user.id)
+
+  if (!access.canAccessCyberRange) {
+    return (
+      <div className="internal-route-page" data-route="painel-desafios-locked">
+        <section className="internal-hero challenge-hero">
+          <div>
+            <div className="kicker">CYBER RANGE / CHALLENGES</div>
+            <h1>Challenges</h1>
+            <p>Missões técnicas para validar conhecimento, capturar flags e construir seu ranking.</p>
+          </div>
+          <div className="internal-hero-badge locked"><LockKeyhole size={18} /><span>STATUS</span><strong>LOCKED</strong></div>
+        </section>
+        <div className="range-overview-strip">
+          <div><small>MISSIONS</small><strong>LOCKED</strong></div>
+          <div><small>REWARD</small><strong>XP + RANKING</strong></div>
+          <div><small>ACCESS</small><strong>MATRÍCULA NECESSÁRIA</strong></div>
+        </div>
+        <section className="range-access-gate compact-gate">
+          <div className="range-gate-icon"><Swords size={28} /></div>
+          <div className="kicker">CHALLENGE ACCESS</div>
+          <h2>Missões vinculadas à sua formação</h2>
+          <p>Ative sua formação para liberar Challenges, submissão de flags e progressão técnica.</p>
+          <div className="range-gate-features"><span><Zap size={15} /> XP por solução</span><span><Trophy size={15} /> Ranking técnico</span></div>
+          <Link className="btn" href="/painel/cursos"><GraduationCap size={16} /> VER MINHA FORMAÇÃO →</Link>
+        </section>
+      </div>
+    )
+  }
+
+  const [{ data: challengeData, error: challengeError }, { data: solveData, error: solveError }] = await Promise.all([
+    supabase.from('challenges').select('id,title,slug,description,category,difficulty,xp_reward').eq('published', true).order('created_at', { ascending: false }),
+    supabase.from('challenge_solves').select('challenge_id').eq('user_id', user.id),
+  ])
+
+  const challenges = (challengeData || []) as Challenge[]
+  const solved = new Set((solveData || []).map((row: { challenge_id: string }) => row.challenge_id))
+
+  return (
+    <div className="internal-route-page" data-route="painel-desafios">
+      <section className="internal-hero challenge-hero">
+        <div>
+          <div className="kicker">CYBER RANGE / CHALLENGES</div>
+          <h1>Challenges</h1>
+          <p>Resolva missões, capture flags e transforme prática em XP e posição no ranking.</p>
+        </div>
+        <div className="internal-hero-badge online"><Target size={18} /><span>MISSIONS</span><strong>ACTIVE</strong></div>
+      </section>
+
+      <div className="range-overview-strip challenge-overview">
+        <div><small>AVAILABLE</small><strong>{challenges.length} MISSÕES</strong></div>
+        <div><small>PWNED</small><strong>{solved.size} SOLVED</strong></div>
+        <div><small>PROGRESSION</small><strong>XP + RANKING</strong></div>
+      </div>
+
+      {(challengeError || solveError) && (
+        <div className="inline-diagnostic">
+          <strong>Não foi possível carregar todos os dados dos Challenges.</strong>
+          <span>{challengeError?.message || solveError?.message}</span>
+        </div>
+      )}
+
+      {challenges.length > 0 ? (
+        <section className="challenge-grid enhanced-grid">
+          {challenges.map((challenge) => {
+            const done = solved.has(challenge.id)
+            return (
+              <article className={`challenge-card product-card ${done ? 'is-solved' : ''}`} key={challenge.id}>
+                <div className="challenge-top" />
+                <div className="challenge-body">
+                  <div className="panel-head"><span className={`pill ${done ? 'active' : ''}`}>{done ? <><CheckCircle2 size={12} /> PWNED</> : challenge.category}</span><DifficultyMeter difficulty={challenge.difficulty} /></div>
+                  <h3>{challenge.title}</h3>
+                  <p className="muted card-copy">{challenge.description || 'Missão prática FortifySec.'}</p>
+                  <div className="challenge-reward"><span>REWARD</span><strong>+{challenge.xp_reward} XP</strong></div>
+                  <Link className="btn full-btn" href={`/painel/desafios/${challenge.slug}`}>{done ? 'REVISAR MISSÃO' : 'ABRIR CHALLENGE'} <ArrowRight size={14} /></Link>
+                </div>
+              </article>
+            )
+          })}
+        </section>
+      ) : <ChallengeEmpty />}
+
+      <section className="range-help-grid">
+        <article><Flag size={18} /><strong>Capture a flag</strong><span>Cada missão possui um objetivo técnico específico.</span></article>
+        <article><Zap size={18} /><strong>Ganhe XP</strong><span>Soluções válidas aumentam sua progressão.</span></article>
+        <article><Trophy size={18} /><strong>Suba no ranking</strong><span>Seu desempenho vira evidência técnica.</span></article>
+      </section>
+    </div>
+  )
 }

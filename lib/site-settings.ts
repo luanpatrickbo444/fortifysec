@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
-import { hasSupabasePublicConfig } from '@/lib/supabase/config'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { getSupabasePublicKey, getSupabaseUrl } from '@/lib/supabase/config'
 
 export type PlatformSettings = {
   announcement: string
@@ -10,7 +10,7 @@ export type PlatformSettings = {
   maintenance_mode: boolean
 }
 
-const defaults: PlatformSettings = {
+export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
   announcement: '',
   support_email: 'contato@fortifysec.com.br',
   academy_cta: 'Explorar Academy',
@@ -19,13 +19,36 @@ const defaults: PlatformSettings = {
   maintenance_mode: false,
 }
 
+/**
+ * Reads public site settings without touching the authenticated server session.
+ * Root/public layouts must never depend on requireUser()/redirect().
+ */
 export async function getPlatformSettings(): Promise<PlatformSettings> {
-  if (!hasSupabasePublicConfig()) return defaults
+  const url = getSupabaseUrl()
+  const key = getSupabasePublicKey()
+  if (!url || !key) return DEFAULT_PLATFORM_SETTINGS
+
   try {
-    const supabase = await createClient()
-    const { data } = await supabase.from('site_settings').select('value').eq('key', 'platform').maybeSingle()
-    return { ...defaults, ...((data?.value || {}) as Partial<PlatformSettings>) }
+    const supabase = createSupabaseClient(url, key, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    })
+
+    const { data, error } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'platform')
+      .maybeSingle()
+
+    if (error) return DEFAULT_PLATFORM_SETTINGS
+    return {
+      ...DEFAULT_PLATFORM_SETTINGS,
+      ...((data?.value || {}) as Partial<PlatformSettings>),
+    }
   } catch {
-    return defaults
+    return DEFAULT_PLATFORM_SETTINGS
   }
 }

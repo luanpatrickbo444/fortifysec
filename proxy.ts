@@ -1,6 +1,16 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+const AUTH_PUBLIC_PATHS = new Set([
+  '/login',
+  '/cadastro',
+  '/recuperar-senha',
+  '/atualizar-senha',
+  '/admin/login',
+  '/empresa/login',
+  '/empresa/cadastro',
+])
+
 function getPublicConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || ''
   const key =
@@ -12,10 +22,12 @@ function getPublicConfig() {
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
-  const { url, key } = getPublicConfig()
 
-  // Public pages must not become a global 500 just because auth env vars are absent.
-  // Protected pages/actions will still fail with a clear configuration error until fixed.
+  // Login/cadastro/recovery pages are always reachable.
+  // Authorization is performed only inside protected route layouts/actions.
+  if (AUTH_PUBLIC_PATHS.has(request.nextUrl.pathname)) return response
+
+  const { url, key } = getPublicConfig()
   if (!url || !key) return response
 
   const supabase = createServerClient(url, key, {
@@ -31,6 +43,7 @@ export async function proxy(request: NextRequest) {
     },
   })
 
+  // Session refresh only. This proxy intentionally contains NO redirects.
   await supabase.auth.getUser().catch(() => null)
   return response
 }
