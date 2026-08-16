@@ -60,3 +60,11 @@
 - `/empresa/vagas/[id]/editar` — edição da oportunidade.
 - `/empresa/talentos` — Talent Search e shortlist empresarial.
 - `/empresa/candidatos` — pipeline e gestão de candidaturas.
+
+## V8.2 — fluxo autenticado
+- `/painel` — Command Center oficial do aluno.
+- `/dashboard` — alias legado; redireciona para `/painel`.
+- `/curso/[slug]` — curso ativo dentro do mesmo shell autenticado do aluno.
+- `/painel/curso/[slug]` — alias legado; redireciona para `/curso/[slug]`.
+- Usuário com `role=admin` no `/painel/*` mantém a navegação do aluno e recebe `ADMIN ACCESS` + atalho para `/admin`.
+- `/admin/*` usa shell administrativo dedicado.

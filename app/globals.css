@@ -138,3 +138,247 @@
 @media(max-width:1200px){.company-auth-shell{grid-template-columns:1fr 430px}.company-auth-visual{padding:48px 38px}.company-auth-feature-grid{grid-template-columns:1fr}.company-auth-feature-grid article{min-height:0}.company-auth-terminal{display:none}.employer-job-grid,.employer-talent-grid{grid-template-columns:1fr 1fr}.employer-metrics-grid{grid-template-columns:1fr 1fr}.candidate-filter-bar{grid-template-columns:1fr 1fr 1fr}.candidate-search{grid-column:1/-1}.candidate-filter-bar .btn{width:100%}}
 @media(max-width:900px){.company-auth-shell{grid-template-columns:1fr}.company-auth-visual{border-right:0;border-bottom:1px solid var(--border);min-height:auto}.company-auth-form-panel{padding:38px 22px}.company-auth-copy h1{font-size:48px}.company-auth-feature-grid{grid-template-columns:repeat(3,1fr)}.employer-dashboard-hero{grid-template-columns:1fr}.employer-verification-card{max-width:420px}.employer-dashboard-grid{grid-template-columns:1fr}.talent-search-filters{grid-template-columns:1fr 1fr}.employer-candidate-grid{grid-template-columns:1fr}}
 @media(max-width:760px){.company-auth-visual{padding:36px 22px}.company-auth-brand{margin-bottom:35px}.company-auth-copy h1{font-size:41px}.company-auth-feature-grid{grid-template-columns:1fr}.company-auth-form-panel{padding:0}.company-login-card{border-left:0;border-right:0;padding:25px 20px;width:100%}.company-login-card:after{font-size:36px}.company-register-grid{grid-template-columns:1fr}.employer-main{padding:20px 15px 38px}.employer-dashboard-hero{padding:24px}.employer-metrics-grid,.employer-job-grid,.employer-talent-grid{grid-template-columns:1fr}.employer-metric-card{min-height:112px}.talent-search-filters{grid-template-columns:1fr}.talent-filter-actions{display:grid;grid-template-columns:1fr}.employer-form-footer{align-items:stretch;flex-direction:column}.employer-form-footer .btn{width:100%}.candidate-filter-bar{grid-template-columns:1fr}.candidate-search{grid-column:auto}.candidate-filter-bar select,.candidate-filter-bar .btn{width:100%}.candidate-card-head{grid-template-columns:auto 1fr}.candidate-card-head>.application-status{grid-column:2;justify-self:start}.candidate-proof-row{grid-template-columns:1fr}.candidate-status-form{grid-template-columns:1fr}.employer-editor-footer{display:grid;grid-template-columns:1fr}.employer-editor-footer .btn{width:100%}.job-status-form{grid-template-columns:1fr}.employer-sidebar .employer-company-block,.employer-sidebar .employer-verification,.employer-sidebar .employer-side-help{display:none}}
+
+/* =========================
+   V8.2 — Unified authenticated shell
+   Server-rendered navigation. No DOM fallback, no body offsets.
+   ========================= */
+.app-shell{
+  display:grid;
+  grid-template-columns:264px minmax(0,1fr);
+  min-height:100vh;
+  background:
+    linear-gradient(180deg,rgba(7,11,16,.98),rgba(8,13,18,.98)),
+    radial-gradient(circle at 80% 0%,rgba(159,239,0,.035),transparent 30%);
+}
+.app-shell>.sidebar{
+  position:sticky;
+  top:0;
+  height:100vh;
+  min-height:100vh;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:20px 14px 16px;
+  background:linear-gradient(180deg,#0a1016 0%,#080d12 100%);
+  border-right:1px solid #23313a;
+  z-index:40;
+}
+.app-shell-admin>.sidebar{
+  background:linear-gradient(180deg,#0b1218 0%,#080d12 100%);
+  border-right-color:rgba(69,215,255,.18);
+}
+.app-shell>.app-main{
+  width:100%;
+  min-width:0;
+  max-width:none;
+  padding:30px clamp(22px,2.7vw,46px) 48px;
+  overflow:hidden;
+}
+.app-shell .side-brand{
+  flex:none;
+  margin-bottom:14px;
+}
+.app-shell-admin .brand-mark{
+  background:var(--cyan);
+  color:#041014;
+  box-shadow:0 0 24px rgba(69,215,255,.12);
+}
+.side-role-switches{
+  display:grid;
+  gap:7px;
+  margin:0 0 16px;
+}
+.side-role-switch{
+  display:grid;
+  grid-template-columns:32px 1fr;
+  align-items:center;
+  gap:9px;
+  padding:10px;
+  border:1px solid var(--border);
+  background:#0b1218;
+  color:#a9b5ba;
+  transition:border-color .16s ease,background .16s ease,color .16s ease;
+}
+.side-role-switch>svg{
+  color:var(--green);
+}
+.side-role-switch>span small,
+.side-role-switch>span strong{
+  display:block;
+}
+.side-role-switch>span small{
+  color:#5f6f78;
+  letter-spacing:.11em;
+  font:800 7px ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+.side-role-switch>span strong{
+  margin-top:3px;
+  font-size:10px;
+  letter-spacing:.02em;
+}
+.side-role-switch:hover{
+  border-color:rgba(159,239,0,.34);
+  background:rgba(159,239,0,.045);
+  color:var(--text);
+}
+.side-role-switch-admin{
+  border-color:rgba(69,215,255,.22);
+  background:rgba(69,215,255,.035);
+}
+.side-role-switch-admin>svg{
+  color:var(--cyan);
+}
+.side-role-switch-admin:hover{
+  border-color:rgba(69,215,255,.48);
+  background:rgba(69,215,255,.06);
+}
+.app-shell .side-nav{
+  gap:3px;
+}
+.app-shell .side-nav a{
+  min-height:42px;
+  border-radius:2px;
+}
+.app-shell .side-nav a.active{
+  color:#f4faf7;
+  background:linear-gradient(90deg,rgba(159,239,0,.11),rgba(159,239,0,.015));
+  border-left-color:var(--green);
+}
+.app-shell-admin .admin-nav a.active{
+  background:linear-gradient(90deg,rgba(69,215,255,.1),rgba(69,215,255,.01));
+  border-left-color:var(--cyan);
+}
+.app-shell-admin .admin-nav a.active svg{
+  color:var(--cyan);
+}
+.app-shell .side-session{
+  margin-top:auto;
+  padding-top:16px;
+}
+.app-shell .side-foot{
+  margin-top:0;
+}
+.internal-route-page{
+  width:100%;
+  max-width:100%;
+}
+.internal-hero{
+  width:100%;
+}
+
+@media(max-width:980px){
+  .app-shell{
+    grid-template-columns:220px minmax(0,1fr);
+  }
+  .app-shell>.app-main{
+    padding:24px 20px 40px;
+  }
+}
+
+@media(max-width:760px){
+  .app-shell{
+    display:block;
+    min-height:100vh;
+  }
+  .app-shell>.sidebar{
+    position:relative;
+    top:auto;
+    height:auto;
+    min-height:0;
+    width:100%;
+    padding:0 10px;
+    border-right:0;
+    border-bottom:1px solid var(--border);
+    overflow-x:auto;
+    overflow-y:hidden;
+  }
+  .app-shell .side-brand,
+  .app-shell .side-label,
+  .app-shell .side-role-switches,
+  .app-shell .side-session{
+    display:none;
+  }
+  .app-shell .side-nav{
+    display:flex;
+    min-width:max-content;
+    gap:0;
+  }
+  .app-shell .side-nav a{
+    min-height:54px;
+    border-left:0;
+    border-bottom:2px solid transparent;
+    padding:0 13px;
+  }
+  .app-shell .side-nav a.active,
+  .app-shell-admin .admin-nav a.active{
+    border-left:0;
+    border-bottom-color:var(--green);
+    background:rgba(159,239,0,.045);
+  }
+  .app-shell-admin .admin-nav a.active{
+    border-bottom-color:var(--cyan);
+    background:rgba(69,215,255,.045);
+  }
+  .app-shell>.app-main{
+    padding:20px 14px 34px;
+  }
+}
+
+/* V8.2 mobile authenticated navigation: role switches and logout remain reachable. */
+@media(max-width:760px){
+  .app-shell>.sidebar{
+    display:flex;
+    align-items:stretch;
+    gap:0;
+  }
+  .app-shell .side-brand,
+  .app-shell .side-label,
+  .app-shell .side-foot{
+    display:none;
+  }
+  .app-shell .side-role-switches{
+    display:flex;
+    flex:none;
+    gap:0;
+    margin:0;
+  }
+  .app-shell .side-role-switch{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    min-height:54px;
+    border-top:0;
+    border-bottom:2px solid transparent;
+    border-left:0;
+    padding:0 12px;
+    white-space:nowrap;
+  }
+  .app-shell .side-role-switch>span small{
+    display:none;
+  }
+  .app-shell .side-role-switch>span strong{
+    margin:0;
+    font-size:9px;
+  }
+  .app-shell .side-role-switch-admin{
+    border-bottom-color:rgba(69,215,255,.55);
+  }
+  .app-shell .side-session{
+    display:flex;
+    flex:none;
+    margin:0;
+    padding:0;
+  }
+  .app-shell .side-logout{
+    width:auto;
+    min-height:54px;
+    border-top:0;
+    border-bottom:0;
+    border-right:0;
+    padding:0 13px;
+    white-space:nowrap;
+  }
+}
+.app-shell-student>.sidebar-student{border-right-color:#23313a}
+.app-shell-student>.sidebar-student .brand-mark{background:var(--green);color:#081000}
+.sidebar-admin{border-right-color:rgba(69,215,255,.18)}

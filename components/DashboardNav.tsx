@@ -16,9 +16,16 @@ export function DashboardNav({
   return (
     <nav className={`side-nav${admin ? ' admin-nav' : ''}`}>
       {items.map(([label, href, Icon]) => {
-        const active = pathname === href || (href !== '/painel' && href !== '/admin' && pathname.startsWith(`${href}/`))
+        const rootRoute = href === '/painel' || href === '/admin'
+        const active = pathname === href || (!rootRoute && pathname.startsWith(`${href}/`))
+
         return (
-          <Link key={href} href={href} className={active ? 'active' : ''} aria-current={active ? 'page' : undefined}>
+          <Link
+            key={href}
+            href={href}
+            className={active ? 'active' : ''}
+            aria-current={active ? 'page' : undefined}
+          >
             <Icon size={17} />
             <span>{label}</span>
           </Link>
