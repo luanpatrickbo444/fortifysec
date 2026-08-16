@@ -6,7 +6,7 @@ import LogoutButton from '@/components/LogoutButton'
 
 export function DashboardShell({children,admin=false}:{children:React.ReactNode,admin?:boolean}){
  const main=[
-  ['Command Center','/painel',Gauge],['Minha formação','/painel/cursos',GraduationCap],['Cyber Labs','/painel/labs',Boxes],['Challenges','/painel/desafios',Swords],['CTF','/painel/ctf',Flag],['Ranking','/painel/ranking',Trophy],['Pagamentos','/painel/pagamentos',CreditCard],['Perfil','/painel/perfil',UserRound]
+  ['Command Center','/dashboard',Gauge],['Minha formação','/painel/cursos',GraduationCap],['Cyber Labs','/painel/labs',Boxes],['Challenges','/painel/desafios',Swords],['CTF','/painel/ctf',Flag],['Ranking','/painel/ranking',Trophy],['Pagamentos','/painel/pagamentos',CreditCard],['Perfil','/painel/perfil',UserRound]
  ] as const
  const content=[['Admin Home','/admin',LayoutDashboard],['Cursos & Trilhas','/admin/cursos',Layers3],['Biblioteca de Aulas','/admin/aulas',BookOpen],['Cyber Labs','/admin/labs',Boxes],['Challenges','/admin/desafios',Wrench],['CTF Control','/admin/ctf',RadioTower]] as const
  const ops=[['Usuários','/admin/usuarios',UsersRound],['Empresas','/admin/empresas',Building2],['Matrículas','/admin/matriculas',GraduationCap],['Pagamentos','/admin/pagamentos',CreditCard],['Configurações','/admin/site',Settings]] as const

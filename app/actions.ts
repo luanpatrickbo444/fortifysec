@@ -79,7 +79,7 @@ export async function loginAction(formData: FormData) {
       redirect('/login?erro=' + encodeURIComponent('Esta conta está temporariamente indisponível.'))
     }
 
-    redirect(String(profile?.role) === 'admin' ? '/admin' : '/painel')
+    redirect(String(profile?.role) === 'admin' ? '/admin' : '/dashboard')
   }
 
   const authMessage = String(error?.message || '').toLowerCase()
@@ -157,7 +157,7 @@ export async function registerAction(formData: FormData) {
   redirect('/login?sucesso=' + encodeURIComponent('Cadastro realizado. Confirme seu e-mail para entrar.'))
 }
 export async function resetPasswordAction(formData: FormData) {const email=String(formData.get('email')||'').trim().toLowerCase();const supabase=await createClient();const site=process.env.NEXT_PUBLIC_SITE_URL||'http://localhost:3000';await supabase.auth.resetPasswordForEmail(email,{redirectTo:`${site}/auth/callback?next=/atualizar-senha`});redirect('/recuperar-senha?sucesso=1')}
-export async function updatePasswordAction(formData: FormData) {const password=String(formData.get('password')||'');if(password.length<8) redirect('/atualizar-senha?erro=Senha%20muito%20curta');const supabase=await createClient();const {error}=await supabase.auth.updateUser({password});if(error) redirect('/atualizar-senha?erro='+encodeURIComponent(error.message));redirect('/painel')}
+export async function updatePasswordAction(formData: FormData) {const password=String(formData.get('password')||'');if(password.length<8) redirect('/atualizar-senha?erro=Senha%20muito%20curta');const supabase=await createClient();const {error}=await supabase.auth.updateUser({password});if(error) redirect('/atualizar-senha?erro='+encodeURIComponent(error.message));redirect('/dashboard')}
 
 export async function updateProfileAction(formData:FormData){
  const {supabase,user}=await requireUser()
@@ -186,7 +186,7 @@ export async function updateProfileAction(formData:FormData){
  }
  await supabase.auth.updateUser({data:{name}}).catch(()=>null)
  revalidatePath('/painel/perfil')
- revalidatePath('/painel')
+ revalidatePath('/dashboard')
  revalidatePath('/talentos')
  redirect('/painel/perfil?salvo=1')
 }
@@ -221,7 +221,7 @@ export async function submitChallengeAction(formData:FormData){
  const args=eventId?{event_uuid:eventId,challenge_uuid:challengeId,candidate_flag:flag}:{challenge_uuid:challengeId,candidate_flag:flag}
  const {data,error}=await supabase.rpc(rpc,args as any)
  if(error||!data)redirect(`/painel/desafios/${slug}?result=invalid${eventId?`&ctf=${encodeURIComponent(eventId)}`:''}`)
- revalidatePath('/painel');revalidatePath('/painel/ranking');revalidatePath('/painel/ctf');if(eventId)revalidatePath(`/painel/ctf/${eventId}`)
+ revalidatePath('/dashboard');revalidatePath('/painel/ranking');revalidatePath('/painel/ctf');if(eventId)revalidatePath(`/painel/ctf/${eventId}`)
  redirect(`/painel/desafios/${slug}?result=solved${eventId?`&ctf=${encodeURIComponent(eventId)}`:''}`)
 }
 
@@ -253,7 +253,7 @@ export async function joinCtfAction(formData:FormData){
  const {user}=await requireUser();const eventId=String(formData.get('event_id')||'');if(!eventId)return;const admin=createAdminClient();const [{data:event},{data:profile},{data:enrollment}]=await Promise.all([admin.from('ctf_events').select('id,status,starts_at,ends_at').eq('id',eventId).maybeSingle(),admin.from('profiles').select('role,blocked').eq('id',user.id).maybeSingle(),admin.from('enrollments').select('id').eq('user_id',user.id).eq('status','active').limit(1).maybeSingle()]);const canAccess=!profile?.blocked&&(String(profile?.role||'')==='admin'||Boolean(enrollment));if(!canAccess||!event||event.status==='finished'||new Date(event.ends_at).getTime()<=Date.now())redirect('/painel/ctf');await admin.from('ctf_participants').upsert({event_id:eventId,user_id:user.id},{onConflict:'event_id,user_id'});revalidatePath('/painel/ctf');revalidatePath(`/painel/ctf/${eventId}`);redirect(`/painel/ctf/${eventId}`)
 }
 
-export async function adminSetEnrollmentAction(formData:FormData){await requireAdmin();const userId=String(formData.get('user_id')||'');const courseId=String(formData.get('course_id')||'');const status=String(formData.get('status')||'active');if(!userId||!courseId||!['active','pending','blocked','expired'].includes(status))return;const admin=createAdminClient();await admin.from('enrollments').upsert({user_id:userId,course_id:courseId,status,source:'admin',activated_at:status==='active'?new Date().toISOString():null},{onConflict:'user_id,course_id'});revalidatePath('/admin/matriculas');revalidatePath('/painel/cursos');revalidatePath('/painel/labs');revalidatePath('/painel/desafios');revalidatePath('/painel')}
+export async function adminSetEnrollmentAction(formData:FormData){await requireAdmin();const userId=String(formData.get('user_id')||'');const courseId=String(formData.get('course_id')||'');const status=String(formData.get('status')||'active');if(!userId||!courseId||!['active','pending','blocked','expired'].includes(status))return;const admin=createAdminClient();await admin.from('enrollments').upsert({user_id:userId,course_id:courseId,status,source:'admin',activated_at:status==='active'?new Date().toISOString():null},{onConflict:'user_id,course_id'});revalidatePath('/admin/matriculas');revalidatePath('/painel/cursos');revalidatePath('/painel/labs');revalidatePath('/painel/desafios');revalidatePath('/dashboard')}
 export async function adminCreateCourseAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');const description=String(formData.get('description')||'').trim();const price=slug==='formacao-fortifysec'?99.90:Number(formData.get('price')||0);if(!title||!slug)return;await admin.from('courses').insert({title,slug,description,price_cents:Math.round(price*100),published:true});revalidatePath('/admin/cursos');revalidatePath('/painel/cursos')}
 export async function adminToggleUserAction(formData:FormData){const {user}=await requireAdmin();const userId=String(formData.get('user_id')||'');if(userId===user.id)return;const blocked=String(formData.get('blocked')||'false')==='true';const admin=createAdminClient();await admin.from('profiles').update({blocked:!blocked}).eq('id',userId);if(!blocked)await admin.from('lab_sessions').update({status:'revoked',stopped_at:new Date().toISOString()}).eq('user_id',userId).eq('status','running');revalidatePath('/admin/usuarios')}
 export async function adminCreateLabAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');if(!title||!slug)return;await admin.from('labs').insert({title,slug,description:String(formData.get('description')||''),difficulty:String(formData.get('difficulty')||'Easy'),estimated_minutes:Number(formData.get('estimated_minutes')||60),connection_url:String(formData.get('connection_url')||'')||null,provider_lab_id:String(formData.get('provider_lab_id')||'')||null,instructions:String(formData.get('instructions')||''),tags:String(formData.get('tags')||'').split(',').map(s=>s.trim()).filter(Boolean),published:true});revalidatePath('/admin/labs');revalidatePath('/painel/labs')}

@@ -39,7 +39,7 @@ export async function requireAdmin() {
     redirect('/admin/login?erro=' + encodeURIComponent('Perfil da conta não está sincronizado.'))
   }
   if (profile.blocked) redirect('/bloqueado')
-  if (String(profile.role) !== 'admin') redirect('/painel')
+  if (String(profile.role) !== 'admin') redirect('/dashboard')
 
   return { supabase: admin, user, profile }
 }
