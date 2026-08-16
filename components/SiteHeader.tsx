@@ -20,7 +20,7 @@ export function SiteHeader() {
   const [session, setSession] = useState<SessionState>({ authenticated: false, role: null, company: false, ready: false })
   const [leaving, setLeaving] = useState(false)
 
-  const internal = pathname === '/dashboard' || pathname.startsWith('/painel') || pathname.startsWith('/admin') || pathname.startsWith('/empresa')
+  const internal = pathname.startsWith('/painel') || pathname.startsWith('/admin') || pathname.startsWith('/empresa')
 
   useEffect(() => {
     let mounted = true
@@ -66,7 +66,7 @@ export function SiteHeader() {
 
   if (internal) return null
 
-  const panelHref = session.role === 'admin' ? '/admin' : session.company ? '/empresa' : '/dashboard'
+  const panelHref = session.role === 'admin' ? '/admin' : session.company ? '/empresa' : '/painel'
 
   return (
     <header className="topnav">
