@@ -1,4 +1,4 @@
-import { readdir, rm, stat } from 'node:fs/promises'
+import { readdir, readFile, rm, stat } from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
 
@@ -65,7 +65,6 @@ const KEEP = new Set([
   "components/ui/DifficultyMeter.tsx",
   "components/ui/SubmitButton.tsx",
   "lib/auth.ts",
-  "lib/fortifysec-inline-css.ts",
   "lib/platform-access.ts",
   "lib/profile-sync.ts",
   "lib/site-settings.ts",
@@ -129,10 +128,31 @@ for (const d of MANAGED_DIRS) {
   }
 }
 
-console.log('[FortifySec prebuild] canonical V7.12.6 source prune complete')
+// Hard assertions: never publish without the exact V7.12 CSS pipeline.
+const cssPath = path.join(ROOT, 'app/globals.css')
+const rootLayoutPath = path.join(ROOT, 'app/layout.tsx')
+const painelPath = path.join(ROOT, 'app/painel')
+if (!(await exists(cssPath))) throw new Error('[FortifySec prebuild] FATAL: app/globals.css is missing')
+if (!(await exists(rootLayoutPath))) throw new Error('[FortifySec prebuild] FATAL: app/layout.tsx is missing')
+const rootLayout = await readFile(rootLayoutPath, 'utf8')
+if (!rootLayout.includes("import './globals.css'")) {
+  throw new Error("[FortifySec prebuild] FATAL: app/layout.tsx must import './globals.css'")
+}
+let shellRefs = 0
+for (const full of await walk(painelPath)) {
+  if (!/\.(tsx|ts|jsx|js)$/.test(full)) continue
+  const text = await readFile(full, 'utf8')
+  shellRefs += (text.match(/<DashboardShell\b/g) || []).length
+}
+if (shellRefs !== 1) {
+  throw new Error(`[FortifySec prebuild] FATAL: expected exactly 1 DashboardShell in app/painel, found ${shellRefs}`)
+}
+
+console.log('[FortifySec prebuild] canonical V7.12.7 source prune complete')
 if (removed.length) {
   console.log(`[FortifySec prebuild] removed ${removed.length} stale entries:`)
   for (const rel of removed.sort()) console.log(`  - ${rel}`)
 } else {
   console.log('[FortifySec prebuild] no stale source entries found')
 }
+console.log('[FortifySec prebuild] DESIGN ASSERTIONS OK: globals.css + root import + exactly 1 DashboardShell')
