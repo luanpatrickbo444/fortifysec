@@ -1,13 +1,12 @@
 {
   "name": "fortifysec-unified",
-  "version": "7.12.7",
+  "version": "7.9.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
-    "prebuild": "node scripts/prune-stale-repo.mjs"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",
