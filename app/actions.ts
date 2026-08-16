@@ -249,3 +249,16 @@ export async function adminUnlinkChallengeFromCtfAction(formData:FormData){
 export async function adminUpdateSiteSettingsAction(formData:FormData){
  await requireAdmin();const admin=createAdminClient();const payload={announcement:String(formData.get('announcement')||'').trim().slice(0,180),support_email:String(formData.get('support_email')||'').trim().toLowerCase(),academy_cta:String(formData.get('academy_cta')||'').trim().slice(0,60),labs_cta:String(formData.get('labs_cta')||'').trim().slice(0,60),ctf_prize_label:String(formData.get('ctf_prize_label')||'').trim().slice(0,60),maintenance_mode:asBool(formData.get('maintenance_mode'))};await admin.from('site_settings').upsert({key:'platform',value:payload,updated_at:new Date().toISOString()},{onConflict:'key'});revalidatePath('/admin/site');revalidatePath('/');revalidatePath('/academy');revalidatePath('/labs');revalidatePath('/ctf')
 }
+
+// Cancela manualmente uma assinatura recorrente (além do cancelamento automático via webhook).
+export async function adminCancelSubscriptionAction(formData:FormData){
+ await requireAdmin();const admin=createAdminClient();const preapprovalId=String(formData.get('preapproval_id')||'');if(!preapprovalId)return
+ const token=process.env.MERCADO_PAGO_ACCESS_TOKEN
+ if(token){
+  await fetch(`https://api.mercadopago.com/preapproval/${encodeURIComponent(preapprovalId)}`,{method:'PUT',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({status:'cancelled'})}).catch(()=>null)
+ }
+ const {data:sub}=await admin.from('subscriptions').select('user_id,course_id').eq('preapproval_id',preapprovalId).maybeSingle()
+ await admin.from('subscriptions').update({status:'cancelled',updated_at:new Date().toISOString()}).eq('preapproval_id',preapprovalId)
+ if(sub) await admin.from('enrollments').update({status:'expired'}).eq('user_id',sub.user_id).eq('course_id',sub.course_id)
+ revalidatePath('/admin/matriculas')
+}

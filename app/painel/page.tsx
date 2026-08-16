@@ -1,150 +1,37 @@
 import Link from 'next/link'
-import { Boxes, Clock3, GraduationCap, LockKeyhole, Network, Radio, Server, ShieldCheck, Zap, Activity, TerminalSquare, ArrowRight } from 'lucide-react'
-import { DifficultyMeter } from '@/components/ui/DifficultyMeter'
+import { BookOpenCheck, LockKeyhole, ShieldCheck, Zap } from 'lucide-react'
+import { CheckoutForm } from '@/components/ui/CheckoutForm'
 import { requireUser } from '@/lib/auth'
-import { getPlatformAccess } from '@/lib/platform-access'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+export default async function Cursos(){
+ const {supabase,user}=await requireUser()
+ const [{data:profile},{data:courses},{data:enrollments},{data:lessons},{data:progress}]=await Promise.all([
+  supabase.from('profiles').select('role,xp').eq('id',user.id).single(),
+  supabase.from('courses').select('id,title,slug,description,price_cents,published').eq('published',true).order('created_at'),
+  supabase.from('enrollments').select('course_id,status').eq('user_id',user.id),
+  supabase.from('lessons').select('id,course_id').order('position'),
+  supabase.from('lesson_progress').select('lesson_id,completed').eq('user_id',user.id).eq('completed',true)
+ ])
+ const enrollmentMap=new Map((enrollments||[]).map((e:any)=>[e.course_id,e.status]))
+ const done=new Set((progress||[]).map((p:any)=>p.lesson_id))
+ const lessonIdsByCourse=new Map<string,string[]>()
+ for(const lesson of lessons||[]){const arr=lessonIdsByCourse.get((lesson as any).course_id)||[];arr.push((lesson as any).id);lessonIdsByCourse.set((lesson as any).course_id,arr)}
+ const activeCount=(enrollments||[]).filter((e:any)=>e.status==='active').length
 
-type Lab = {
-  id: string
-  title: string
-  slug: string
-  description: string
-  difficulty: string
-  estimated_minutes: number
-  tags: string[] | null
-}
-
-type RunningSession = {
-  lab_id: string
-  status: string
-  expires_at: string | null
-}
-
-function LockedCyberRange() {
-  return (
-    <section className="range-access-gate">
-      <div className="range-gate-icon"><LockKeyhole size={28} /></div>
-      <div className="kicker">CYBER RANGE / ACCESS CONTROL</div>
-      <h2>CyberLab disponível para alunos matriculados</h2>
-      <p>Conclua sua matrícula em uma formação FortifySec para acessar máquinas, redes isoladas e sessões práticas.</p>
-      <div className="range-gate-features">
-        <span><ShieldCheck size={15} /> Ambientes isolados</span>
-        <span><Network size={15} /> Sessões individuais</span>
-        <span><Zap size={15} /> Prática orientada</span>
+ return <>
+  <div className="page-head internal-page-head"><div><div className="kicker">ACADEMY / COURSES</div><h1>FortifySec Academy</h1><p>Trilhas técnicas com progresso, XP e continuidade entre Academy e Cyber Range.</p></div><div className="head-stats"><span className="pill active"><BookOpenCheck size={13}/> {activeCount} ATIVAS</span><span className="pill"><Zap size={13}/> {profile?.xp||0} XP</span></div></div>
+  <div className="coursegrid enhanced-grid">{(courses||[]).map((c:any)=>{
+    const status=enrollmentMap.get(c.id);const active=status==='active';const ids=lessonIdsByCourse.get(c.id)||[];const completed=ids.filter(id=>done.has(id)).length;const pct=active&&ids.length?Math.round(completed/ids.length*100):0;const displayPriceCents=c.slug==='formacao-fortifysec'?9990:Number(c.price_cents||0)
+    return <article className={`coursecard product-card ${active?'is-active':''}`} key={c.id}>
+      <div className="coursecover"><div className="cover-topline"><span className="cover-code">COURSE://{c.slug.toUpperCase()}</span>{active?<ShieldCheck size={18}/>:<LockKeyhole size={18}/>}</div><div className="cover-progress"><span>{active?`${pct}% COMPLETE`:'ACCESS CONTROLLED'}</span></div></div>
+      <div className="coursebody">
+        <div className="panel-head"><span className={`pill ${active?'active':status==='pending'?'locked':''}`}>{active?'ACESSO ATIVO':status==='pending'?'PAGAMENTO PENDENTE':'LOCKED'}</span><span className="mono tiny-label">{active?`${completed}/${ids.length} AULAS`:'PREMIUM'}</span></div>
+        <h3>{c.title}</h3><p className="muted card-copy">{c.description}</p>
+        {active&&<><div className="progress course-progress"><span style={{width:`${pct}%`}}/></div><div className="progress-caption"><span>{completed} concluídas</span><span>{pct}%</span></div></>}
+        <div className="card-actions">{active?<Link className="btn" href={`/curso/${c.slug}`}>{pct>0?'CONTINUAR TRILHA':'INICIAR TRILHA'} →</Link>:status==='pending'?<button className="btn secondary" disabled>AGUARDANDO PAGAMENTO</button>:<CheckoutForm courseId={c.id} label={`COMPRAR · R$ ${(displayPriceCents/100).toFixed(2).replace('.',',')}`}/>}</div>
       </div>
-      <Link className="btn" href="/painel/cursos"><GraduationCap size={16} /> VER MINHA FORMAÇÃO →</Link>
-    </section>
-  )
-}
-
-function RangeEmpty() {
-  return (
-    <section className="range-empty-panel">
-      <div className="range-empty-icon"><TerminalSquare size={30} /></div>
-      <div>
-        <span className="section-index">RANGE STATUS</span>
-        <h2>Nenhum laboratório publicado ainda</h2>
-        <p>Seu acesso está ativo. Assim que o administrador publicar um Lab, ele aparecerá automaticamente nesta área.</p>
-      </div>
-      <div className="range-empty-steps">
-        <div><strong>01</strong><span>Lab publicado pelo administrador</span></div>
-        <div><strong>02</strong><span>Target aparece no catálogo</span></div>
-        <div><strong>03</strong><span>Você inicia uma sessão isolada</span></div>
-      </div>
-    </section>
-  )
-}
-
-export default async function LabsPage() {
-  const { user, supabase } = await requireUser()
-  const access = await getPlatformAccess(user.id)
-
-  if (!access.canAccessCyberRange) {
-    return (
-      <div className="internal-route-page" data-route="painel-labs-locked">
-        <section className="internal-hero range-hero">
-          <div>
-            <div className="kicker">CYBER RANGE / LABS</div>
-            <h1>Máquinas & Labs</h1>
-            <p>Ambientes práticos isolados para executar técnicas dentro de um escopo controlado.</p>
-          </div>
-          <div className="internal-hero-badge locked"><LockKeyhole size={18} /><span>STATUS</span><strong>LOCKED</strong></div>
-        </section>
-        <div className="range-overview-strip">
-          <div><small>ACCESS</small><strong>MATRÍCULA NECESSÁRIA</strong></div>
-          <div><small>NETWORK</small><strong>ISOLATED RANGE</strong></div>
-          <div><small>SESSION</small><strong>INDIVIDUAL</strong></div>
-        </div>
-        <LockedCyberRange />
-      </div>
-    )
-  }
-
-  const [{ data: labsData, error: labsError }, { data: sessionsData, error: sessionsError }] = await Promise.all([
-    supabase.from('labs').select('id,title,slug,description,difficulty,estimated_minutes,tags').eq('published', true).order('created_at', { ascending: false }),
-    supabase.from('lab_sessions').select('lab_id,status,expires_at').eq('user_id', user.id).eq('status', 'running'),
-  ])
-
-  const labs = (labsData || []) as Lab[]
-  const sessions = (sessionsData || []) as RunningSession[]
-  const running = new Map(sessions.map((session) => [session.lab_id, session]))
-
-  return (
-    <div className="internal-route-page" data-route="painel-labs">
-      <section className="internal-hero range-hero">
-        <div>
-          <div className="kicker">CYBER RANGE / LABS</div>
-          <h1>Máquinas & Labs</h1>
-          <p>Escolha um alvo, abra o briefing e provisione sua sessão dentro do Cyber Range FortifySec.</p>
-        </div>
-        <div className="internal-hero-badge online"><Radio size={18} /><span>RANGE</span><strong>ONLINE</strong></div>
-      </section>
-
-      <div className="range-overview-strip">
-        <div><small>TARGETS</small><strong>{labs.length} DISPONÍVEIS</strong></div>
-        <div><small>SESSIONS</small><strong>{sessions.length} EM EXECUÇÃO</strong></div>
-        <div><small>ACCESS</small><strong>VERIFIED</strong></div>
-      </div>
-
-      {(labsError || sessionsError) && (
-        <div className="inline-diagnostic">
-          <strong>Não foi possível carregar todos os dados do Cyber Range.</strong>
-          <span>{labsError?.message || sessionsError?.message}</span>
-        </div>
-      )}
-
-      {labs.length > 0 ? (
-        <section className="lab-grid enhanced-grid">
-          {labs.map((lab) => {
-            const session = running.get(lab.id)
-            return (
-              <article className={`lab-card product-card ${session ? 'is-running' : ''}`} key={lab.id}>
-                <div className="lab-cover">
-                  <div className="cover-topline"><span className="cover-code">LAB://{lab.slug.toUpperCase()}</span><Boxes size={18} /></div>
-                  <div className="lab-scanline" />
-                </div>
-                <div className="lab-body">
-                  <div className="panel-head"><span className={`pill ${session ? 'active' : ''}`}>{session ? '● RUNNING' : 'READY'}</span><DifficultyMeter difficulty={lab.difficulty} /></div>
-                  <h3>{lab.title}</h3>
-                  <p className="muted card-copy">{lab.description || 'Ambiente prático FortifySec.'}</p>
-                  <div className="lab-specs"><span><Clock3 size={13} />{lab.estimated_minutes} min</span><span><Network size={13} />{session ? 'sessão ativa' : 'isolated range'}</span></div>
-                  <div className="tag-row">{(lab.tags || []).slice(0, 4).map((tag) => <span className="micro-tag" key={tag}>#{tag}</span>)}</div>
-                  <Link className="btn full-btn" href={`/painel/labs/${lab.slug}`}>{session ? 'ABRIR WORKSPACE' : 'ABRIR LAB'} <ArrowRight size={14} /></Link>
-                </div>
-              </article>
-            )
-          })}
-        </section>
-      ) : <RangeEmpty />}
-
-      <section className="range-help-grid">
-        <article><Activity size={18} /><strong>Como funciona</strong><span>Abra um alvo e inicie uma sessão temporária.</span></article>
-        <article><ShieldCheck size={18} /><strong>Escopo controlado</strong><span>Use somente os ambientes disponibilizados.</span></article>
-        <article><Server size={18} /><strong>Estado da sessão</strong><span>Targets ativos aparecem como RUNNING.</span></article>
-      </section>
-    </div>
-  )
+    </article>
+  })}</div>
+  {!courses?.length&&<div className="empty-state">Nenhum curso publicado.</div>}
+ </>
 }
