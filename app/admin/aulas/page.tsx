@@ -3,7 +3,7 @@ import { BookOpenCheck, Film, Layers3, PlusCircle, Zap } from 'lucide-react'
 import { DashboardShell } from '@/components/DashboardShell'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireAdmin } from '@/lib/auth'
-import { adminCreateLessonAction, adminToggleLessonAction } from '@/app/actions'
+import { adminCreateLessonAction, adminToggleLessonAction } from '@/lib/actions'
 
 export default async function AdminLessons({searchParams}:{searchParams:Promise<{criada?:string,erro?:string}>}){
  const query=await searchParams;const {supabase}=await requireAdmin();const [{data:courses},{data:modules},{data:lessons}]=await Promise.all([

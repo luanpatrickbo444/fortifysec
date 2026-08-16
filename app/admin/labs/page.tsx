@@ -3,7 +3,7 @@ import { DashboardShell } from '@/components/DashboardShell'
 import { DifficultyMeter } from '@/components/ui/DifficultyMeter'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireAdmin } from '@/lib/auth'
-import { adminCreateLabAction, adminToggleLabPublishedAction } from '@/app/actions'
+import { adminCreateLabAction, adminToggleLabPublishedAction } from '@/lib/actions'
 
 export default async function AdminLabs(){
  const {supabase}=await requireAdmin();const {data:labs}=await supabase.from('labs').select('id,title,slug,description,difficulty,estimated_minutes,tags,published,provider_lab_id,connection_url').order('created_at',{ascending:false})

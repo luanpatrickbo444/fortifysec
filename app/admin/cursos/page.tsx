@@ -3,7 +3,7 @@ import { BookOpen, Layers3, PlusCircle, Settings2 } from 'lucide-react'
 import { DashboardShell } from '@/components/DashboardShell'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireAdmin } from '@/lib/auth'
-import { adminCreateCourseAction, adminToggleCourseAction } from '@/app/actions'
+import { adminCreateCourseAction, adminToggleCourseAction } from '@/lib/actions'
 
 export default async function AdminCourses(){
  const {supabase}=await requireAdmin()

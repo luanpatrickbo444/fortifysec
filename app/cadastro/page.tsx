@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { registerAction } from '@/app/actions'
+import { registerAction } from '@/lib/actions'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 
 export default async function Cadastro({searchParams}:{searchParams:Promise<{erro?:string,email?:string,novo?:string}>}){

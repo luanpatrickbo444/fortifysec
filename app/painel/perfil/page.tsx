@@ -1,7 +1,7 @@
 import { BriefcaseBusiness, Github, Linkedin, ShieldCheck, Trophy, UserRound } from 'lucide-react'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireUser } from '@/lib/auth'
-import { updateProfileAction } from '@/app/actions'
+import { updateProfileAction } from '@/lib/actions'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

@@ -2,7 +2,7 @@ import { GraduationCap, ShieldCheck } from 'lucide-react'
 import { DashboardShell } from '@/components/DashboardShell'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireAdmin } from '@/lib/auth'
-import { adminSetEnrollmentAction } from '@/app/actions'
+import { adminSetEnrollmentAction } from '@/lib/actions'
 
 export default async function AdminEnrollments(){
  const {supabase}=await requireAdmin();const [{data:users},{data:courses},{data:enrollments}]=await Promise.all([

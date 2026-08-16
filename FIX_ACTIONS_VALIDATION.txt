@@ -1,0 +1,13 @@
+FortifySec actions module fix
+
+- 17 page imports changed from @/app/actions to @/lib/actions
+- lib/actions.ts present
+- app/actions.ts retained as compatibility copy
+- 29 server action exports found
+- 0 missing local @/ imports by static resolution
+- app/globals.css unchanged
+- app/layout.tsx unchanged
+- app/painel/layout.tsx unchanged
+- DashboardShell architecture unchanged
+
+Note: npm install could not complete in this execution environment before its timeout, so this report does not claim a full local Next.js production build.
