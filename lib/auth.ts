@@ -55,3 +55,22 @@ export async function hasActiveEnrollment(courseId: string) {
     .maybeSingle()
   return !!data
 }
+
+export async function requireCompany() {
+  const { user } = await requireUser()
+  const admin = createAdminClient()
+  const { data: membership, error } = await admin
+    .from('company_members')
+    .select('company_id,member_role,companies(id,name,slug,verified,active)')
+    .eq('user_id', user.id)
+    .limit(1)
+    .maybeSingle()
+
+  const company = Array.isArray((membership as any)?.companies)
+    ? (membership as any).companies[0]
+    : (membership as any)?.companies
+
+  if (error || !membership || !company || !company.active) redirect('/empresa/login?erro=' + encodeURIComponent('Esta conta não está vinculada a uma empresa ativa.'))
+
+  return { supabase: admin, user, membership, company }
+}

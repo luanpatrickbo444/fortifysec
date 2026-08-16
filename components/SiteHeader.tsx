@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 type SessionState = {
   authenticated: boolean
   role: 'admin' | 'student' | null
+  company: boolean
   ready: boolean
 }
 
@@ -16,10 +17,10 @@ export function SiteHeader() {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
-  const [session, setSession] = useState<SessionState>({ authenticated: false, role: null, ready: false })
+  const [session, setSession] = useState<SessionState>({ authenticated: false, role: null, company: false, ready: false })
   const [leaving, setLeaving] = useState(false)
 
-  const internal = pathname === '/dashboard' || pathname.startsWith('/painel') || pathname.startsWith('/admin')
+  const internal = pathname === '/dashboard' || pathname.startsWith('/painel') || pathname.startsWith('/admin') || pathname.startsWith('/empresa')
 
   useEffect(() => {
     let mounted = true
@@ -28,20 +29,23 @@ export function SiteHeader() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!mounted) return
       if (!user) {
-        setSession({ authenticated: false, role: null, ready: true })
+        setSession({ authenticated: false, role: null, company: false, ready: true })
         return
       }
 
       let role: 'admin' | 'student' = 'student'
-      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+      const [{ data: profile }, { data: companyMember }] = await Promise.all([
+        supabase.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+        supabase.from('company_members').select('company_id').eq('user_id', user.id).limit(1).maybeSingle(),
+      ])
       if (String(profile?.role) === 'admin') role = 'admin'
-      if (mounted) setSession({ authenticated: true, role, ready: true })
+      if (mounted) setSession({ authenticated: true, role, company: Boolean(companyMember), ready: true })
     }
 
     load()
     const { data: listener } = supabase.auth.onAuthStateChange((_event, authSession) => {
       if (!mounted) return
-      if (!authSession?.user) setSession({ authenticated: false, role: null, ready: true })
+      if (!authSession?.user) setSession({ authenticated: false, role: null, company: false, ready: true })
       else load()
     })
 
@@ -55,14 +59,14 @@ export function SiteHeader() {
     if (leaving) return
     setLeaving(true)
     await supabase.auth.signOut()
-    setSession({ authenticated: false, role: null, ready: true })
+    setSession({ authenticated: false, role: null, company: false, ready: true })
     router.push('/')
     router.refresh()
   }
 
   if (internal) return null
 
-  const panelHref = session.role === 'admin' ? '/admin' : '/dashboard'
+  const panelHref = session.role === 'admin' ? '/admin' : session.company ? '/empresa' : '/dashboard'
 
   return (
     <header className="topnav">
@@ -78,6 +82,8 @@ export function SiteHeader() {
           <Link href={session.authenticated ? '/painel/ctf' : '/ctf'}>CTF</Link>
           <Link href="/planos">Planos</Link>
           <Link href="/talentos">Talentos</Link>
+          <Link href="/vagas">Vagas</Link>
+          {!session.authenticated && <Link href="/empresa/login">Empresas</Link>}
           {!session.ready ? (
             <span className="nav-session-loading">SESSÃO...</span>
           ) : session.authenticated ? (
