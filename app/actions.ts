@@ -324,11 +324,28 @@ export async function companyRegisterAction(formData:FormData){
  await ensureApplicationProfile(data.user);const admin=createAdminClient();const base=safeSlug(companyName)||'empresa';const slug=`${base}-${data.user.id.slice(0,8)}`;const {data:company,error:companyError}=await admin.from('companies').insert({name:companyName,slug,created_by:data.user.id,verified:false,active:true}).select('id').single()
  if(companyError||!company)redirect('/empresa/cadastro?erro='+encodeURIComponent('Conta criada, mas não foi possível cadastrar a empresa.'))
  await admin.from('company_members').insert({company_id:company.id,user_id:data.user.id,member_role:'owner'})
- redirect('/empresa/login?sucesso='+encodeURIComponent('Empresa cadastrada. Confirme seu e-mail e aguarde a validação da FortifySec.'))
+ // Se a confirmação de e-mail estiver DESATIVADA no projeto Supabase, o signUp já
+ // devolve uma sessão ativa (data.session != null) e o usuário já está logado neste
+ // momento. Nesse caso mandá-lo para /empresa/login força um segundo login imediato
+ // com a senha que ele acabou de digitar — que costuma ser confundido com "credencial
+ // inválida" quando na real é só uma etapa redundante. Se já existe sessão, entra direto.
+ if(data.session)redirect('/empresa')
+ redirect('/empresa/login?sucesso='+encodeURIComponent('Empresa cadastrada. Verifique seu e-mail para confirmar a conta antes de entrar.'))
 }
 
 export async function companyLoginAction(formData:FormData){
- const email=String(formData.get('email')||'').trim().toLowerCase();const password=String(formData.get('password')||'');const supabase=await createClient();const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error||!data.user)redirect('/empresa/login?erro='+encodeURIComponent('Credenciais inválidas.'))
+ const email=String(formData.get('email')||'').trim().toLowerCase();const password=String(formData.get('password')||'');const supabase=await createClient();const {data,error}=await supabase.auth.signInWithPassword({email,password})
+ if(error||!data.user){
+  // Supabase retorna mensagens distintas para senha/e-mail errados vs. e-mail ainda não
+  // confirmado. Mostrar sempre "Credenciais inválidas." escondia esse segundo caso, que é
+  // exatamente o que acontece quando alguém tenta entrar logo após o cadastro: a conta
+  // existe e a senha está certa, só falta clicar no link de confirmação enviado por e-mail.
+  const reason=String(error?.message||'').toLowerCase()
+  const msg=reason.includes('email not confirmed')||reason.includes('confirm')
+    ?'Confirme seu e-mail antes de entrar. Verifique a caixa de entrada (e o spam).'
+    :'Credenciais inválidas.'
+  redirect('/empresa/login?erro='+encodeURIComponent(msg))
+ }
  await ensureApplicationProfile(data.user);const admin=createAdminClient();const {data:member}=await admin.from('company_members').select('company_id').eq('user_id',data.user.id).limit(1).maybeSingle();if(!member){await supabase.auth.signOut();redirect('/empresa/login?erro='+encodeURIComponent('Conta sem empresa vinculada.'))}redirect('/empresa')
 }
 
