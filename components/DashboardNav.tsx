@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { LucideIcon } from 'lucide-react'
 
@@ -25,31 +24,18 @@ export function DashboardNav({
           </>
         )
 
-        // Admin navigation intentionally uses native anchors.
-        // This forces a fresh server request and avoids stale App Router
-        // state after production deploys (the route itself exists on Vercel).
-        if (admin) {
-          return (
-            <a
-              key={href}
-              href={href}
-              className={active ? 'active' : ''}
-              aria-current={active ? 'page' : undefined}
-            >
-              {content}
-            </a>
-          )
-        }
-
+        // Core dashboard navigation intentionally uses native anchors.
+        // A full document request prevents a browser tab with an older App Router
+        // tree from producing false 404s immediately after a production deploy.
         return (
-          <Link
+          <a
             key={href}
             href={href}
             className={active ? 'active' : ''}
             aria-current={active ? 'page' : undefined}
           >
             {content}
-          </Link>
+          </a>
         )
       })}
     </nav>

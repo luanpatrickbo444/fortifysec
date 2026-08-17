@@ -1,7 +1,6 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { LogOut, UserRound } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -15,7 +14,6 @@ type SessionState = {
 
 export function SiteHeader() {
   const pathname = usePathname()
-  const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
   const [session, setSession] = useState<SessionState>({ authenticated: false, role: null, company: false, ready: false })
   const [leaving, setLeaving] = useState(false)
@@ -60,8 +58,7 @@ export function SiteHeader() {
     setLeaving(true)
     await supabase.auth.signOut()
     setSession({ authenticated: false, role: null, company: false, ready: true })
-    router.push('/')
-    router.refresh()
+    window.location.assign('/')
   }
 
   if (internal) return null
@@ -71,30 +68,30 @@ export function SiteHeader() {
   return (
     <header className="topnav">
       <div className="nav-wrap">
-        <Link className="brand" href="/">
+        <a className="brand" href="/">
           <span className="brand-bracket">[</span>FORTIFY<span>SEC</span>
           <span className="brand-bracket">]</span>
-        </Link>
+        </a>
         <nav className="nav-links">
-          <Link href="/academy">Academy</Link>
-          <Link href={session.authenticated ? '/painel/labs' : '/labs'}>Labs</Link>
-          {session.authenticated && <Link href="/painel/desafios">Challenges</Link>}
-          <Link href={session.authenticated ? '/painel/ctf' : '/ctf'}>CTF</Link>
-          <Link href="/planos">Planos</Link>
-          <Link href="/talentos">Talentos</Link>
-          <Link href="/vagas">Vagas</Link>
-          {!session.authenticated && <Link href="/empresa/login">Empresas</Link>}
+          <a href="/academy">Academy</a>
+          <a href={session.authenticated ? '/painel/labs' : '/labs'}>Labs</a>
+          {session.authenticated && <a href="/painel/desafios">Challenges</a>}
+          <a href={session.authenticated ? '/painel/ctf' : '/ctf'}>CTF</a>
+          <a href="/planos">Planos</a>
+          <a href="/talentos">Talentos</a>
+          <a href="/vagas">Vagas</a>
+          {!session.authenticated && <a href="/empresa/login">Empresas</a>}
           {!session.ready ? (
             <span className="nav-session-loading">SESSÃO...</span>
           ) : session.authenticated ? (
             <>
-              <Link className="nav-panel-link" href={panelHref}><UserRound size={14}/> PAINEL</Link>
+              <a className="nav-panel-link" href={panelHref}><UserRound size={14}/> PAINEL</a>
               <button className="nav-logout" type="button" onClick={signOut} disabled={leaving}>
                 <LogOut size={14}/>{leaving ? ' SAINDO...' : ' SAIR'}
               </button>
             </>
           ) : (
-            <Link className="nav-cta" href="/login">LOGIN</Link>
+            <a className="nav-cta" href="/login">LOGIN</a>
           )}
         </nav>
       </div>

@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { KeyRound, ShieldCheck } from 'lucide-react'
-import { companyLoginAction } from '@/app/actions'
 import { CompanyAuthShell } from '@/components/CompanyAuthShell'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 
@@ -16,7 +15,7 @@ export default async function CompanyLogin({searchParams}:{searchParams:Promise<
       {q.erro&&<div className="alert danger-alert">{q.erro}</div>}
       {q.sucesso&&<div className="alert success-alert">{q.sucesso}</div>}
 
-      <form action={companyLoginAction} className="company-auth-form">
+      <form action="/api/company/login" method="post" className="company-auth-form">
         <div className="field">
           <label>E-mail corporativo</label>
           <input type="email" name="email" required autoComplete="email" placeholder="voce@empresa.com.br"/>
