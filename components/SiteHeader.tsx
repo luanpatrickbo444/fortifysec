@@ -14,16 +14,33 @@ type SessionState = {
 
 export function SiteHeader() {
   const pathname = usePathname()
-  const supabase = useMemo(() => createClient(), [])
+  // CRITICAL: never let a missing/misconfigured Supabase env var throw here.
+  // SiteHeader renders on every public page (including /_not-found) from the
+  // root layout, so a throw at this point takes down the whole page render
+  // and Next.js falls back to its bare error page — which has no globals.css.
+  // That previously showed up as "the site lost its style".
+  const supabase = useMemo(() => {
+    try {
+      return createClient()
+    } catch {
+      return null
+    }
+  }, [])
   const [session, setSession] = useState<SessionState>({ authenticated: false, role: null, company: false, ready: false })
   const [leaving, setLeaving] = useState(false)
 
   const internal = pathname === '/dashboard' || pathname === '/painel' || pathname.startsWith('/painel/') || pathname.startsWith('/curso/') || pathname.startsWith('/admin') || pathname.startsWith('/empresa')
 
   useEffect(() => {
+    if (!supabase) {
+      setSession({ authenticated: false, role: null, company: false, ready: true })
+      return
+    }
+
     let mounted = true
 
     async function load() {
+      if (!supabase) return
       const { data: { user } } = await supabase.auth.getUser()
       if (!mounted) return
       if (!user) {
@@ -54,7 +71,7 @@ export function SiteHeader() {
   }, [supabase])
 
   async function signOut() {
-    if (leaving) return
+    if (leaving || !supabase) return
     setLeaving(true)
     await supabase.auth.signOut()
     setSession({ authenticated: false, role: null, company: false, ready: true })
