@@ -1,0 +1,18 @@
+{
+  "name": "fortifysec-range-provider",
+  "version": "8.3.0-azure",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "check": "node --check server.mjs && node --check providers/azure.mjs"
+  },
+  "dependencies": {
+    "@azure/arm-compute": "24.1.0",
+    "@azure/arm-network": "37.0.0",
+    "@azure/identity": "4.13.1"
+  }
+}

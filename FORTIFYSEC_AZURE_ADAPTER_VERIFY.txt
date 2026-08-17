@@ -1,0 +1,50 @@
+FORTIFYSEC AZURE RANGE ADAPTER — VERIFICAÇÃO
+
+Escopo alterado:
+- range-provider/server.mjs
+- range-provider/providers/azure.mjs (novo)
+- range-provider/package.json (novo)
+- range-provider/.env.example
+- range-provider/labs.example.json
+- range-provider/setup-ubuntu.sh
+- range-provider/fortify-range.service
+- range-provider/README.md
+- AZURE_RANGE_SETUP.md (novo)
+- RANGE_AZURE_ADAPTER_CHANGELOG.md (novo)
+
+Escopo NÃO alterado:
+- app/
+- components/
+- lib/
+- proxy.ts
+- Supabase migrations
+- Mercado Pago
+- planos/auth/admin/empresa
+
+Contrato preservado:
+- POST /sessions
+- DELETE /sessions/:id
+- GET /vpn/:token
+- GET /health
+
+Adicionado:
+- provider=azure / type=azure_vm
+- Azure Managed Identity / DefaultAzureCredential
+- NIC privada sem Public IP
+- NSG obrigatório
+- criação e destruição VM/NIC/OS disk
+- WireGuard AllowedIPs somente target /32
+- SNAT restrito peer -> target
+- sweep de VMs expiradas/orfãs
+- GET /health/azure autenticado
+- suporte image_id (Azure Compute Gallery/custom image)
+
+Validações executadas:
+- node --check range-provider/server.mjs: PASS
+- node --check range-provider/providers/azure.mjs: PASS
+- bash -n range-provider/setup-ubuntu.sh: PASS
+- package.json parse: PASS
+- labs.example.json parse: PASS
+
+Observação:
+O ambiente local não possui credenciais Azure e não criou uma VM real. O teste final de API deve ser executado na VM fortify-range-01 depois de Managed Identity/RBAC/VNet/NSG estarem configurados.

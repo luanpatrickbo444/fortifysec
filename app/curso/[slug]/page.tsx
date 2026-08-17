@@ -1,25 +1,8 @@
 import { notFound, redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
 import { CheckCircle2, Circle, Layers3, PlayCircle, Zap } from 'lucide-react'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireUser } from '@/lib/auth'
-
-// Server Action definida inline (mesmo arquivo) para evitar depender de um
-// segundo arquivo (./server-actions.ts) que pode não ser incluído em alguns
-// fluxos de deploy/upload — causa raiz do erro "Module not found" anterior.
-async function completeLessonAction(formData: FormData) {
-  'use server'
-  const { supabase, user } = await requireUser()
-  const lessonId = String(formData.get('lesson_id') || '')
-  const courseId = String(formData.get('course_id') || '')
-  const slug = String(formData.get('slug') || '')
-  const { data: enrollment } = await supabase.from('enrollments').select('id').eq('user_id', user.id).eq('course_id', courseId).eq('status', 'active').maybeSingle()
-  if (!enrollment) return
-  await supabase.from('lesson_progress').upsert({ user_id: user.id, lesson_id: lessonId, completed: true, completed_at: new Date().toISOString() }, { onConflict: 'user_id,lesson_id' })
-  revalidatePath('/painel')
-  revalidatePath('/painel/ranking')
-  if (slug) revalidatePath(`/curso/${slug}`)
-}
+import { completeLessonAction } from './server-actions'
 
 function youtubeEmbed(url:string){try{const u=new URL(url);if(u.hostname.includes('youtube.com')){const v=u.searchParams.get('v');return v?`https://www.youtube.com/embed/${encodeURIComponent(v)}`:null}if(u.hostname==='youtu.be'){const v=u.pathname.replace('/','');return v?`https://www.youtube.com/embed/${encodeURIComponent(v)}`:null}}catch{}return null}
 

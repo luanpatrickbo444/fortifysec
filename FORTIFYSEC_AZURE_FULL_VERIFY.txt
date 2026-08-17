@@ -1,0 +1,18 @@
+FORTIFYSEC COMPLETE SNAPSHOT + AZURE RANGE ADAPTER — VALIDATION
+
+- Azure adapter syntax: PASS
+- Range provider server syntax: PASS
+- setup-ubuntu.sh bash syntax: PASS
+- package.json JSON: PASS
+- labs.example.json JSON: PASS
+- Root app/page.tsx uses AcademyPublic: PASS
+- Root app/page.tsx has no completeLessonAction/server-actions import: PASS
+- Existing FortifySec provider contract preserved: POST /sessions + DELETE /sessions/:id
+- Docker provider retained
+- Azure VM provider added
+- Azure VMs created without Public IP by adapter
+- WireGuard config scoped to per-target /32 for Azure sessions
+- Azure cleanup includes VM + NIC + OS disk
+- Orphan VM cleanup tags/expiry included
+
+NOTE: Full Next.js production build was not re-run in this container because the full snapshot does not include node_modules. The latest Vercel production build was separately observed as READY before packaging. Range-provider changed independently from Next.js application code.

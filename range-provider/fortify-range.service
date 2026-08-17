@@ -1,5 +1,5 @@
 [Unit]
-Description=FortifySec Range Provider
+Description=FortifySec Range Provider (Docker + Azure VM)
 After=network-online.target docker.service wg-quick@wg0.service
 Wants=network-online.target docker.service wg-quick@wg0.service
 
@@ -8,6 +8,7 @@ Type=simple
 User=root
 WorkingDirectory=/opt/fortify-range
 EnvironmentFile=/opt/fortify-range/.env
+Environment=NODE_ENV=production
 ExecStart=/usr/bin/node /opt/fortify-range/server.mjs
 Restart=always
 RestartSec=3

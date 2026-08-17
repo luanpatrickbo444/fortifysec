@@ -1,0 +1,25 @@
+FORTIFYSEC — CÓDIGO COMPLETO + AZURE CYBER RANGE
+
+Este pacote contém a árvore completa de código-fonte disponível nesta conversa:
+- Next.js / App Router
+- Academy / páginas públicas
+- autenticação e callbacks
+- painel do aluno
+- Cyber Labs / Challenges / CTF / Ranking / Perfil / Pagamentos
+- painel administrativo
+- console de empresas / vagas / talentos / candidatos
+- integração Mercado Pago
+- Supabase + migrations / RLS
+- layouts, components, CSS e utilitários
+- Range Provider
+- Docker Labs
+- Azure VM Adapter
+- WireGuard / TTL / cleanup
+- scripts de instalação do Range Provider
+- arquivos de configuração e documentação
+
+IMPORTANTE:
+1. Segredos reais não são incluídos. Preencha os arquivos .env a partir dos .env.example.
+2. node_modules, .next e caches não são incluídos; execute npm install antes do build.
+3. O deploy de produção visto na Vercel está no commit 338e4ba, mas a Vercel não expõe os arquivos-fonte privados do commit. Este pacote usa a última árvore completa de código disponível nesta conversa e incorpora a adaptação Azure.
+4. Para sincronização byte-a-byte com o commit atual do GitHub, é necessário acesso ao repositório privado.

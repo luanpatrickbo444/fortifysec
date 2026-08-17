@@ -1,5 +1,6 @@
 {
   "web-juice-01": {
+    "provider": "docker",
     "image": "bkimminich/juice-shop:latest",
     "scheme": "http",
     "port": 3000,
@@ -10,11 +11,41 @@
     "read_only": false
   },
   "fortify-linux-privesc-01": {
+    "provider": "docker",
     "image": "ghcr.io/fortifysec/linux-privesc-01:latest",
     "ttl_minutes": 90,
     "memory": "1024m",
     "cpus": "1.0",
     "pids_limit": 384,
     "read_only": false
+  },
+  "azure-smoke-ubuntu": {
+    "provider": "azure",
+    "os_type": "linux",
+    "image": {
+      "publisher": "Canonical",
+      "offer": "ubuntu-24_04-lts",
+      "sku": "server",
+      "version": "latest"
+    },
+    "vm_size": "Standard_B2s",
+    "disk_sku": "StandardSSD_LRS",
+    "scheme": "http",
+    "port": 80,
+    "ready_port": 80,
+    "ready_timeout_seconds": 180,
+    "ttl_minutes": 60,
+    "cloud_init": "#cloud-config\npackage_update: true\npackages:\n  - nginx\nruncmd:\n  - [ bash, -lc, \"printf 'FortifySec Azure Range OK\\n' > /var/www/html/index.html\" ]\n  - [ systemctl, enable, --now, nginx ]\n"
+  },
+  "azure-gallery-template": {
+    "provider": "azure",
+    "os_type": "linux",
+    "image_id": "/subscriptions/SEU_SUB/resourceGroups/rg-fortifysec-range/providers/Microsoft.Compute/galleries/fortifyGallery/images/linux-privesc/versions/1.0.0",
+    "vm_size": "Standard_B2s",
+    "disk_sku": "StandardSSD_LRS",
+    "ttl_minutes": 90,
+    "scheme": "http",
+    "port": 8080,
+    "ready_port": 8080
   }
 }

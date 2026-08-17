@@ -328,15 +328,7 @@ export async function companyRegisterAction(formData:FormData){
 }
 
 export async function companyLoginAction(formData:FormData){
- const email=String(formData.get('email')||'').trim().toLowerCase();const password=String(formData.get('password')||'');const supabase=await createClient();const {data,error}=await supabase.auth.signInWithPassword({email,password})
- if(error||!data.user){
-  // Antes isso caía tudo em "Credenciais inválidas", o que confundia quem
-  // tinha a senha certa mas ainda não tinha confirmado o e-mail de cadastro.
-  const authMessage=String(error?.message||'').toLowerCase()
-  if(authMessage.includes('email not confirmed')||authMessage.includes('email_not_confirmed'))redirect('/empresa/login?erro='+encodeURIComponent('Confirme seu e-mail antes de entrar. Verifique também a caixa de spam.'))
-  if(authMessage.includes('rate limit')||authMessage.includes('too many'))redirect('/empresa/login?erro='+encodeURIComponent('Muitas tentativas. Aguarde um pouco e tente novamente.'))
-  redirect('/empresa/login?erro='+encodeURIComponent('Credenciais inválidas.'))
- }
+ const email=String(formData.get('email')||'').trim().toLowerCase();const password=String(formData.get('password')||'');const supabase=await createClient();const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error||!data.user)redirect('/empresa/login?erro='+encodeURIComponent('Credenciais inválidas.'))
  await ensureApplicationProfile(data.user);const admin=createAdminClient();const {data:member}=await admin.from('company_members').select('company_id').eq('user_id',data.user.id).limit(1).maybeSingle();if(!member){await supabase.auth.signOut();redirect('/empresa/login?erro='+encodeURIComponent('Conta sem empresa vinculada.'))}redirect('/empresa')
 }
 

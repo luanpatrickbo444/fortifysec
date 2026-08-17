@@ -16,7 +16,7 @@ export function DashboardNav({
   return (
     <nav className={`side-nav${admin ? ' admin-nav' : ''}`}>
       {items.map(([label, href, Icon]) => {
-        const rootRoute = href === '/painel' || href === '/admin' || href === '/empresa'
+        const rootRoute = href === '/painel' || href === '/admin'
         const active = pathname === href || (!rootRoute && pathname.startsWith(`${href}/`))
         const content = (
           <>
