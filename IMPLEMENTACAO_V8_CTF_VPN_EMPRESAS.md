@@ -13,7 +13,7 @@ supabase/migrations/006_ctf_vpn_companies.sql
 Ela adiciona:
 
 - vínculo opcional `challenges.lab_id`;
-- dados de VPN/alvo em `lab_sessions`;
+- dados de VPN/alvo em `lab_sessions`;     
 - `ctf_participants`;
 - `ctf_solves`;
 - `submit_ctf_flag(...)`;
