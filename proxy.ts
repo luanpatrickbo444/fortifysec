@@ -21,6 +21,18 @@ function getPublicConfig() {
 }
 
 export async function proxy(request: NextRequest) {
+  // `/admin/cursos` is kept only as a compatibility URL.
+  // The canonical route is `/admin/content-studio` because the old segment
+  // intermittently returned a Vercel/App Router 404 despite being present
+  // in the production route manifest. A real HTTP redirect avoids RSC/rewrite
+  // ambiguity and gives the browser a stable canonical route.
+  const pathname = request.nextUrl.pathname
+  if (pathname === '/admin/cursos' || pathname.startsWith('/admin/cursos/')) {
+    const target = request.nextUrl.clone()
+    target.pathname = pathname.replace('/admin/cursos', '/admin/content-studio')
+    return NextResponse.redirect(target, 307)
+  }
+
   let response = NextResponse.next({ request })
 
   // Login/cadastro/recovery pages are always reachable.
