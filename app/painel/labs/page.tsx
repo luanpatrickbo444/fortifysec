@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { Boxes, Clock3, GraduationCap, LockKeyhole, Network, Radio, Server, ShieldCheck, Zap, Activity, TerminalSquare, ArrowRight } from 'lucide-react'
 import { DifficultyMeter } from '@/components/ui/DifficultyMeter'
 import { requireUser } from '@/lib/auth'
@@ -35,7 +34,7 @@ function LockedCyberRange() {
         <span><Network size={15} /> Sessões individuais</span>
         <span><Zap size={15} /> Prática orientada</span>
       </div>
-      <Link className="btn" href="/painel/cursos"><GraduationCap size={16} /> VER MINHA FORMAÇÃO →</Link>
+      <a className="btn" href="/painel/cursos"><GraduationCap size={16} /> VER MINHA FORMAÇÃO →</a>
     </section>
   )
 }
@@ -132,7 +131,7 @@ export default async function LabsPage() {
                   <p className="muted card-copy">{lab.description || 'Ambiente prático FortifySec.'}</p>
                   <div className="lab-specs"><span><Clock3 size={13} />{lab.estimated_minutes} min</span><span><Network size={13} />{session ? 'sessão ativa' : 'isolated range'}</span></div>
                   <div className="tag-row">{(lab.tags || []).slice(0, 4).map((tag) => <span className="micro-tag" key={tag}>#{tag}</span>)}</div>
-                  <Link className="btn full-btn" href={`/painel/labs/${lab.slug}`}>{session ? 'ABRIR WORKSPACE' : 'ABRIR LAB'} <ArrowRight size={14} /></Link>
+                  <a className="btn full-btn" href={`/painel/labs/${lab.slug}`}>{session ? 'ABRIR WORKSPACE' : 'ABRIR LAB'} <ArrowRight size={14} /></a>
                 </div>
               </article>
             )

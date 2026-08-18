@@ -24,9 +24,9 @@ export function DashboardNav({
           </>
         )
 
-        // Core dashboard navigation intentionally uses native anchors.
-        // A full document request prevents a browser tab with an older App Router
-        // tree from producing false 404s immediately after a production deploy.
+        // Use native anchors for every dashboard route. A full document request
+        // prevents stale App Router/RSC state after production deployments from
+        // showing a client-side 404 for routes that exist on the server.
         return (
           <a
             key={href}

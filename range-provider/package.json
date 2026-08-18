@@ -1,18 +1,16 @@
 {
   "name": "fortifysec-range-provider",
-  "version": "8.3.0-azure",
+  "version": "8.5.0-gcp-range",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": ">=20.9.0"
-  },
+  "engines": { "node": ">=20.9.0" },
   "scripts": {
     "start": "node server.mjs",
-    "check": "node --check server.mjs && node --check providers/azure.mjs"
+    "start:env": "node --env-file=.env server.mjs",
+    "start:local": "node --env-file=.env.local server.mjs",
+    "check": "node --check server.mjs && node --check providers/local-docker.mjs && node --check providers/gcp.mjs"
   },
   "dependencies": {
-    "@azure/arm-compute": "24.1.0",
-    "@azure/arm-network": "37.0.0",
-    "@azure/identity": "4.13.1"
+    "@google-cloud/compute": "^6.14.0"
   }
 }

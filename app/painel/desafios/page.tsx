@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { CheckCircle2, GraduationCap, LockKeyhole, Swords, Trophy, Zap, Flag, Target, ArrowRight } from 'lucide-react'
 import { DifficultyMeter } from '@/components/ui/DifficultyMeter'
 import { requireUser } from '@/lib/auth'
@@ -61,7 +60,7 @@ export default async function ChallengesPage() {
           <h2>Missões vinculadas à sua formação</h2>
           <p>Ative sua formação para liberar Challenges, submissão de flags e progressão técnica.</p>
           <div className="range-gate-features"><span><Zap size={15} /> XP por solução</span><span><Trophy size={15} /> Ranking técnico</span></div>
-          <Link className="btn" href="/painel/cursos"><GraduationCap size={16} /> VER MINHA FORMAÇÃO →</Link>
+          <a className="btn" href="/painel/cursos"><GraduationCap size={16} /> VER MINHA FORMAÇÃO →</a>
         </section>
       </div>
     )
@@ -111,7 +110,7 @@ export default async function ChallengesPage() {
                   <h3>{challenge.title}</h3>
                   <p className="muted card-copy">{challenge.description || 'Missão prática FortifySec.'}</p>
                   <div className="challenge-reward"><span>REWARD</span><strong>+{challenge.xp_reward} XP</strong></div>
-                  <Link className="btn full-btn" href={`/painel/desafios/${challenge.slug}`}>{done ? 'REVISAR MISSÃO' : 'ABRIR CHALLENGE'} <ArrowRight size={14} /></Link>
+                  <a className="btn full-btn" href={`/painel/desafios/${challenge.slug}`}>{done ? 'REVISAR MISSÃO' : 'ABRIR CHALLENGE'} <ArrowRight size={14} /></a>
                 </div>
               </article>
             )

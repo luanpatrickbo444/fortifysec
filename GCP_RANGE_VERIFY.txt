@@ -1,0 +1,43 @@
+FORTIFYSEC v8.5 — GCP RANGE VERIFY
+
+Arquivos principais adicionados/alterados:
+- range-provider/providers/gcp.mjs
+- range-provider/server.mjs
+- range-provider/package.json
+- range-provider/.env.example
+- range-provider/labs.gcp.json
+- range-provider/labs.example.json
+- range-provider/setup-gcp-gateway.sh
+- range-provider/setup-ubuntu.sh (alias compatível)
+- range-provider/nginx-range.conf.example
+- range-provider/fortify-range.service
+- infra/gcp/versions.tf
+- infra/gcp/variables.tf
+- infra/gcp/main.tf
+- infra/gcp/outputs.tf
+- infra/gcp/terraform.tfvars.example
+- infra/gcp/README.md
+- GCP_RANGE_SETUP.md
+- GCP_RANGE_CHANGES.md
+- .env.example
+- app/painel/labs/[slug]/page.tsx
+- app/painel/desafios/[slug]/page.tsx
+
+Validações executadas:
+- node --check range-provider/server.mjs: PASS
+- node --check range-provider/providers/gcp.mjs: PASS
+- node --check range-provider/providers/local-docker.mjs: PASS
+- range-provider/labs.gcp.json parse: PASS
+- range-provider/package.json parse: PASS
+
+Limitações de validação deste ambiente:
+- @google-cloud/compute não foi instalado aqui: o download via npm excedeu o timeout disponível.
+- Terraform CLI não está instalado neste ambiente, então `terraform validate` não foi executado.
+- Nenhuma VM real foi criada porque não há credenciais/projeto GCP do usuário neste ambiente.
+
+O adapter segue o contrato HTTP existente do FortifySec:
+- GET /health
+- GET /health/gcp (Bearer)
+- POST /sessions (Bearer)
+- DELETE /sessions/:id (Bearer)
+- GET /vpn/:token

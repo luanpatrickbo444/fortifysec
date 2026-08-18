@@ -57,8 +57,22 @@ export async function hasActiveEnrollment(courseId: string) {
 }
 
 export async function requireCompany() {
-  const { user } = await requireUser()
+  // Company routes have their own login gateway. Do not call requireUser() here,
+  // otherwise an unauthenticated company request is sent to /login and can enter
+  // a cross-gateway redirect cycle.
+  const sessionClient = await createClient()
+  const { data: { user } } = await sessionClient.auth.getUser()
+  if (!user) redirect('/empresa/login')
+
   const admin = createAdminClient()
+
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('blocked')
+    .eq('id', user.id)
+    .maybeSingle()
+  if (profile?.blocked) redirect('/bloqueado')
+
   const { data: membership, error } = await admin
     .from('company_members')
     .select('company_id,member_role,companies(id,name,slug,verified,active)')
@@ -70,7 +84,9 @@ export async function requireCompany() {
     ? (membership as any).companies[0]
     : (membership as any)?.companies
 
-  if (error || !membership || !company || !company.active) redirect('/empresa/login?erro=' + encodeURIComponent('Esta conta não está vinculada a uma empresa ativa.'))
+  if (error || !membership || !company || !company.active) {
+    redirect('/empresa/login?erro=' + encodeURIComponent('Esta conta não está vinculada a uma empresa ativa.'))
+  }
 
   return { supabase: admin, user, membership, company }
 }

@@ -24,8 +24,8 @@ async function createRangeSession(input:{userId:string,labId:string,ttlMinutes:n
  const data=await res.json()
  return {
   sessionId:data.session_id?String(data.session_id):null,
-  connectionUrl:String(data.connection_url||data.vpn_download_url||''),
-  vpnDownloadUrl:String(data.vpn_download_url||data.connection_url||''),
+  connectionUrl:data.connection_url?String(data.connection_url):'',
+  vpnDownloadUrl:data.vpn_download_url?String(data.vpn_download_url):'',
   targetAddress:String(data.target_address||data.target_ip||''),
   expiresAt:data.expires_at?String(data.expires_at):null,
  }
@@ -79,7 +79,7 @@ export async function loginAction(formData: FormData) {
       redirect('/login?erro=' + encodeURIComponent('Esta conta está temporariamente indisponível.'))
     }
 
-    redirect(String(profile?.role) === 'admin' ? '/admin' : '/painel')
+    redirect('/painel')
   }
 
   const authMessage = String(error?.message || '').toLowerCase()
@@ -328,8 +328,27 @@ export async function companyRegisterAction(formData:FormData){
 }
 
 export async function companyLoginAction(formData:FormData){
- const email=String(formData.get('email')||'').trim().toLowerCase();const password=String(formData.get('password')||'');const supabase=await createClient();const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error||!data.user)redirect('/empresa/login?erro='+encodeURIComponent('Credenciais inválidas.'))
- await ensureApplicationProfile(data.user);const admin=createAdminClient();const {data:member}=await admin.from('company_members').select('company_id').eq('user_id',data.user.id).limit(1).maybeSingle();if(!member){await supabase.auth.signOut();redirect('/empresa/login?erro='+encodeURIComponent('Conta sem empresa vinculada.'))}redirect('/empresa')
+ const email=String(formData.get('email')||'').trim().toLowerCase()
+ const password=String(formData.get('password')||'')
+ const supabase=await createClient()
+ const {data,error}=await supabase.auth.signInWithPassword({email,password})
+ if(error||!data.user)redirect('/empresa/login?erro='+encodeURIComponent('Credenciais inválidas.'))
+
+ await ensureApplicationProfile(data.user)
+ const admin=createAdminClient()
+ const {data:member}=await admin
+   .from('company_members')
+   .select('company_id,companies(active)')
+   .eq('user_id',data.user.id)
+   .limit(1)
+   .maybeSingle()
+
+ const company=Array.isArray((member as any)?.companies)?(member as any).companies[0]:(member as any)?.companies
+ if(!member||!company?.active){
+   await supabase.auth.signOut()
+   redirect('/empresa/login?erro='+encodeURIComponent('Conta sem empresa ativa vinculada.'))
+ }
+ redirect('/empresa')
 }
 
 export async function companyUpdateProfileAction(formData:FormData){

@@ -5,35 +5,41 @@ import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto'
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import {
-  azureConfigurationStatus,
-  checkAzureAccess,
-  cleanupExpiredAzureResources,
-  destroyAzureVm,
-  provisionAzureVm,
-} from './providers/azure.mjs'
+  checkLocalDockerAccess,
+  destroyLocalDocker,
+  localDockerConfigurationStatus,
+  provisionLocalDocker,
+} from './providers/local-docker.mjs'
+import {
+  checkGcpAccess,
+  cleanupExpiredGcpResources,
+  destroyGcpVm,
+  gcpConfigurationStatus,
+  provisionGcpVm,
+} from './providers/gcp.mjs'
 
 const execFile = promisify(execFileCb)
 const PORT = Number(process.env.PORT || 8787)
+const LISTEN_HOST = String(process.env.LISTEN_HOST || '0.0.0.0')
 const API_KEY = String(process.env.PROVIDER_API_KEY || '')
 const PUBLIC_BASE_URL = String(process.env.PUBLIC_BASE_URL || `http://127.0.0.1:${PORT}`).replace(/\/$/, '')
 const WG_INTERFACE = String(process.env.WG_INTERFACE || 'wg0')
 const WG_ENDPOINT = String(process.env.WG_ENDPOINT || '')
 const WG_SERVER_PUBLIC_KEY = String(process.env.WG_SERVER_PUBLIC_KEY || '')
 const WG_CLIENT_DNS = String(process.env.WG_CLIENT_DNS || '')
-const AZURE_EGRESS_INTERFACE = String(process.env.AZURE_EGRESS_INTERFACE || 'eth0')
+const GCP_EGRESS_INTERFACE = String(process.env.GCP_EGRESS_INTERFACE || '')
 const STATE_FILE = resolve(process.env.STATE_FILE || './data/state.json')
 const LABS_FILE = resolve(process.env.LABS_FILE || './labs.json')
 const MAX_TTL = Math.max(15, Number(process.env.MAX_TTL_MINUTES || 240))
-const AZURE_SWEEP_INTERVAL_MS = Math.max(60_000, Number(process.env.AZURE_SWEEP_INTERVAL_MS || 300_000))
+const GCP_SWEEP_INTERVAL_MS = Math.max(60_000, Number(process.env.GCP_SWEEP_INTERVAL_MS || 300_000))
 
 if (!API_KEY) throw new Error('PROVIDER_API_KEY is required')
-if (!WG_ENDPOINT) throw new Error('WG_ENDPOINT is required, e.g. range.fortifysec.com.br:51820')
 
 const state = { sessions: {} }
 const reservedSlots = new Set()
 const provisioningKeys = new Set()
 let labs = {}
-let lastAzureSweep = 0
+let lastGcpSweep = 0
 
 async function loadJson(path, fallback) {
   try { return JSON.parse(await readFile(path, 'utf8')) } catch { return fallback }
@@ -43,8 +49,12 @@ async function saveState() {
   await writeFile(STATE_FILE, JSON.stringify(state, null, 2), { mode: 0o600 })
 }
 async function boot() {
-  Object.assign(state, await loadJson(STATE_FILE, { sessions: {} }))
+  const persisted = await loadJson(STATE_FILE, { sessions: {} })
+  state.sessions = persisted?.sessions || {}
   labs = await loadJson(LABS_FILE, {})
+  if (!Object.keys(labs).length) throw new Error(`No labs loaded from ${LABS_FILE}`)
+  const usesGcp = Object.values(labs).some(def => providerType(def) === 'gcp')
+  if (usesGcp && !WG_ENDPOINT) throw new Error('WG_ENDPOINT is required when GCP labs are configured')
 }
 
 function json(res, status, body) {
@@ -52,9 +62,8 @@ function json(res, status, body) {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'content-length': data.length, 'cache-control': 'no-store' })
   res.end(data)
 }
-function unauthorized(res) { return json(res, 401, { error: 'unauthorized' }) }
 function safeEqual(a, b) {
-  const x = Buffer.from(a); const y = Buffer.from(b)
+  const x = Buffer.from(String(a)); const y = Buffer.from(String(b))
   return x.length === y.length && timingSafeEqual(x, y)
 }
 function authorized(req) {
@@ -63,13 +72,21 @@ function authorized(req) {
 }
 async function body(req) {
   const chunks = []; let size = 0
-  for await (const chunk of req) { size += chunk.length; if (size > 64 * 1024) throw new Error('body too large'); chunks.push(chunk) }
+  for await (const chunk of req) {
+    size += chunk.length
+    if (size > 64 * 1024) throw Object.assign(new Error('body too large'), { statusCode: 413 })
+    chunks.push(chunk)
+  }
   return chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {}
 }
-function shellSafeId(value) { return String(value || '').replace(/[^a-zA-Z0-9_.-]/g, '').slice(0, 96) }
 function providerType(def) {
-  const raw = String(def?.provider || def?.type || 'docker').toLowerCase()
-  return raw === 'azure_vm' ? 'azure' : raw
+  const raw = String(def?.provider || def?.type || 'local_docker').toLowerCase()
+  if (['local', 'local_docker', 'docker_local', 'docker'].includes(raw)) return 'local_docker'
+  if (['gcp', 'gcp_vm', 'google', 'google_cloud', 'google_compute'].includes(raw)) return 'gcp'
+  return raw
+}
+function runningFor(userId, labId) {
+  return Object.values(state.sessions).find(s => s.status === 'running' && s.userId === userId && s.labId === labId && new Date(s.expiresAt).getTime() > Date.now())
 }
 function slotInUse(slot) {
   return reservedSlots.has(slot) || Object.values(state.sessions).some(s => s.slot === slot && ['running', 'provisioning'].includes(s.status))
@@ -80,7 +97,7 @@ function allocateSlot() {
   }
   throw Object.assign(new Error('range capacity exhausted'), { statusCode: 503 })
 }
-function releaseSlot(slot) { reservedSlots.delete(slot) }
+function releaseSlot(slot) { if (slot) reservedSlots.delete(slot) }
 async function run(cmd, args, opts = {}) {
   const { stdout = '', stderr = '' } = await execFile(cmd, args, { timeout: 60_000, maxBuffer: 2 * 1024 * 1024, ...opts })
   return { stdout: String(stdout).trim(), stderr: String(stderr).trim() }
@@ -101,116 +118,90 @@ function sessionTargetAddress(def, targetIp) {
   const portHint = def.port ? `:${Number(def.port)}` : ''
   return def.scheme ? `${def.scheme}://${targetIp}${portHint}` : `${targetIp}${portHint}`
 }
-
 async function addWireGuardPeer(clientPublicKey, clientIp) {
   await run('wg', ['set', WG_INTERFACE, 'peer', clientPublicKey, 'allowed-ips', `${clientIp}/32`])
 }
 async function removeWireGuardPeer(clientPublicKey) {
   if (clientPublicKey) await run('wg', ['set', WG_INTERFACE, 'peer', clientPublicKey, 'remove']).catch(() => {})
 }
-async function removeRule(args, table = null) {
-  const command = table ? ['-t', table, '-D', ...args] : ['-D', ...args]
-  await run('iptables', command).catch(() => {})
+async function removeRule(args) { await run('iptables', ['-D', ...args]).catch(() => {}) }
+async function egressInterfaceFor(targetIp) {
+  if (GCP_EGRESS_INTERFACE) return GCP_EGRESS_INTERFACE
+  const { stdout } = await run('ip', ['route', 'get', targetIp])
+  const match = stdout.match(/\bdev\s+(\S+)/)
+  if (!match) throw new Error(`Could not discover egress interface for ${targetIp}`)
+  return match[1]
 }
 
-async function provisionDockerSession({ id, userId, labId, def, slot, clientIp, clientPrivateKey, clientPublicKey, serverPublicKey, token, expiresAt }) {
-  if (!def.image || typeof def.image !== 'string') throw Object.assign(new Error('Docker lab requires string image'), { statusCode: 500 })
-  const short = id.replace(/-/g, '').slice(0, 10)
-  const networkName = `fortify_${short}`
-  const bridgeName = `fr${short.slice(0, 8)}`
-  const containerName = `target_${short}`
-  const targetSubnet = `172.30.${slot}.0/24`
-  const gateway = `172.30.${slot}.1`
-  const targetIp = `172.30.${slot}.10`
-
-  let networkCreated = false
-  let peerAdded = false
-  try {
-    await run('docker', ['network', 'create', '--driver', 'bridge', '--subnet', targetSubnet, '--gateway', gateway, '--opt', `com.docker.network.bridge.name=${bridgeName}`, networkName])
-    networkCreated = true
-
-    const args = ['run', '-d', '--name', containerName, '--network', networkName, '--ip', targetIp,
-      '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges:true', '--pids-limit', String(def.pids_limit || 256),
-      '--memory', String(def.memory || '768m'), '--cpus', String(def.cpus || '1.0'),
-      '--label', `fortify.session=${id}`, '--label', `fortify.user=${shellSafeId(userId)}`, '--label', `fortify.lab=${shellSafeId(labId)}`]
-    if (def.read_only !== false) args.push('--read-only', '--tmpfs', '/tmp:rw,noexec,nosuid,size=128m', '--tmpfs', '/run:rw,nosuid,size=32m')
-    for (const [k, v] of Object.entries(def.env || {})) args.push('-e', `${k}=${v}`)
-    args.push(def.image)
-    if (Array.isArray(def.command)) args.push(...def.command.map(String))
-    await run('docker', args)
-
-    await addWireGuardPeer(clientPublicKey, clientIp)
-    peerAdded = true
-
-    await run('iptables', ['-I', 'FORWARD', '1', '-i', WG_INTERFACE, '-o', bridgeName, '-s', `${clientIp}/32`, '-d', targetSubnet, '-j', 'ACCEPT'])
-    await run('iptables', ['-I', 'FORWARD', '1', '-i', bridgeName, '-o', WG_INTERFACE, '-s', targetSubnet, '-d', `${clientIp}/32`, '-m', 'conntrack', '--ctstate', 'ESTABLISHED,RELATED', '-j', 'ACCEPT'])
-    await run('iptables', ['-I', 'DOCKER-USER', '1', '-s', targetSubnet, '-d', `${clientIp}/32`, '-j', 'ACCEPT'])
-    await run('iptables', ['-I', 'DOCKER-USER', '2', '-s', targetSubnet, '-j', 'DROP'])
-    await run('iptables', ['-I', 'INPUT', '1', '-i', bridgeName, '-s', targetSubnet, '-j', 'DROP'])
-
-    const config = vpnConfig({ clientPrivateKey, clientIp, targetRoutes: targetSubnet, serverPublicKey })
-    state.sessions[id] = {
-      id, provider: 'docker', status: 'running', userId, labId, slot, networkName, bridgeName, containerName,
-      targetSubnet, targetIp, clientIp, clientPublicKey, token, config, expiresAt, createdAt: new Date().toISOString(),
-    }
-    await saveState()
-
-    return {
-      session_id: id,
-      connection_url: `${PUBLIC_BASE_URL}/vpn/${token}`,
-      vpn_download_url: `${PUBLIC_BASE_URL}/vpn/${token}`,
-      target_address: sessionTargetAddress(def, targetIp),
-      expires_at: expiresAt,
-    }
-  } catch (error) {
-    if (peerAdded) await removeWireGuardPeer(clientPublicKey)
-    await run('docker', ['rm', '-f', containerName]).catch(() => {})
-    if (networkCreated) await run('docker', ['network', 'rm', networkName]).catch(() => {})
-    throw error
+function localResponse(session) {
+  return {
+    session_id: session.id,
+    connection_url: session.targetUrl,
+    vpn_download_url: null,
+    target_address: session.targetUrl,
+    expires_at: session.expiresAt,
+    access_mode: 'direct',
+  }
+}
+function gcpResponse(session) {
+  return {
+    session_id: session.id,
+    connection_url: `${PUBLIC_BASE_URL}/vpn/${session.token}`,
+    vpn_download_url: `${PUBLIC_BASE_URL}/vpn/${session.token}`,
+    target_address: sessionTargetAddress(session.def, session.targetIp),
+    expires_at: session.expiresAt,
+    access_mode: 'vpn',
   }
 }
 
-async function provisionAzureSession({ id, userId, labId, def, slot, clientIp, clientPrivateKey, clientPublicKey, serverPublicKey, token, expiresAt }) {
+async function provisionLocalSession({ id, userId, labId, expiresAt, def }) {
+  const local = await provisionLocalDocker({ sessionId: id, userId, labId, expiresAt, def })
+  const session = { id, provider: 'local_docker', status: 'running', userId, labId, targetUrl: local.targetUrl, expiresAt, createdAt: new Date().toISOString(), local }
+  state.sessions[id] = session
+  await saveState()
+  return localResponse(session)
+}
+
+async function provisionGcpSession({ id, userId, labId, expiresAt, def, slot }) {
+  const clientIp = `10.77.${slot}.2`
+  const token = randomBytes(24).toString('base64url')
+  const { priv: clientPrivateKey, pub: clientPublicKey } = await wgKeyPair()
+  const serverPublicKey = await getServerPublicKey()
+  let gcp = null
   let peerAdded = false
-  let azure = null
   let forwardRulesAdded = false
+  let egressInterface = null
+
   try {
-    azure = await provisionAzureVm({ sessionId: id, userId, labId, expiresAt, def })
-    const targetIp = azure.targetIp
+    gcp = await provisionGcpVm({ sessionId: id, userId, labId, expiresAt, def })
+    const targetIp = gcp.targetIp
     const targetRoute = `${targetIp}/32`
+    egressInterface = await egressInterfaceFor(targetIp)
 
     await addWireGuardPeer(clientPublicKey, clientIp)
     peerAdded = true
 
-    // Azure VM has no public IP. The gateway performs narrow forwarding + SNAT only for this peer -> this target.
-    await run('iptables', ['-I', 'FORWARD', '1', '-i', WG_INTERFACE, '-o', AZURE_EGRESS_INTERFACE, '-s', `${clientIp}/32`, '-d', targetRoute, '-j', 'ACCEPT'])
-    await run('iptables', ['-I', 'FORWARD', '1', '-i', AZURE_EGRESS_INTERFACE, '-o', WG_INTERFACE, '-s', targetRoute, '-d', `${clientIp}/32`, '-m', 'conntrack', '--ctstate', 'ESTABLISHED,RELATED', '-j', 'ACCEPT'])
-    await run('iptables', ['-t', 'nat', '-I', 'POSTROUTING', '1', '-s', `${clientIp}/32`, '-d', targetRoute, '-o', AZURE_EGRESS_INTERFACE, '-j', 'MASQUERADE'])
+    // Per-session forwarding: this WireGuard peer can reach only its own private VM.
+    await run('iptables', ['-I', 'FORWARD', '1', '-i', WG_INTERFACE, '-o', egressInterface, '-s', `${clientIp}/32`, '-d', targetRoute, '-j', 'ACCEPT'])
+    await run('iptables', ['-I', 'FORWARD', '1', '-i', egressInterface, '-o', WG_INTERFACE, '-s', targetRoute, '-d', `${clientIp}/32`, '-m', 'conntrack', '--ctstate', 'ESTABLISHED,RELATED', '-j', 'ACCEPT'])
     forwardRulesAdded = true
 
     const config = vpnConfig({ clientPrivateKey, clientIp, targetRoutes: targetRoute, serverPublicKey })
-    state.sessions[id] = {
-      id, provider: 'azure', status: 'running', userId, labId, slot, targetIp, targetRoute, clientIp, clientPublicKey,
-      token, config, expiresAt, azure, createdAt: new Date().toISOString(),
+    const session = {
+      id, provider: 'gcp', status: 'running', userId, labId, slot, targetIp, targetRoute, clientIp, clientPublicKey,
+      token, config, expiresAt, gcp, egressInterface, def: { scheme: def.scheme || null, port: def.port || null }, createdAt: new Date().toISOString(),
     }
+    state.sessions[id] = session
     await saveState()
-
-    return {
-      session_id: id,
-      connection_url: `${PUBLIC_BASE_URL}/vpn/${token}`,
-      vpn_download_url: `${PUBLIC_BASE_URL}/vpn/${token}`,
-      target_address: sessionTargetAddress(def, targetIp),
-      expires_at: expiresAt,
-    }
+    return gcpResponse(session)
   } catch (error) {
-    if (forwardRulesAdded && azure?.targetIp) {
-      const route = `${azure.targetIp}/32`
-      await removeRule(['FORWARD', '-i', WG_INTERFACE, '-o', AZURE_EGRESS_INTERFACE, '-s', `${clientIp}/32`, '-d', route, '-j', 'ACCEPT'])
-      await removeRule(['FORWARD', '-i', AZURE_EGRESS_INTERFACE, '-o', WG_INTERFACE, '-s', route, '-d', `${clientIp}/32`, '-m', 'conntrack', '--ctstate', 'ESTABLISHED,RELATED', '-j', 'ACCEPT'])
-      await removeRule(['POSTROUTING', '-s', `${clientIp}/32`, '-d', route, '-o', AZURE_EGRESS_INTERFACE, '-j', 'MASQUERADE'], 'nat')
+    if (forwardRulesAdded && gcp?.targetIp && egressInterface) {
+      const route = `${gcp.targetIp}/32`
+      await removeRule(['FORWARD', '-i', WG_INTERFACE, '-o', egressInterface, '-s', `${clientIp}/32`, '-d', route, '-j', 'ACCEPT'])
+      await removeRule(['FORWARD', '-i', egressInterface, '-o', WG_INTERFACE, '-s', route, '-d', `${clientIp}/32`, '-m', 'conntrack', '--ctstate', 'ESTABLISHED,RELATED', '-j', 'ACCEPT'])
     }
     if (peerAdded) await removeWireGuardPeer(clientPublicKey)
-    if (azure) await destroyAzureVm(azure).catch(() => {})
+    if (gcp) await destroyGcpVm(gcp).catch(() => {})
     throw error
   }
 }
@@ -219,26 +210,25 @@ async function provisionSession({ userId, labId, ttlMinutes }) {
   const def = labs[labId]
   if (!def) throw Object.assign(new Error('unknown lab_id'), { statusCode: 404 })
   const type = providerType(def)
-  if (!['docker', 'azure'].includes(type)) throw Object.assign(new Error(`unsupported provider: ${type}`), { statusCode: 500 })
+  if (!['local_docker', 'gcp'].includes(type)) throw Object.assign(new Error(`unsupported provider: ${type}`), { statusCode: 500 })
+
+  const current = runningFor(userId, labId)
+  if (current) return current.provider === 'gcp' ? gcpResponse(current) : localResponse(current)
 
   const key = `${userId}:${labId}`
   if (provisioningKeys.has(key)) throw Object.assign(new Error('session is already provisioning'), { statusCode: 409 })
   provisioningKeys.add(key)
+  let slot = null
 
-  const slot = allocateSlot()
   try {
     const id = randomUUID()
-    const clientIp = `10.77.${slot}.2`
     const ttl = Math.min(MAX_TTL, Math.max(15, Number(ttlMinutes || def.ttl_minutes || 60)))
     const expiresAt = new Date(Date.now() + ttl * 60_000).toISOString()
-    const token = randomBytes(24).toString('base64url')
-    const { priv: clientPrivateKey, pub: clientPublicKey } = await wgKeyPair()
-    const serverPublicKey = await getServerPublicKey()
-
-    if (type === 'azure') {
-      return await provisionAzureSession({ id, userId, labId, def, slot, clientIp, clientPrivateKey, clientPublicKey, serverPublicKey, token, expiresAt })
+    if (type === 'gcp') {
+      slot = allocateSlot()
+      return await provisionGcpSession({ id, userId, labId, expiresAt, def, slot })
     }
-    return await provisionDockerSession({ id, userId, labId, def, slot, clientIp, clientPrivateKey, clientPublicKey, serverPublicKey, token, expiresAt })
+    return await provisionLocalSession({ id, userId, labId, expiresAt, def })
   } finally {
     releaseSlot(slot)
     provisioningKeys.delete(key)
@@ -250,24 +240,16 @@ async function destroySession(id) {
   if (!s) return false
   if (s.status !== 'running') return true
 
-  await removeWireGuardPeer(s.clientPublicKey)
-
-  if (s.provider === 'azure') {
-    const route = s.targetRoute || (s.targetIp ? `${s.targetIp}/32` : null)
-    if (route) {
-      await removeRule(['FORWARD', '-i', WG_INTERFACE, '-o', AZURE_EGRESS_INTERFACE, '-s', `${s.clientIp}/32`, '-d', route, '-j', 'ACCEPT'])
-      await removeRule(['FORWARD', '-i', AZURE_EGRESS_INTERFACE, '-o', WG_INTERFACE, '-s', route, '-d', `${s.clientIp}/32`, '-m', 'conntrack', '--ctstate', 'ESTABLISHED,RELATED', '-j', 'ACCEPT'])
-      await removeRule(['POSTROUTING', '-s', `${s.clientIp}/32`, '-d', route, '-o', AZURE_EGRESS_INTERFACE, '-j', 'MASQUERADE'], 'nat')
+  if (s.provider === 'gcp') {
+    await removeWireGuardPeer(s.clientPublicKey)
+    const iface = s.egressInterface || (s.targetIp ? await egressInterfaceFor(s.targetIp).catch(() => null) : null)
+    if (s.targetRoute && iface) {
+      await removeRule(['FORWARD', '-i', WG_INTERFACE, '-o', iface, '-s', `${s.clientIp}/32`, '-d', s.targetRoute, '-j', 'ACCEPT'])
+      await removeRule(['FORWARD', '-i', iface, '-o', WG_INTERFACE, '-s', s.targetRoute, '-d', `${s.clientIp}/32`, '-m', 'conntrack', '--ctstate', 'ESTABLISHED,RELATED', '-j', 'ACCEPT'])
     }
-    await destroyAzureVm(s.azure).catch(console.error)
+    await destroyGcpVm(s.gcp).catch(error => console.error('[gcp:destroy]', error?.message || error))
   } else {
-    await removeRule(['FORWARD', '-i', WG_INTERFACE, '-o', s.bridgeName, '-s', `${s.clientIp}/32`, '-d', s.targetSubnet, '-j', 'ACCEPT'])
-    await removeRule(['FORWARD', '-i', s.bridgeName, '-o', WG_INTERFACE, '-s', s.targetSubnet, '-d', `${s.clientIp}/32`, '-m', 'conntrack', '--ctstate', 'ESTABLISHED,RELATED', '-j', 'ACCEPT'])
-    await removeRule(['DOCKER-USER', '-s', s.targetSubnet, '-d', `${s.clientIp}/32`, '-j', 'ACCEPT'])
-    await removeRule(['DOCKER-USER', '-s', s.targetSubnet, '-j', 'DROP'])
-    await removeRule(['INPUT', '-i', s.bridgeName, '-s', s.targetSubnet, '-j', 'DROP'])
-    await run('docker', ['rm', '-f', s.containerName]).catch(() => {})
-    await run('docker', ['network', 'rm', s.networkName]).catch(() => {})
+    await destroyLocalDocker(s.local).catch(error => console.error('[local-docker:destroy]', error?.message || error))
   }
 
   s.status = 'stopped'
@@ -280,42 +262,55 @@ async function destroySession(id) {
 
 async function cleanupExpired() {
   for (const s of Object.values(state.sessions)) {
-    if (s.status === 'running' && new Date(s.expiresAt).getTime() <= Date.now()) await destroySession(s.id).catch(console.error)
+    if (s.status === 'running' && new Date(s.expiresAt).getTime() <= Date.now()) await destroySession(s.id).catch(error => console.error('[range:sweep]', error?.message || error))
   }
-  if (Date.now() - lastAzureSweep >= AZURE_SWEEP_INTERVAL_MS) {
-    lastAzureSweep = Date.now()
-    cleanupExpiredAzureResources().catch(error => console.error('Azure orphan sweep failed:', error?.message || error))
+  if (Date.now() - lastGcpSweep >= GCP_SWEEP_INTERVAL_MS && gcpConfigurationStatus().configured) {
+    lastGcpSweep = Date.now()
+    cleanupExpiredGcpResources().catch(error => console.error('[gcp:orphan-sweep]', error?.message || error))
   }
 }
 
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url || '/', PUBLIC_BASE_URL)
+
     if (req.method === 'GET' && url.pathname === '/health') {
       const running = Object.values(state.sessions).filter(s => s.status === 'running')
       return json(res, 200, {
         ok: true,
         sessions: running.length,
-        docker_sessions: running.filter(s => s.provider !== 'azure').length,
-        azure_sessions: running.filter(s => s.provider === 'azure').length,
-        azure: azureConfigurationStatus(),
+        local_sessions: running.filter(s => s.provider === 'local_docker').length,
+        gcp_sessions: running.filter(s => s.provider === 'gcp').length,
+        labs: Object.keys(labs).length,
+        gcp: gcpConfigurationStatus(),
+        local_docker: localDockerConfigurationStatus(),
       })
     }
 
     const vpnMatch = url.pathname.match(/^\/vpn\/([A-Za-z0-9_-]+)$/)
     if (req.method === 'GET' && vpnMatch) {
-      const session = Object.values(state.sessions).find(s => s.status === 'running' && s.token === vpnMatch[1])
+      const session = Object.values(state.sessions).find(s => s.provider === 'gcp' && s.status === 'running' && s.token === vpnMatch[1])
       if (!session || new Date(session.expiresAt).getTime() <= Date.now()) return json(res, 404, { error: 'vpn config expired' })
       const data = Buffer.from(session.config)
-      res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8', 'content-disposition': `attachment; filename="fortify-${session.id.slice(0, 8)}.conf"`, 'content-length': data.length, 'cache-control': 'no-store, private' })
+      res.writeHead(200, {
+        'content-type': 'text/plain; charset=utf-8',
+        'content-disposition': `attachment; filename="fortify-${session.id.slice(0, 8)}.conf"`,
+        'content-length': data.length,
+        'cache-control': 'no-store, private',
+      })
       return res.end(data)
     }
 
-    if (!authorized(req)) return unauthorized(res)
+    if (!authorized(req)) return json(res, 401, { error: 'unauthorized' })
 
-    if (req.method === 'GET' && url.pathname === '/health/azure') {
-      const result = await checkAzureAccess()
-      return json(res, 200, { ...result, config: azureConfigurationStatus() })
+    if (req.method === 'GET' && url.pathname === '/health/gcp') {
+      const result = await checkGcpAccess()
+      return json(res, result.ok ? 200 : 503, { ...result, config: gcpConfigurationStatus() })
+    }
+
+    if (req.method === 'GET' && url.pathname === '/health/local') {
+      const result = await checkLocalDockerAccess()
+      return json(res, result.ok ? 200 : 503, { ...result, config: localDockerConfigurationStatus() })
     }
 
     if (req.method === 'POST' && url.pathname === '/sessions') {
@@ -333,11 +328,12 @@ const server = http.createServer(async (req, res) => {
 
     return json(res, 404, { error: 'not found' })
   } catch (error) {
-    console.error(error)
+    console.error('[range]', error)
     return json(res, error?.statusCode || 500, { error: error?.message || 'internal error' })
   }
 })
 
 await boot()
+await cleanupExpired()
 setInterval(cleanupExpired, 30_000).unref()
-server.listen(PORT, '0.0.0.0', () => console.log(`Fortify Range Provider listening on :${PORT}`))
+server.listen(PORT, LISTEN_HOST, () => console.log(`Fortify Range Provider listening on ${LISTEN_HOST}:${PORT}`))

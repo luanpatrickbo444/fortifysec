@@ -1,0 +1,26 @@
+{
+  "web-juice-01": {
+    "provider": "local_docker",
+    "image": "bkimminich/juice-shop:latest",
+    "scheme": "http",
+    "port": 3000,
+    "ttl_minutes": 60,
+    "memory": "768m",
+    "cpus": "1.0",
+    "pids_limit": 256,
+    "read_only": false,
+    "ready_timeout_seconds": 60
+  },
+  "web-nginx-smoke": {
+    "provider": "local_docker",
+    "image": "nginx:alpine",
+    "scheme": "http",
+    "port": 80,
+    "ttl_minutes": 30,
+    "memory": "256m",
+    "cpus": "0.5",
+    "pids_limit": 128,
+    "read_only": false,
+    "ready_timeout_seconds": 30
+  }
+}

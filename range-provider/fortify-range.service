@@ -1,22 +1,22 @@
 [Unit]
-Description=FortifySec Range Provider (Docker + Azure VM)
-After=network-online.target docker.service wg-quick@wg0.service
-Wants=network-online.target docker.service wg-quick@wg0.service
+Description=FortifySec Range Provider
+After=network-online.target wg-quick@wg0.service
+Wants=network-online.target
 
 [Service]
 Type=simple
-User=root
-WorkingDirectory=/opt/fortify-range
-EnvironmentFile=/opt/fortify-range/.env
-Environment=NODE_ENV=production
-ExecStart=/usr/bin/node /opt/fortify-range/server.mjs
+WorkingDirectory=/opt/fortifysec/range-provider
+EnvironmentFile=/opt/fortifysec/range-provider/.env
+ExecStart=/usr/bin/node /opt/fortifysec/range-provider/server.mjs
 Restart=always
-RestartSec=3
+RestartSec=5
+User=root
+Group=root
 NoNewPrivileges=true
 PrivateTmp=true
-ProtectHome=true
 ProtectSystem=full
-ReadWritePaths=/opt/fortify-range/data /var/run/docker.sock
+ProtectHome=true
+ReadWritePaths=/opt/fortifysec/range-provider/data
 
 [Install]
 WantedBy=multi-user.target
