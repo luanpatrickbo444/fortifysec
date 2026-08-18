@@ -50,7 +50,7 @@ const studentItems = [
 
 const adminContentItems = [
   ['Admin Home', '/admin', LayoutDashboard],
-  ['Cursos & Trilhas', '/admin/content-studio', Layers3],
+  ['Cursos & Trilhas', '/admin?view=courses', Layers3],
   ['Biblioteca de Aulas', '/admin/aulas', BookOpen],
   ['Cyber Labs', '/admin/labs', Boxes],
   ['Challenges', '/admin/desafios', Wrench],
@@ -60,7 +60,7 @@ const adminContentItems = [
 
 const adminQuickItems = [
   ['Admin Home', '/admin', LayoutDashboard],
-  ['Cursos', '/admin/content-studio', Layers3],
+  ['Cursos', '/admin?view=courses', Layers3],
   ['Cyber Labs', '/admin/labs', Boxes],
   ['Usuários', '/admin/usuarios', UsersRound],
   ['Empresas', '/admin/empresas', Building2],
