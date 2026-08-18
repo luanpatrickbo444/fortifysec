@@ -3,10 +3,6 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   async rewrites() {
     return {
-      // Mantém somente o comportamento já existente da home pública.
-      // IMPORTANTE: /admin/cursos NÃO deve ser reescrito.
-      // O App Router deve resolver diretamente app/admin/cursos/page.tsx
-      // e app/admin/cursos/[id]/page.tsx.
       beforeFiles: [
         {
           source: '/',
@@ -17,6 +13,7 @@ const nextConfig: NextConfig = {
       fallback: [],
     }
   },
+
   async headers() {
     return [
       {
