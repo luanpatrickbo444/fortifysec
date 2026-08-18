@@ -1,30 +1,27 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  async rewrites() {
-    return {
-      // Hard guarantee: the public root always renders the Academy content
-      // while keeping the browser URL as `/`.
-      beforeFiles: [
-        {
-          source: '/',
-          destination: '/academy',
-        },
-      ],
-      afterFiles: [],
-      fallback: [],
-    }
-  },
-  async headers() {
+  async redirects() {
     return [
       {
-        source: '/',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-store, max-age=0',
-          },
-        ],
+        source: '/admin/cursos',
+        destination: '/admin/content-studio',
+        permanent: false,
+      },
+      {
+        source: '/admin/cursos/:path*',
+        destination: '/admin/content-studio/:path*',
+        permanent: false,
+      },
+      {
+        source: '/empresa/vagas',
+        destination: '/empresa/job-console',
+        permanent: false,
+      },
+      {
+        source: '/empresa/vagas/:path*',
+        destination: '/empresa/job-console/:path*',
+        permanent: false,
       },
     ]
   },
