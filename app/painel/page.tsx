@@ -1,23 +1,6 @@
-import { BriefcaseBusiness, Github, Linkedin, ShieldCheck, Trophy, UserRound } from 'lucide-react'
-import { SubmitButton } from '@/components/ui/SubmitButton'
-import { requireUser } from '@/lib/auth'
-import { updateProfileAction } from '@/app/actions'
+import { redirect } from 'next/navigation'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
-export default async function Perfil({searchParams}:{searchParams:Promise<{salvo?:string,erro?:string}>}){
- const query=await searchParams;const {supabase,user}=await requireUser();const [profileResult,solvesResult,sessionsResult,rankingResult]=await Promise.all([
-  supabase.from('profiles').select('name,headline,role,xp,github_url,linkedin_url,profile_public,open_to_work').eq('id',user.id).maybeSingle(),
-  supabase.from('challenge_solves').select('id',{count:'exact',head:true}).eq('user_id',user.id),
-  supabase.from('lab_sessions').select('id',{count:'exact',head:true}).eq('user_id',user.id),
-  supabase.rpc('get_leaderboard',{limit_count:100})
- ]);const p=profileResult.data;const ranking=rankingResult.data||[];const solves=solvesResult.count||0;const sessions=sessionsResult.count||0;const initial=(p?.name||user.email||'F').slice(0,1).toUpperCase();const rank=ranking.findIndex((r:any)=>r.id===user.id)+1;const level=Math.floor((p?.xp||0)/1000)+1;const levelProgress=((p?.xp||0)%1000)/10
- return <>
-   <div className="page-head internal-page-head"><div><div className="kicker">IDENTITY / OPERATOR PROFILE</div><h1>Perfil técnico</h1><p>Sua identidade dentro do range e, se você quiser, sua vitrine profissional.</p></div><span className={`pill ${p?.profile_public?'active':'locked'}`}><ShieldCheck size={13}/>{p?.profile_public?'PUBLIC PROFILE':'PRIVATE PROFILE'}</span></div>
-   {query.salvo&&<div className="alert success-alert">Perfil salvo com sucesso.</div>}{query.erro&&<div className="alert danger-alert">Não foi possível salvar o perfil. Verifique os dados e tente novamente.</div>}
-   <section className="operator-profile-card"><div className="operator-avatar">{initial}<span className="operator-level">LVL {level}</span></div><div className="operator-main"><span className="section-index">OPERATOR ID</span><h2>{p?.name||user.email}</h2><p>{p?.headline||'Defina sua headline profissional'}</p><div className="level-progress"><div><span>LEVEL {level}</span><span>{(p?.xp||0)%1000}/1000 XP</span></div><div className="xpbar"><span style={{width:`${levelProgress}%`}}/></div></div></div><div className="operator-status"><span className={`status-orb ${p?.open_to_work?'online':'offline'}`}/><div><small>TALENT STATUS</small><strong>{p?.open_to_work?'OPEN TO WORK':'NOT LISTED'}</strong></div></div></section>
-   <div className="profile-stats-grid"><div className="stat-card accent"><Trophy size={18}/><small>XP TOTAL</small><div className="stat">{p?.xp||0}</div></div><div className="stat-card"><UserRound size={18}/><small>RANK GLOBAL</small><div className="stat">{rank>0?`#${rank}`:'—'}</div></div><div className="stat-card"><ShieldCheck size={18}/><small>CHALLENGES</small><div className="stat">{solves}</div></div><div className="stat-card"><BriefcaseBusiness size={18}/><small>LAB SESSIONS</small><div className="stat">{sessions}</div></div></div>
-   <form action={updateProfileAction} className="card profile-editor"><div className="panel-head"><div><span className="section-index">PROFILE SETTINGS</span><h3>Editar perfil</h3></div><span className="mono tiny-label">SERVER SAVED</span></div><div className="two-col"><div className="field"><label>Nome</label><input name="name" defaultValue={p?.name||''} required/></div><div className="field"><label>Título profissional</label><input name="headline" defaultValue={p?.headline||''} placeholder="Ex.: Pentester | AppSec"/></div><div className="field"><label><Github size={13}/> GitHub</label><input name="github_url" defaultValue={p?.github_url||''} placeholder="https://github.com/..."/></div><div className="field"><label><Linkedin size={13}/> LinkedIn</label><input name="linkedin_url" defaultValue={p?.linkedin_url||''} placeholder="https://linkedin.com/in/..."/></div></div><div className="two-col"><div className="field"><label>Visibilidade do perfil</label><select name="profile_public" defaultValue={String(!!p?.profile_public)}><option value="false">Privado — não listar</option><option value="true">Público — exibir no Talent Network</option></select></div><div className="field"><label>Disponível para oportunidades</label><select name="open_to_work" defaultValue={String(!!p?.open_to_work)}><option value="false">Não</option><option value="true">Sim — Open to Work</option></select></div></div><div className="field"><label>E-mail da conta</label><input disabled value={user.email||''}/></div><div className="form-footer"><p className="muted">Alterações públicas aparecem no Talent Network conforme sua configuração de privacidade.</p><SubmitButton idleLabel="SALVAR PERFIL" pendingLabel="SALVANDO PERFIL..."/></div></form>
- </>
+export default async function LegacyPanelCourse({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  redirect(`/curso/${encodeURIComponent(slug)}`)
 }

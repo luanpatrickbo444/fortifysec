@@ -14,8 +14,30 @@ type SessionState = {
   ready: boolean
 }
 
+function isInternalPath(pathname: string) {
+  return (
+    pathname === '/dashboard' ||
+    pathname === '/painel' ||
+    pathname.startsWith('/painel/') ||
+    pathname.startsWith('/curso/') ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/empresa')
+  )
+}
+
+/**
+ * Important: do not mount the browser Supabase auth observer on internal areas.
+ * The previous implementation rendered null for /admin, /painel and /empresa,
+ * but still executed getUser() + onAuthStateChange(), creating a second auth
+ * refresh path in parallel with the server Proxy.
+ */
 export function SiteHeader() {
   const pathname = usePathname()
+  if (isInternalPath(pathname)) return null
+  return <PublicSiteHeader />
+}
+
+function PublicSiteHeader() {
   const router = useRouter()
   const supabase = useMemo(() => {
     if (!hasSupabasePublicConfig()) return null
@@ -25,25 +47,33 @@ export function SiteHeader() {
       return null
     }
   }, [])
-  const [session, setSession] = useState<SessionState>({ authenticated: false, role: null, company: false, ready: false })
-  const [leaving, setLeaving] = useState(false)
 
-  const internal = pathname === '/dashboard' || pathname === '/painel' || pathname.startsWith('/painel/') || pathname.startsWith('/curso/') || pathname.startsWith('/admin') || pathname.startsWith('/empresa')
+  const [session, setSession] = useState<SessionState>({
+    authenticated: false,
+    role: null,
+    company: false,
+    ready: false,
+  })
+  const [leaving, setLeaving] = useState(false)
 
   useEffect(() => {
     let mounted = true
 
     if (!supabase) {
       setSession({ authenticated: false, role: null, company: false, ready: true })
-      return () => { mounted = false }
+      return () => {
+        mounted = false
+      }
     }
 
-    // Capture the narrowed client so TypeScript can safely use it inside async closures.
     const client = supabase
 
     async function load() {
       try {
-        const { data: { user } } = await client.auth.getUser()
+        const {
+          data: { user },
+        } = await client.auth.getUser()
+
         if (!mounted) return
         if (!user) {
           setSession({ authenticated: false, role: null, company: false, ready: true })
@@ -53,20 +83,39 @@ export function SiteHeader() {
         let role: 'admin' | 'student' = 'student'
         const [{ data: profile }, { data: companyMember }] = await Promise.all([
           client.from('profiles').select('role').eq('id', user.id).maybeSingle(),
-          client.from('company_members').select('company_id').eq('user_id', user.id).limit(1).maybeSingle(),
+          client
+            .from('company_members')
+            .select('company_id')
+            .eq('user_id', user.id)
+            .limit(1)
+            .maybeSingle(),
         ])
+
         if (String(profile?.role) === 'admin') role = 'admin'
-        if (mounted) setSession({ authenticated: true, role, company: Boolean(companyMember), ready: true })
+        if (mounted) {
+          setSession({
+            authenticated: true,
+            role,
+            company: Boolean(companyMember),
+            ready: true,
+          })
+        }
       } catch {
-        if (mounted) setSession({ authenticated: false, role: null, company: false, ready: true })
+        if (mounted) {
+          setSession({ authenticated: false, role: null, company: false, ready: true })
+        }
       }
     }
 
     void load()
+
     const { data: listener } = client.auth.onAuthStateChange((_event, authSession) => {
       if (!mounted) return
-      if (!authSession?.user) setSession({ authenticated: false, role: null, company: false, ready: true })
-      else void load()
+      if (!authSession?.user) {
+        setSession({ authenticated: false, role: null, company: false, ready: true })
+      } else {
+        void load()
+      }
     })
 
     return () => {
@@ -83,10 +132,6 @@ export function SiteHeader() {
     router.push('/')
     router.refresh()
   }
-
-  if (internal) return null
-
-  const panelHref = '/painel'
 
   return (
     <header className="topnav">
@@ -108,13 +153,18 @@ export function SiteHeader() {
             <span className="nav-session-loading">SESSÃO...</span>
           ) : session.authenticated ? (
             <>
-              <Link className="nav-panel-link" href={panelHref}><UserRound size={14}/> PAINEL</Link>
+              <Link className="nav-panel-link" href="/painel">
+                <UserRound size={14} /> PAINEL
+              </Link>
               <button className="nav-logout" type="button" onClick={signOut} disabled={leaving}>
-                <LogOut size={14}/>{leaving ? ' SAINDO...' : ' SAIR'}
+                <LogOut size={14} />
+                {leaving ? ' SAINDO...' : ' SAIR'}
               </button>
             </>
           ) : (
-            <Link className="nav-cta" href="/login">LOGIN</Link>
+            <Link className="nav-cta" href="/login">
+              LOGIN
+            </Link>
           )}
         </nav>
       </div>

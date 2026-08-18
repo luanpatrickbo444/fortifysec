@@ -1,6 +1,9 @@
 import { existsSync } from 'node:fs'
 
 const required = [
+  'app/admin/layout.tsx',
+  'app/painel/layout.tsx',
+  'app/empresa/layout.tsx',
   'app/painel/page.tsx',
   'app/painel/labs/page.tsx',
   'app/painel/desafios/page.tsx',
