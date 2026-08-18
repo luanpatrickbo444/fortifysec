@@ -4,9 +4,6 @@ import { companyLoginAction } from '@/app/actions'
 import { CompanyAuthShell } from '@/components/CompanyAuthShell'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
 export default async function CompanyLogin({searchParams}:{searchParams:Promise<{erro?:string,sucesso?:string}>}){
   const q=await searchParams
 
