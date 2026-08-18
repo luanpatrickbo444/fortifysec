@@ -1,10 +1,10 @@
 {
   "name": "fortifysec-unified",
-  "version": "8.5.8",
+  "version": "8.5.9",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/verify-required-routes.mjs && node scripts/verify-auth-foundation.mjs && node scripts/verify-login-boundary.mjs && next build",
+    "build": "node scripts/verify-required-routes.mjs && node scripts/verify-auth-foundation.mjs && node scripts/verify-login-boundary.mjs && node scripts/verify-public-root.mjs && next build",
     "start": "next start",
     "lint": "eslint ."
   },
