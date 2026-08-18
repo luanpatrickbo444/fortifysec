@@ -8,6 +8,9 @@ const requiredRoutes = [
   'app/painel/ctf/[id]/page.tsx',
   'app/painel/ranking/page.tsx',
   'app/admin/ctf/page.tsx',
+  'app/admin/cursos/page.tsx',
+  'app/admin/cursos/[id]/page.tsx',
+  'app/admin/content-studio/page.tsx',
 ]
 
 const missing = []
