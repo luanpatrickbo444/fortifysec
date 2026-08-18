@@ -39,13 +39,10 @@ const nextConfig: NextConfig = {
     }
   },
 
-  // Authenticated surfaces must never be cached as shared HTML/RSC responses.
+  // Only authenticated surfaces receive strict no-store headers. Public pages
+  // are intentionally left out of this rule to keep their routing path simple.
   async headers() {
     return [
-      { source: '/', headers: noStoreHeaders },
-      { source: '/login', headers: noStoreHeaders },
-      { source: '/cadastro', headers: noStoreHeaders },
-      { source: '/recuperar-senha', headers: noStoreHeaders },
       { source: '/admin/:path*', headers: noStoreHeaders },
       { source: '/painel/:path*', headers: noStoreHeaders },
       { source: '/empresa/:path*', headers: noStoreHeaders },

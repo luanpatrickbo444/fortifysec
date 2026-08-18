@@ -2,20 +2,20 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/proxy'
 
 /**
- * FortifySec network boundary.
+ * Protected-session boundary only.
  *
- * IMPORTANT:
- * Public pages MUST NOT initialize/refresh the Supabase SSR session in Proxy.
- * They need to remain reachable even with stale/invalid auth cookies.
- *
- * Only protected application surfaces pass through updateSession().
+ * Public routes (/login, /academy, /planos, etc.) never enter this Proxy.
+ * Authorization itself remains inside the protected server pages/actions.
  */
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
-  // Login gateways are intentionally public even though they live below
-  // /admin and /empresa, which are otherwise protected matcher prefixes.
-  if (pathname === '/admin/login' || pathname === '/empresa/login') {
+  // Public gateways living below protected prefixes.
+  if (
+    pathname === '/admin/login' ||
+    pathname === '/empresa/login' ||
+    pathname === '/empresa/cadastro'
+  ) {
     return NextResponse.next()
   }
 
