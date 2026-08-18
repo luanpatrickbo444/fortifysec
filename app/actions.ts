@@ -358,30 +358,30 @@ export async function companyUpdateProfileAction(formData:FormData){
 export async function companyCreateJobAction(formData:FormData){
  const {user,company}=await requireCompany()
  const status=String(formData.get('status')||'draft')==='published'?'published':'draft'
- if(status==='published'&&!company.verified)redirect('/empresa/vagas/nova?erro='+encodeURIComponent('A empresa precisa ser validada pela FortifySec antes de publicar vagas. Salve como rascunho enquanto a validação está pendente.'))
- const title=String(formData.get('title')||'').trim();if(title.length<3)redirect('/empresa/vagas/nova?erro='+encodeURIComponent('Informe o título da vaga.'))
- const salaryMin=Number(formData.get('salary_min')||0)||null;const salaryMax=Number(formData.get('salary_max')||0)||null;if(salaryMin!==null&&salaryMax!==null&&salaryMax<salaryMin)redirect('/empresa/vagas/nova?erro='+encodeURIComponent('O salário máximo não pode ser menor que o mínimo.'))
+ if(status==='published'&&!company.verified)redirect('/empresa/job-console/nova?erro='+encodeURIComponent('A empresa precisa ser validada pela FortifySec antes de publicar vagas. Salve como rascunho enquanto a validação está pendente.'))
+ const title=String(formData.get('title')||'').trim();if(title.length<3)redirect('/empresa/job-console/nova?erro='+encodeURIComponent('Informe o título da vaga.'))
+ const salaryMin=Number(formData.get('salary_min')||0)||null;const salaryMax=Number(formData.get('salary_max')||0)||null;if(salaryMin!==null&&salaryMax!==null&&salaryMax<salaryMin)redirect('/empresa/job-console/nova?erro='+encodeURIComponent('O salário máximo não pode ser menor que o mínimo.'))
  const admin=createAdminClient();const slug=`${safeSlug(company.slug)}-${safeSlug(title)}-${randomUUID().slice(0,6)}`
  const payload={company_id:company.id,created_by:user.id,title,slug,description:String(formData.get('description')||'').trim(),requirements:String(formData.get('requirements')||'').trim(),location:String(formData.get('location')||'').trim(),work_mode:String(formData.get('work_mode')||'remote'),employment_type:String(formData.get('employment_type')||'full_time'),seniority:String(formData.get('seniority')||'').trim(),salary_min:salaryMin,salary_max:salaryMax,status,published_at:status==='published'?new Date().toISOString():null}
- const {error}=await admin.from('jobs').insert(payload);if(error)redirect('/empresa/vagas/nova?erro='+encodeURIComponent(error.message));revalidatePath('/empresa');revalidatePath('/empresa/vagas');revalidatePath('/vagas');redirect('/empresa/vagas?criada=1')
+ const {error}=await admin.from('jobs').insert(payload);if(error)redirect('/empresa/job-console/nova?erro='+encodeURIComponent(error.message));revalidatePath('/empresa');revalidatePath('/empresa/job-console');revalidatePath('/vagas');redirect('/empresa/job-console?criada=1')
 }
 
 export async function companySetJobStatusAction(formData:FormData){
- const {company}=await requireCompany();const jobId=String(formData.get('job_id')||'');const status=String(formData.get('status')||'draft');if(!['draft','published','closed'].includes(status))return;if(status==='published'&&!company.verified)redirect('/empresa/vagas?erro=validacao');const admin=createAdminClient();await admin.from('jobs').update({status,published_at:status==='published'?new Date().toISOString():null}).eq('id',jobId).eq('company_id',company.id);revalidatePath('/empresa');revalidatePath('/empresa/vagas');revalidatePath('/vagas')
+ const {company}=await requireCompany();const jobId=String(formData.get('job_id')||'');const status=String(formData.get('status')||'draft');if(!['draft','published','closed'].includes(status))return;if(status==='published'&&!company.verified)redirect('/empresa/job-console?erro=validacao');const admin=createAdminClient();await admin.from('jobs').update({status,published_at:status==='published'?new Date().toISOString():null}).eq('id',jobId).eq('company_id',company.id);revalidatePath('/empresa');revalidatePath('/empresa/job-console');revalidatePath('/vagas')
 }
 
 export async function companyUpdateJobAction(formData:FormData){
  const {company}=await requireCompany()
  const jobId=String(formData.get('job_id')||'')
- if(!jobId)redirect('/empresa/vagas')
+ if(!jobId)redirect('/empresa/job-console')
  const title=String(formData.get('title')||'').trim()
- if(title.length<3)redirect(`/empresa/vagas/${jobId}/editar?erro=`+encodeURIComponent('Informe o título da vaga.'))
+ if(title.length<3)redirect(`/empresa/job-console/${jobId}/editar?erro=`+encodeURIComponent('Informe o título da vaga.'))
  const salaryMin=Number(formData.get('salary_min')||0)||null
  const salaryMax=Number(formData.get('salary_max')||0)||null
- if(salaryMin!==null&&salaryMax!==null&&salaryMax<salaryMin)redirect(`/empresa/vagas/${jobId}/editar?erro=`+encodeURIComponent('O salário máximo não pode ser menor que o mínimo.'))
+ if(salaryMin!==null&&salaryMax!==null&&salaryMax<salaryMin)redirect(`/empresa/job-console/${jobId}/editar?erro=`+encodeURIComponent('O salário máximo não pode ser menor que o mínimo.'))
  const requestedStatus=String(formData.get('status')||'draft')
  const status=requestedStatus==='published'?'published':requestedStatus==='closed'?'closed':'draft'
- if(status==='published'&&!company.verified)redirect(`/empresa/vagas/${jobId}/editar?erro=`+encodeURIComponent('A empresa precisa ser validada antes de publicar vagas.'))
+ if(status==='published'&&!company.verified)redirect(`/empresa/job-console/${jobId}/editar?erro=`+encodeURIComponent('A empresa precisa ser validada antes de publicar vagas.'))
  const admin=createAdminClient()
  const payload={
   title,
@@ -398,9 +398,9 @@ export async function companyUpdateJobAction(formData:FormData){
   updated_at:new Date().toISOString(),
  }
  const {error}=await admin.from('jobs').update(payload).eq('id',jobId).eq('company_id',company.id)
- if(error)redirect(`/empresa/vagas/${jobId}/editar?erro=`+encodeURIComponent(error.message))
- revalidatePath('/empresa');revalidatePath('/empresa/vagas');revalidatePath(`/empresa/vagas/${jobId}/editar`);revalidatePath('/vagas')
- redirect('/empresa/vagas?salvo=1')
+ if(error)redirect(`/empresa/job-console/${jobId}/editar?erro=`+encodeURIComponent(error.message))
+ revalidatePath('/empresa');revalidatePath('/empresa/job-console');revalidatePath(`/empresa/job-console/${jobId}/editar`);revalidatePath('/vagas')
+ redirect('/empresa/job-console?salvo=1')
 }
 
 export async function companySaveTalentAction(formData:FormData){

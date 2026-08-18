@@ -33,6 +33,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(target, 307)
   }
 
+  // `/empresa/vagas` is retained as a compatibility URL only.
+  // The canonical employer jobs route is `/empresa/job-console`.
+  // A hard HTTP redirect avoids the production App Router/RSC 200→404
+  // transition observed on the legacy `vagas` segment.
+  if (pathname === '/empresa/vagas' || pathname.startsWith('/empresa/vagas/')) {
+    const target = request.nextUrl.clone()
+    target.pathname = pathname.replace('/empresa/vagas', '/empresa/job-console')
+    return NextResponse.redirect(target, 307)
+  }
+
   let response = NextResponse.next({ request })
 
   // Login/cadastro/recovery pages are always reachable.

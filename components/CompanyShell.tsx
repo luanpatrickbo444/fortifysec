@@ -16,7 +16,7 @@ export function CompanyShell({
 }){
   const items=[
     ['Overview','/empresa',Gauge],
-    ['Vagas','/empresa/vagas',BriefcaseBusiness],
+    ['Vagas','/empresa/job-console',BriefcaseBusiness],
     ['Talent Search','/empresa/talentos',Search],
     ['Candidatos','/empresa/candidatos',UsersRound],
   ] as const

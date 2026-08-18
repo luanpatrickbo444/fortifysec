@@ -12,6 +12,11 @@ const required = [
   'app/admin/content-studio/[id]/page.tsx',
   'app/admin/cursos/page.tsx',
   'app/admin/cursos/[id]/page.tsx',
+  'app/empresa/page.tsx',
+  'app/empresa/job-console/page.tsx',
+  'app/empresa/job-console/nova/page.tsx',
+  'app/empresa/job-console/[id]/editar/page.tsx',
+  'app/empresa/vagas/page.tsx',
 ]
 const missing = required.filter((file) => !existsSync(file))
 if (missing.length) {

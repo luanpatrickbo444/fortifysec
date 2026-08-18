@@ -38,7 +38,7 @@ export default async function CompanyHome({searchParams}:{searchParams:Promise<{
           <h1>Olá, {company.name}.</h1>
           <p>Gerencie sua operação de recrutamento e encontre talentos validados pela atividade prática na FortifySec.</p>
           <div className="hero-actions employer-hero-actions">
-            <Link className={`btn ${company.verified?'':'secondary'}`} href="/empresa/vagas/nova"><BriefcaseBusiness size={15}/> NOVA VAGA</Link>
+            <Link prefetch={false} className={`btn ${company.verified?'':'secondary'}`} href="/empresa/job-console/nova"><BriefcaseBusiness size={15}/> NOVA VAGA</Link>
             <Link className="btn secondary" href="/empresa/talentos"><Search size={15}/> BUSCAR TALENTOS</Link>
           </div>
         </div>
@@ -54,7 +54,7 @@ export default async function CompanyHome({searchParams}:{searchParams:Promise<{
       {!company.verified&&<div className="alert employer-review-alert"><Clock3 size={15}/> Sua empresa está cadastrada e em análise. Você pode preparar vagas em rascunho; a publicação fica bloqueada até a validação da FortifySec.</div>}
 
       <section className="employer-metrics-grid">
-        <Link href="/empresa/vagas" className="employer-metric-card">
+        <Link prefetch={false} href="/empresa/job-console" className="employer-metric-card">
           <BriefcaseBusiness size={18}/><small>VAGAS ATIVAS</small><strong>{publishedJobs}</strong><span>{allJobs.length} no total</span>
         </Link>
         <Link href="/empresa/candidatos" className="employer-metric-card">
@@ -90,7 +90,7 @@ export default async function CompanyHome({searchParams}:{searchParams:Promise<{
 
         <div className="card employer-panel employer-quick-panel">
           <div className="employer-panel-head"><div><span className="section-index">QUICK ACTIONS</span><h2>Ações rápidas</h2></div></div>
-          <Link href="/empresa/vagas/nova"><BriefcaseBusiness size={18}/><div><strong>Publicar uma vaga</strong><span>Crie uma nova oportunidade para a rede.</span></div><ArrowRight size={15}/></Link>
+          <Link prefetch={false} href="/empresa/job-console/nova"><BriefcaseBusiness size={18}/><div><strong>Publicar uma vaga</strong><span>Crie uma nova oportunidade para a rede.</span></div><ArrowRight size={15}/></Link>
           <Link href="/empresa/talentos"><Search size={18}/><div><strong>Encontrar talentos</strong><span>Filtre por XP, headline e disponibilidade.</span></div><ArrowRight size={15}/></Link>
           <Link href="/empresa/candidatos"><UsersRound size={18}/><div><strong>Revisar candidatos</strong><span>Atualize o estágio de cada candidatura.</span></div><ArrowRight size={15}/></Link>
         </div>
