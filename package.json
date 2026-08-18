@@ -1,10 +1,10 @@
 {
   "name": "fortifysec-unified",
-  "version": "8.2.1",
+  "version": "8.5.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/verify-required-routes.mjs && next build",
     "start": "next start",
     "lint": "eslint ."
   },
