@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 import { Flag, RadioTower, Swords, Trophy } from 'lucide-react'
 import { DifficultyMeter } from '@/components/ui/DifficultyMeter'
 import { requireUser } from '@/lib/auth'
@@ -8,23 +7,83 @@ import { createAdminClient } from '@/lib/supabase/admin'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+function EventUnavailable({
+  title,
+  message,
+}: {
+  title: string
+  message: string
+}) {
+  return (
+    <>
+      <div className="page-head internal-page-head">
+        <div>
+          <div className="kicker">COMPETE / CTF</div>
+          <h1>{title}</h1>
+          <p>{message}</p>
+        </div>
+        <span className="pill">CTF</span>
+      </div>
+      <div className="empty-state">
+        <p>{message}</p>
+        <a className="btn secondary" href="/painel/ctf">VOLTAR AOS CTFs →</a>
+      </div>
+    </>
+  )
+}
+
 export default async function CtfEventPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { user } = await requireUser()
-  const admin = createAdminClient()
 
-  const [eventResult, participantResult, linksResult, rankingResult, solvesResult] = await Promise.all([
-    admin
-      .from('ctf_events')
-      .select('id,title,description,starts_at,ends_at,prize_text,status')
-      .eq('id', id)
-      .maybeSingle(),
-    admin
-      .from('ctf_participants')
-      .select('event_id,joined_at')
-      .eq('event_id', id)
-      .eq('user_id', user.id)
-      .maybeSingle(),
+  // O detalhe nunca redireciona para o próprio hub. Um ID antigo/inválido deve
+  // renderizar um estado estável, evitando ciclos do App Router/RSC.
+  let admin
+  try {
+    admin = createAdminClient()
+  } catch {
+    return (
+      <EventUnavailable
+        title="CTF temporariamente indisponível"
+        message="Não foi possível acessar o serviço de CTF agora."
+      />
+    )
+  }
+
+  // Primeiro confirma que o evento realmente existe. Só depois carregamos o
+  // restante do dashboard do CTF.
+  const { data: event, error: eventError } = await admin
+    .from('ctf_events')
+    .select('id,title,description,starts_at,ends_at,prize_text,status')
+    .eq('id', id)
+    .maybeSingle()
+
+  if (eventError || !event) {
+    return (
+      <EventUnavailable
+        title="CTF não encontrado"
+        message="Este evento não existe mais ou ainda não foi publicado."
+      />
+    )
+  }
+
+  const { data: participant, error: participantError } = await admin
+    .from('ctf_participants')
+    .select('event_id,joined_at')
+    .eq('event_id', id)
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (participantError || !participant) {
+    return (
+      <EventUnavailable
+        title={event.title}
+        message="Você ainda não está inscrito neste CTF. Volte ao hub para entrar no evento."
+      />
+    )
+  }
+
+  const [linksResult, rankingResult, solvesResult] = await Promise.all([
     admin
       .from('ctf_event_challenges')
       .select('event_id,challenge_id,position,points_override,challenges(id,title,slug,category,difficulty,xp_reward,published,lab_id)')
@@ -37,13 +96,6 @@ export default async function CtfEventPage({ params }: { params: Promise<{ id: s
       .eq('event_id', id)
       .eq('user_id', user.id),
   ])
-
-  const event = eventResult.data
-  const participant = participantResult.data
-
-  // Never expose a framework 404 for a CTF navigation/access problem.
-  if (!event) redirect('/painel/ctf?erro=evento')
-  if (!participant) redirect('/painel/ctf?erro=inscricao')
 
   const links = (linksResult.data || []).filter((link: any) => {
     const challenge = Array.isArray(link.challenges) ? link.challenges[0] : link.challenges
