@@ -18,7 +18,12 @@ export async function requireUser() {
 }
 
 export async function requireAdmin() {
-  const { user } = await requireUser()
+  // Admin has its own gateway. Do not call requireUser() here because that
+  // function redirects anonymous users to /login (student gateway). Keeping
+  // the gateways separate prevents cross-area redirect cycles.
+  const sessionClient = await createClient()
+  const { data: { user } } = await sessionClient.auth.getUser()
+  if (!user) redirect('/admin/login')
 
   // A autorização administrativa é conferida server-side com a chave privada.
   // Isso evita depender de RLS/policies legadas para descobrir a role do usuário.

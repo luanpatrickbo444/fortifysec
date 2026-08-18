@@ -43,6 +43,9 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: '/', headers: noStoreHeaders },
+      { source: '/login', headers: noStoreHeaders },
+      { source: '/cadastro', headers: noStoreHeaders },
+      { source: '/recuperar-senha', headers: noStoreHeaders },
       { source: '/admin/:path*', headers: noStoreHeaders },
       { source: '/painel/:path*', headers: noStoreHeaders },
       { source: '/empresa/:path*', headers: noStoreHeaders },
