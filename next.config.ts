@@ -1,18 +1,12 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  async redirects() {
-    return [
-      { source: '/admin/cursos', destination: '/admin?view=courses', permanent: false },
-      { source: '/admin/content-studio', destination: '/admin?view=courses', permanent: false },
-      { source: '/admin/cursos/:id', destination: '/admin?view=course&course=:id', permanent: false },
-      { source: '/admin/content-studio/:id', destination: '/admin?view=course&course=:id', permanent: false },
-    ]
-  },
   async rewrites() {
     return {
-      // Hard guarantee: the public root always renders the Academy content
-      // while keeping the browser URL as `/`.
+      // Mantém somente o comportamento já existente da home pública.
+      // IMPORTANTE: /admin/cursos NÃO deve ser reescrito.
+      // O App Router deve resolver diretamente app/admin/cursos/page.tsx
+      // e app/admin/cursos/[id]/page.tsx.
       beforeFiles: [
         {
           source: '/',

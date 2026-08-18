@@ -1,6 +1,6 @@
 'use client'
 
-import { usePathname, useSearchParams } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import type { LucideIcon } from 'lucide-react'
 
 export function DashboardNav({
@@ -11,18 +11,12 @@ export function DashboardNav({
   admin?: boolean
 }) {
   const pathname = usePathname()
-  const searchParams = useSearchParams()
 
   return (
     <nav className={`side-nav${admin ? ' admin-nav' : ''}`}>
       {items.map(([label, href, Icon]) => {
-        const [hrefPath, hrefQuery = ''] = href.split('?')
-        const requestedView = new URLSearchParams(hrefQuery).get('view')
-        const currentView = searchParams.get('view')
-        const rootRoute = hrefPath === '/painel' || hrefPath === '/admin'
-        const active = requestedView
-          ? pathname === hrefPath && currentView === requestedView
-          : (pathname === hrefPath && (!rootRoute || !currentView)) || (!rootRoute && pathname.startsWith(`${hrefPath}/`))
+        const rootRoute = href === '/painel' || href === '/admin'
+        const active = pathname === href || (!rootRoute && pathname.startsWith(`${href}/`))
         const content = (
           <>
             <Icon size={17} />

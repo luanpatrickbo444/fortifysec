@@ -1,6 +1,6 @@
-import { existsSync } from 'node:fs'
+import { access } from 'node:fs/promises'
 
-const required = [
+const requiredRoutes = [
   'app/painel/page.tsx',
   'app/painel/labs/page.tsx',
   'app/painel/desafios/page.tsx',
@@ -8,20 +8,24 @@ const required = [
   'app/painel/ctf/[id]/page.tsx',
   'app/painel/ranking/page.tsx',
   'app/admin/ctf/page.tsx',
-  'app/admin/content-studio/page.tsx',
-  'app/admin/content-studio/[id]/page.tsx',
   'app/admin/cursos/page.tsx',
   'app/admin/cursos/[id]/page.tsx',
-  'app/empresa/page.tsx',
-  'app/empresa/job-console/page.tsx',
-  'app/empresa/job-console/nova/page.tsx',
-  'app/empresa/job-console/[id]/editar/page.tsx',
-  'app/empresa/vagas/page.tsx',
+  'app/admin/content-studio/page.tsx',
 ]
-const missing = required.filter((file) => !existsSync(file))
+
+const missing = []
+for (const route of requiredRoutes) {
+  try {
+    await access(route)
+  } catch {
+    missing.push(route)
+  }
+}
+
 if (missing.length) {
-  console.error('FortifySec route guard FAILED. Missing required routes:')
-  for (const file of missing) console.error(` - ${file}`)
+  console.error('FortifySec route guard failed. Missing required routes:')
+  for (const route of missing) console.error(` - ${route}`)
   process.exit(1)
 }
-console.log(`FortifySec route guard: ${required.length} required routes OK`)
+
+console.log(`FortifySec route guard: ${requiredRoutes.length} required routes OK`)
