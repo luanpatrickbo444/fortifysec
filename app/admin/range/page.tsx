@@ -73,11 +73,11 @@ export default async function AdminRange({
       {query.flag && <div className="alert success-alert">Modo de flag dinâmica atualizado.</div>}
       {migrationMissing && <div className="alert danger-alert">A migration 009_cyber_range_hardening_additive.sql ainda não está aplicada ou o schema ainda não foi recarregado.</div>}
 
-      <section className="stats-grid">
-        <article className="stat-card"><Gauge size={18}/><span>Sessões</span><strong>{Number((stats as any).running ?? sessions.length)}</strong><small>ativas agora</small></article>
-        <article className="stat-card"><Activity size={18}/><span>Capacidade</span><strong>{Number((stats as any).capacity ?? 0)}</strong><small>limite do provider</small></article>
-        <article className="stat-card"><TimerReset size={18}/><span>Disponíveis</span><strong>{Number((stats as any).available ?? 0)}</strong><small>slots livres</small></article>
-        <article className="stat-card"><ShieldCheck size={18}/><span>Flag dinâmica</span><strong>{(stats as any).dynamic_flags ? 'ON' : 'OFF'}</strong><small>provider</small></article>
+      <section className="dashboard-grid">
+        <article className="stat-card"><Gauge size={18}/><small>SESSÕES ATIVAS</small><div className="stat">{Number((stats as any).running ?? sessions.length)}</div><small>ativas agora</small></article>
+        <article className="stat-card"><Activity size={18}/><small>CAPACIDADE</small><div className="stat">{Number((stats as any).capacity ?? 0)}</div><small>limite do provider</small></article>
+        <article className="stat-card"><TimerReset size={18}/><small>DISPONÍVEIS</small><div className="stat">{Number((stats as any).available ?? 0)}</div><small>slots livres</small></article>
+        <article className="stat-card"><ShieldCheck size={18}/><small>FLAG DINÂMICA</small><div className="stat">{(stats as any).dynamic_flags ? 'ON' : 'OFF'}</div><small>provider</small></article>
       </section>
 
       {!stats.ok && <div className="alert danger-alert">Range Provider: {(stats as any).error || 'indisponível'}</div>}
@@ -113,7 +113,7 @@ export default async function AdminRange({
       <div className="two-col">
         <section className="card">
           <div className="panel-head"><div><span className="section-index">PLAN LIMITS</span><h3>Quotas por plano</h3></div></div>
-          {(limits as any[]).map((l: any) => <form key={l.code} action="/api/admin/range/settings" method="post" className="card compact-card">
+          {(limits as any[]).map((l: any) => <form key={l.code} action="/api/admin/range/settings" method="post" className="card">
             <input type="hidden" name="code" value={l.code}/>
             <strong>{String(l.code).toUpperCase()}</strong>
             <div className="three-col">
@@ -127,7 +127,7 @@ export default async function AdminRange({
 
         <section className="card">
           <div className="panel-head"><div><span className="section-index">CTF DEFENSE</span><h3>Anti-cheat e freeze</h3></div></div>
-          {(events as any[]).map((e: any) => <form key={e.id} action="/api/admin/range/ctf-settings" method="post" className="card compact-card">
+          {(events as any[]).map((e: any) => <form key={e.id} action="/api/admin/range/ctf-settings" method="post" className="card">
             <input type="hidden" name="event_id" value={e.id}/>
             <strong>{e.title}</strong><small>{String(e.status).toUpperCase()}</small>
             <div className="two-col">

@@ -1,0 +1,32 @@
+FortifySec V10 - validação local antes da entrega
+Data: 2026-08-20
+
+RESULTADOS
+- Route guard: PASS (10 required routes OK)
+- TS/TSX: 90 arquivos analisados por TypeScript transpileModule, 0 erros de sintaxe/transpilação
+- JS/MJS: node --check em scripts, range-provider-safe-v2 e range-gateway-safe: PASS
+- Classes CSS usadas nas novas páginas /admin/range e /painel/conquistas: 28 verificadas; 0 seletores ausentes após ajuste
+- Arquivos existentes alterados em relação à base estável reconstruída: 0
+- Arquivos críticos preservados byte-a-byte: PASS
+  app/globals.css
+  app/layout.tsx
+  components/DashboardShell.tsx
+  app/actions.ts
+  app/admin/ctf/page.tsx
+  app/admin/desafios/page.tsx
+  package.json
+  postcss.config.mjs
+  next.config.ts
+  proxy.ts
+
+AJUSTE FEITO DURANTE A VALIDAÇÃO
+- As novas páginas usavam classes 'stats-grid' e 'compact-card', inexistentes no CSS estável.
+- Foram removidas/substituídas somente nas páginas NOVAS, sem tocar no CSS:
+  stats-grid -> dashboard-grid
+  compact-card -> card
+- Cards de métricas passaram a usar o padrão visual já existente: small + div.stat.
+
+LIMITAÇÃO DO AMBIENTE
+- O npm registry não resolve DNS neste sandbox (registry.npmjs.org: Could not resolve host).
+- Por isso npm install / next build completo não pode ser executado aqui.
+- O build final ainda deve ser executado na máquina do usuário ou na Vercel antes de promover mudanças.

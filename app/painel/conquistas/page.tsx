@@ -24,10 +24,10 @@ export default async function Conquistas() {
 
     {missing && <div className="alert danger-alert">As tabelas de Skills ainda não estão disponíveis. O administrador precisa aplicar a migration do Cyber Range.</div>}
 
-    <section className="stats-grid">
-      <article className="stat-card"><ShieldCheck size={18}/><span>Skills verificadas</span><strong>{skills.length}</strong><small>áreas com XP técnico</small></article>
-      <article className="stat-card"><Award size={18}/><span>Badges</span><strong>{badges.length}</strong><small>conquistas liberadas</small></article>
-      <article className="stat-card"><Sparkles size={18}/><span>Skill XP</span><strong>{(skills as any[]).reduce((sum: number, s: any) => sum + Number(s.xp || 0), 0)}</strong><small>progresso verificado</small></article>
+    <section className="dashboard-grid">
+      <article className="stat-card"><ShieldCheck size={18}/><small>SKILLS VERIFICADAS</small><div className="stat">{skills.length}</div><small>áreas com XP técnico</small></article>
+      <article className="stat-card"><Award size={18}/><small>BADGES</small><div className="stat">{badges.length}</div><small>conquistas liberadas</small></article>
+      <article className="stat-card"><Sparkles size={18}/><small>SKILL XP</small><div className="stat">{(skills as any[]).reduce((sum: number, s: any) => sum + Number(s.xp || 0), 0)}</div><small>progresso verificado</small></article>
     </section>
 
     <div className="two-col">
