@@ -1,148 +1,34 @@
 import Link from 'next/link'
-import { BookOpenCheck, Film, Layers3, PlusCircle, Zap } from 'lucide-react'
+import { Activity, BookOpen, Boxes, Building2, CreditCard, Flag, GraduationCap, Layers3, RadioTower, Settings, ShieldCheck, Swords, UsersRound } from 'lucide-react'
 import { DashboardShell } from '@/components/DashboardShell'
-import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireAdmin } from '@/lib/auth'
-import { adminCreateLessonAction, adminToggleLessonAction } from '@/app/actions'
 
-export default async function AdminLessons({
-  searchParams,
-}: {
-  searchParams: Promise<{ criada?: string; erro?: string }>
-}) {
-  const query = await searchParams
-  const { supabase } = await requireAdmin()
-  const [{ data: courses }, { data: modules }, { data: lessons }] = await Promise.all([
-    supabase.from('courses').select('id,title,slug').order('title'),
-    supabase.from('course_modules').select('id,course_id,title,position').order('course_id').order('position'),
-    supabase
-      .from('lessons')
-      .select('id,title,summary,position,xp_reward,video_url,published,course_id,module_id,courses(title,slug)')
-      .order('course_id')
-      .order('position'),
-  ])
-
-  const moduleMap = new Map((modules || []).map((m: any) => [m.id, m]))
-  const modulesByCourse = new Map<string, any[]>()
-  ;(modules || []).forEach((m: any) => {
-    modulesByCourse.set(m.course_id, [...(modulesByCourse.get(m.course_id) || []), m])
-  })
-
-  return (
-    <DashboardShell admin>
-      <div className="page-head internal-page-head">
-        <div>
-          <div className="kicker">ADMIN / CONTENT LIBRARY</div>
-          <h1>Biblioteca de aulas</h1>
-          <p>Publique uma aula rapidamente ou abra o Studio do curso para trabalhar a grade completa.</p>
-        </div>
-        <div className="hero-actions">
-          <span className="pill active"><BookOpenCheck size={13}/>{(lessons || []).length} AULAS</span>
-          <a className="btn secondary" href="/admin/cursos"><Layers3 size={14}/> STUDIOS DE CURSO</a>
-        </div>
-      </div>
-
-      {query.criada && <div className="alert success-alert">Aula publicada com sucesso.</div>}
-      {query.erro && <div className="alert danger-alert">{query.erro}</div>}
-
-      <div className="admin-studio-grid">
-        <form action={adminCreateLessonAction} className="card content-studio">
-          <div className="studio-header">
-            <div>
-              <span className="section-index">QUICK PUBLISH</span>
-              <h2>Nova aula</h2>
-              <p>Escolha curso, módulo e conteúdo. Deixe a posição vazia para usar a próxima automaticamente.</p>
-            </div>
-            <PlusCircle size={27}/>
-          </div>
-
-          <input type="hidden" name="return_to" value="/admin/aulas"/>
-
-          <div className="two-col">
-            <div className="field">
-              <label>Curso</label>
-              <select name="course_id" required>
-                <option value="">Selecione</option>
-                {(courses || []).map((c: any) => <option key={c.id} value={c.id}>{c.title}</option>)}
-              </select>
-            </div>
-
-            <div className="field">
-              <label>Módulo</label>
-              <select name="module_id">
-                <option value="">Sem módulo</option>
-                {(courses || []).map((c: any) => {
-                  const list = modulesByCourse.get(c.id) || []
-                  if (!list.length) return null
-                  return (
-                    <optgroup key={c.id} label={c.title}>
-                      {list.map((m: any) => <option key={m.id} value={m.id}>{m.title}</option>)}
-                    </optgroup>
-                  )
-                })}
-              </select>
-            </div>
-
-            <div className="field"><label>Título</label><input name="title" required/></div>
-            <div className="field"><label>Posição</label><input name="position" type="number" min="1" placeholder="Automática"/></div>
-            <div className="field"><label><Zap size={12}/> XP</label><input name="xp_reward" type="number" min="0" defaultValue="10"/></div>
-            <div className="field">
-              <label>Status</label>
-              <select name="published" defaultValue="true">
-                <option value="true">Publicada</option>
-                <option value="false">Rascunho</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="field"><label>Resumo</label><input name="summary"/></div>
-          <div className="field"><label><Film size={12}/> URL do vídeo</label><input name="video_url"/></div>
-          <div className="field"><label>Conteúdo</label><textarea name="content" rows={9}/></div>
-          <SubmitButton idleLabel="PUBLICAR AULA →" pendingLabel="PUBLICANDO AULA..."/>
-        </form>
-
-        <aside className="card studio-guide">
-          <span className="section-index">WORKFLOW</span>
-          <h3>Fluxo recomendado</h3>
-          <div className="guide-step"><strong>01</strong><div><b>Crie o curso</b><span>Defina nome, descrição, preço e status.</span></div></div>
-          <div className="guide-step"><strong>02</strong><div><b>Abra o Course Studio</b><span>Crie módulos e organize a sequência.</span></div></div>
-          <div className="guide-step"><strong>03</strong><div><b>Publique as aulas</b><span>Associe cada aula ao módulo correto.</span></div></div>
-          <div className="guide-step"><strong>04</strong><div><b>Revise a experiência</b><span>Abra o curso antes de anunciar a trilha.</span></div></div>
-        </aside>
-      </div>
-
-      <section className="card lesson-library">
-        <div className="panel-head">
-          <div><span className="section-index">ALL CONTENT</span><h3>Aulas da plataforma</h3></div>
-          <span className="mono tiny-label">{(courses || []).length} CURSOS</span>
-        </div>
-        <div className="tablewrap">
-          <table>
-            <thead><tr><th>Curso</th><th>Módulo</th><th>#</th><th>Aula</th><th>Mídia</th><th>XP</th><th>Status</th><th>Ação</th></tr></thead>
-            <tbody>
-              {(lessons || []).map((l: any) => (
-                <tr key={l.id}>
-                  <td><Link href={`/admin/cursos/${l.course_id}`}><strong>{l.courses?.title || '—'}</strong></Link></td>
-                  <td>{moduleMap.get(l.module_id)?.title || '—'}</td>
-                  <td className="rank">{String(l.position).padStart(2, '0')}</td>
-                  <td>{l.title}</td>
-                  <td>{l.video_url ? <span className="pill active"><Film size={11}/> VÍDEO</span> : <span className="pill">TEXTO</span>}</td>
-                  <td><span className="xp-score">+{l.xp_reward}</span></td>
-                  <td><span className={`pill ${l.published ? 'active' : 'locked'}`}>{l.published ? 'PUBLICADA' : 'RASCUNHO'}</span></td>
-                  <td>
-                    <form action={adminToggleLessonAction}>
-                      <input type="hidden" name="lesson_id" value={l.id}/>
-                      <input type="hidden" name="published" value={String(l.published)}/>
-                      <input type="hidden" name="return_to" value="/admin/aulas"/>
-                      <SubmitButton className="btn secondary small" idleLabel={l.published ? 'OCULTAR' : 'PUBLICAR'} pendingLabel="..."/>
-                    </form>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </DashboardShell>
-  )
+export default async function AdminHome(){
+ const {supabase,profile}=await requireAdmin()
+ const [users,courses,lessons,enrollments,labs,challenges,events,payments,companies,recentUsers,recentPayments]=await Promise.all([
+  supabase.from('profiles').select('id',{count:'exact',head:true}),
+  supabase.from('courses').select('id',{count:'exact',head:true}),
+  supabase.from('lessons').select('id',{count:'exact',head:true}),
+  supabase.from('enrollments').select('id',{count:'exact',head:true}).eq('status','active'),
+  supabase.from('labs').select('id',{count:'exact',head:true}),
+  supabase.from('challenges').select('id',{count:'exact',head:true}),
+  supabase.from('ctf_events').select('id',{count:'exact',head:true}),
+  supabase.from('payments').select('id',{count:'exact',head:true}),
+  supabase.from('companies').select('id',{count:'exact',head:true}),
+  supabase.from('profiles').select('id,name,email,role,created_at').order('created_at',{ascending:false}).limit(5),
+  supabase.from('payments').select('id,status,amount_cents,created_at,profiles(name,email),courses(title)').order('created_at',{ascending:false}).limit(5)
+ ])
+ const cards=[
+  ['Usuários',users.count||0,'/admin/usuarios',UsersRound],['Cursos',courses.count||0,'/admin/cursos',Layers3],['Aulas',lessons.count||0,'/admin/aulas',BookOpen],['Matrículas',enrollments.count||0,'/admin/matriculas',GraduationCap],['Labs',labs.count||0,'/admin/labs',Boxes],['Challenges',challenges.count||0,'/admin/desafios',Swords],['CTFs',events.count||0,'/admin/ctf',Flag],['Empresas',companies.count||0,'/admin/empresas',Building2],['Pagamentos',payments.count||0,'/admin/pagamentos',CreditCard]
+ ] as const
+ return <DashboardShell admin>
+   <div className="page-head internal-page-head"><div><div className="kicker">ADMIN / OPERATIONS CONSOLE</div><h1>Central de operação</h1><p>Bem-vindo, {profile.name}. Conteúdo, cyber range, competição e operação do site em uma única interface.</p></div><div className="hero-actions"><Link className="btn secondary" href="/admin/site"><Settings size={15}/> CONFIGURAÇÕES</Link><a className="btn" href="/admin/cursos">ABRIR CONTENT STUDIO →</a></div></div>
+   <div className="admin-command-grid">{cards.map(([label,value,href,Icon])=><Link className="stat-card admin-command-card" href={href} key={href}><Icon size={19}/><small>{label.toUpperCase()}</small><div className="stat">{value}</div><span className="mono">GERENCIAR →</span></Link>)}</div>
+   <section className="admin-control-sections">
+    <article className="card control-lane"><div className="control-lane-head"><div><span className="section-index">CONTENT PIPELINE</span><h2>Academy</h2><p>Monte a estrutura do curso e publique o conteúdo na ordem certa.</p></div><Layers3 size={28}/></div><div className="control-flow"><a href="/admin/cursos"><span>01</span><div><b>Curso & trilha</b><small>Dados, preço e publicação</small></div></a><a href="/admin/cursos"><span>02</span><div><b>Módulos</b><small>Estrutura curricular</small></div></a><Link href="/admin/aulas"><span>03</span><div><b>Aulas</b><small>Vídeo, conteúdo e XP</small></div></Link></div></article>
+    <article className="card control-lane"><div className="control-lane-head"><div><span className="section-index">CYBER RANGE</span><h2>Labs & Challenges</h2><p>Gerencie ambientes, dificuldades, conteúdo prático e disponibilidade.</p></div><ShieldCheck size={28}/></div><div className="control-flow"><Link href="/admin/labs"><span>01</span><div><b>Cyber Labs</b><small>Endpoints e publicação</small></div></Link><Link href="/admin/desafios"><span>02</span><div><b>Challenges</b><small>Missões, flag e XP</small></div></Link><Link href="/admin/ctf"><span>03</span><div><b>CTF Control</b><small>Eventos e desafios</small></div></Link></div></article>
+    <article className="card control-lane"><div className="control-lane-head"><div><span className="section-index">BUSINESS OPS</span><h2>Operação</h2><p>Acompanhe usuários, matrículas, pagamentos e configurações.</p></div><Activity size={28}/></div><div className="control-flow"><Link href="/admin/usuarios"><span>01</span><div><b>Usuários</b><small>Roles e status</small></div></Link><Link href="/admin/empresas"><span>02</span><div><b>Empresas</b><small>Validação e vagas</small></div></Link><Link href="/admin/matriculas"><span>03</span><div><b>Matrículas</b><small>Acesso e status</small></div></Link><Link href="/admin/pagamentos"><span>04</span><div><b>Pagamentos</b><small>Histórico e conferência</small></div></Link></div></article>
+   </section>
+   <div className="admin-live-grid"><section className="card"><div className="panel-head"><div><span className="section-index">LATEST USERS</span><h3>Novos usuários</h3></div><Link className="tag green" href="/admin/usuarios">VER TODOS →</Link></div><div className="activity-list">{(recentUsers.data||[]).map((u:any)=><div className="activity-row" key={u.id}><span className="mini-avatar">{String(u.name||'?').slice(0,1).toUpperCase()}</span><div><strong>{u.name}</strong><span>{u.email}</span></div><span className="pill">{u.role}</span></div>)}</div></section><section className="card"><div className="panel-head"><div><span className="section-index">PAYMENT FEED</span><h3>Pagamentos recentes</h3></div><Link className="tag green" href="/admin/pagamentos">VER TODOS →</Link></div><div className="activity-list">{(recentPayments.data||[]).map((p:any)=><div className="activity-row" key={p.id}><CreditCard size={16}/><div><strong>{p.profiles?.name||p.profiles?.email||'Usuário'}</strong><span>{p.courses?.title||'Curso'} · {p.status}</span></div><strong>R$ {(Number(p.amount_cents||0)/100).toFixed(2).replace('.',',')}</strong></div>)}{!recentPayments.data?.length&&<div className="empty-state">Nenhum pagamento registrado.</div>}</div></section></div>
+ </DashboardShell>
 }
