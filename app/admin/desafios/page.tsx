@@ -3,6 +3,7 @@ import { DashboardShell } from '@/components/DashboardShell'
 import { DifficultyMeter } from '@/components/ui/DifficultyMeter'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireAdmin } from '@/lib/auth'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { adminCreateChallengeAction, adminToggleChallengePublishedAction } from '@/app/actions'
 
 export default async function AdminChallenges({
@@ -11,13 +12,14 @@ export default async function AdminChallenges({
   searchParams: Promise<{ erro?: string; criado?: string }>
 }) {
   const query = await searchParams
-  const { supabase } = await requireAdmin()
+  await requireAdmin()
+  const admin = createAdminClient()
   const [{ data: rows }, { data: labs }] = await Promise.all([
-    supabase
+    admin
       .from('challenges')
       .select('id,title,slug,description,category,difficulty,xp_reward,published,lab_id,labs(title)')
       .order('created_at', { ascending: false }),
-    supabase.from('labs').select('id,title,slug,published,provider_lab_id').eq('published', true).order('title'),
+    admin.from('labs').select('id,title,slug,published,provider_lab_id').eq('published', true).order('title'),
   ])
 
   return (

@@ -2,6 +2,7 @@ import { Flag, Link2, RadioTower, Trophy } from 'lucide-react'
 import { DashboardShell } from '@/components/DashboardShell'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireAdmin } from '@/lib/auth'
+import { createAdminClient } from '@/lib/supabase/admin'
 import {
   adminCreateCtfAction,
   adminLinkChallengeToCtfAction,
@@ -15,11 +16,12 @@ export default async function AdminCtf({
   searchParams: Promise<{ erro?: string; criado?: string; vinculado?: string; removido?: string; status?: string }>
 }) {
   const query = await searchParams
-  const { supabase } = await requireAdmin()
+  await requireAdmin()
+  const admin = createAdminClient()
   const [{ data: events }, { data: challenges }, { data: links }] = await Promise.all([
-    supabase.from('ctf_events').select('*').order('starts_at', { ascending: false }),
-    supabase.from('challenges').select('id,title,category,difficulty,published').order('title'),
-    supabase.from('ctf_event_challenges').select('event_id,challenge_id,position,challenges(title,category,difficulty)').order('position'),
+    admin.from('ctf_events').select('*').order('starts_at', { ascending: false }),
+    admin.from('challenges').select('id,title,category,difficulty,published').order('title'),
+    admin.from('ctf_event_challenges').select('event_id,challenge_id,position,challenges(title,category,difficulty)').order('position'),
   ])
 
   const linked = new Map<string, any[]>()
