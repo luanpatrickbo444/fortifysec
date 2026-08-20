@@ -7,5 +7,3 @@
 - `/admin/cursos/[id]` remains unchanged.
 - Route guard now verifies `/admin/cursos`, `/admin/cursos/[id]`, and `/admin/content-studio` in addition to the existing protected routes.
 - No database schema, Supabase policies, course actions, GCP provider, CTF flow, or visual CSS changed.
-
-

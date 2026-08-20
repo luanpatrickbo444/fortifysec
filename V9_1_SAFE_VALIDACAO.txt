@@ -1,0 +1,37 @@
+FortifySec V9.1 SAFE — validação
+
+Base: projeto visual estável anterior à V9 problemática.
+
+Arquivos visuais críticos: INALTERADOS
+- app/globals.css
+- app/layout.tsx
+- components/DashboardShell.tsx
+- app/admin/ctf/page.tsx
+- app/admin/desafios/page.tsx
+
+Package.json: INALTERADO
+
+Validações executadas:
+- app/actions.ts: TypeScript transpile OK
+- app/admin/range/page.tsx: TypeScript/TSX transpile OK
+- app/painel/conquistas/page.tsx: TypeScript/TSX transpile OK
+- lib/range-provider.ts: TypeScript transpile OK
+- range-provider/server.mjs: node --check OK
+- range-provider/providers/gcp.mjs: node --check OK
+- range-provider/providers/local-docker.mjs: node --check OK
+- scripts/verify-required-routes.mjs: 10 required routes OK
+
+Mudanças existentes fora de arquivos novos:
+- app/actions.ts
+- range-provider/server.mjs
+- range-provider/providers/gcp.mjs
+- range-provider/providers/local-docker.mjs
+- range-provider/.env.example
+- range-provider/README.md
+- range-provider/labs.example.json
+
+Novos:
+- lib/range-provider.ts
+- app/admin/range/page.tsx
+- app/painel/conquistas/page.tsx
+- supabase/migrations/008_cyber_range_production_core_safe.sql
