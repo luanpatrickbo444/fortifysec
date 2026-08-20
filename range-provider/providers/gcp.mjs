@@ -84,58 +84,17 @@ async function resolveSourceImage(def) {
   return image.selfLink
 }
 
-function bootstrapScript(def, hasDynamicFlag) {
-  const original = String(def.startup_script || '')
-  if (!hasDynamicFlag) return original || null
-  const path = String(def.dynamic_flag_path || '/opt/fortify/flag.txt').replace(/'/g, "'\''")
-  const mode = String(def.dynamic_flag_mode || '0600').replace(/[^0-7]/g, '').slice(0, 4) || '0600'
-  const prefix = `#!/bin/bash
-set -u
-FLAG_PATH='${path}'
-FLAG_VALUE="$(curl -fsS -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/instance/attributes/fortify-flag-bootstrap' 2>/dev/null || true)"
-if [ -n "$FLAG_VALUE" ]; then
-  install -d -m 0755 "$(dirname "$FLAG_PATH")"
-  umask 077
-  printf '%s\n' "$FLAG_VALUE" > "$FLAG_PATH"
-  chmod ${mode} "$FLAG_PATH"
-fi
-unset FLAG_VALUE
-`
-  const cleaned = original.replace(/^#!.*\n?/, '')
-  return prefix + (cleaned ? `
-${cleaned}
-` : '')
-}
-
-function metadataItems(def, { sessionId, expiresAt, context = {} }) {
+function metadataItems(def, { sessionId, expiresAt }) {
   const items = []
-  const startup = bootstrapScript(def, Boolean(context.dynamicFlag))
-  if (startup) items.push({ key: 'startup-script', value: startup })
-  if (context.dynamicFlag) items.push({ key: 'fortify-flag-bootstrap', value: String(context.dynamicFlag) })
+  if (def.startup_script) items.push({ key: 'startup-script', value: String(def.startup_script) })
   items.push({ key: 'fortify-session-id', value: String(sessionId) })
   items.push({ key: 'fortify-expires-at', value: String(expiresAt) })
-  if (context.challengeId) items.push({ key: 'fortify-challenge-id', value: String(context.challengeId) })
-  if (context.eventId) items.push({ key: 'fortify-ctf-event-id', value: String(context.eventId) })
   for (const [key, value] of Object.entries(def.metadata || {})) {
     const safeKey = String(key).trim()
-    if (!safeKey || safeKey === 'startup-script' || safeKey === 'fortify-flag-bootstrap') continue
+    if (!safeKey || safeKey === 'startup-script') continue
     items.push({ key: safeKey.slice(0, 128), value: String(value) })
   }
   return items
-}
-
-async function clearSensitiveMetadata(project, zone, instanceName) {
-  const { instances } = getClients()
-  const [instance] = await instances.get({ project, zone, instance: instanceName })
-  const metadata = instance?.metadata || {}
-  const items = (metadata.items || []).filter(item => item?.key !== 'fortify-flag-bootstrap')
-  const [operation] = await instances.setMetadata({
-    project,
-    zone,
-    instance: instanceName,
-    metadataResource: { fingerprint: metadata.fingerprint, items },
-  })
-  await waitForOperation(operation)
 }
 
 async function waitForTcp(host, port, timeoutMs) {
@@ -169,7 +128,7 @@ function scheduling(def) {
   }
 }
 
-export async function provisionGcpVm({ sessionId, userId, labId, expiresAt, def, context = {} }) {
+export async function provisionGcpVm({ sessionId, userId, labId, expiresAt, def }) {
   const { instances } = getClients()
   const name = vmName(sessionId)
   const zone = String(def.zone || ZONE)
@@ -211,7 +170,7 @@ export async function provisionGcpVm({ sessionId, userId, labId, expiresAt, def,
     }],
     // Intentionally attach no service account to intentionally vulnerable lab VMs.
     serviceAccounts: [],
-    metadata: { items: metadataItems(def, { sessionId, expiresAt, context }) },
+    metadata: { items: metadataItems(def, { sessionId, expiresAt }) },
     ...(scheduling(def) ? { scheduling: scheduling(def) } : {}),
   }
 
@@ -231,10 +190,6 @@ export async function provisionGcpVm({ sessionId, userId, labId, expiresAt, def,
       const ready = await waitForTcp(targetIp, readyPort, timeoutMs)
       if (!ready) throw Object.assign(new Error(`GCP target did not become ready on ${targetIp}:${readyPort}`), { statusCode: 504 })
     }
-
-    // The bootstrap flag exists in instance metadata only during boot. It is removed
-    // before the VPN config is returned to the student, avoiding a trivial metadata read.
-    if (context.dynamicFlag) await clearSensitiveMetadata(PROJECT_ID, zone, name)
 
     return {
       projectId: PROJECT_ID,

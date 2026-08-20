@@ -75,7 +75,7 @@ export function localDockerConfigurationStatus() {
   }
 }
 
-export async function provisionLocalDocker({ sessionId, userId, labId, expiresAt, def, context = {} }) {
+export async function provisionLocalDocker({ sessionId, userId, labId, expiresAt, def }) {
   if (!def?.image || typeof def.image !== 'string') {
     throw Object.assign(new Error('local_docker lab requires string image'), { statusCode: 500 })
   }
@@ -120,12 +120,6 @@ export async function provisionLocalDocker({ sessionId, userId, labId, expiresAt
     for (const [key, value] of Object.entries(def.env || {})) {
       args.push('-e', `${key}=${String(value)}`)
     }
-
-    // Dynamic CTF data is injected only into the isolated target container.
-    // The raw flag is never persisted in the provider state file.
-    if (context.dynamicFlag) args.push('-e', `FORTIFY_FLAG=${String(context.dynamicFlag)}`)
-    if (context.challengeId) args.push('-e', `FORTIFY_CHALLENGE_ID=${safeLabel(context.challengeId)}`)
-    if (context.eventId) args.push('-e', `FORTIFY_CTF_EVENT_ID=${safeLabel(context.eventId)}`)
 
     args.push(def.image)
     if (Array.isArray(def.command)) args.push(...def.command.map(String))

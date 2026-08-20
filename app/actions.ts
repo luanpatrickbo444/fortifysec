@@ -6,7 +6,6 @@ import { redirect } from 'next/navigation'
 import { requireAdmin, requireCompany, requireUser } from '@/lib/auth'
 import { ensureApplicationProfile } from '@/lib/profile-sync'
 import { createHash, randomUUID } from 'node:crypto'
-import { createRangeSession, destroyRangeSession, hasRangeProvider } from '@/lib/range-provider'
 
 function asBool(v:FormDataEntryValue|null){return String(v||'false')==='true'}
 function safeExternalUrl(value:string){try{const u=new URL(value);return u.protocol==='https:'||u.protocol==='http:'?u.toString():null}catch{return null}}
@@ -14,40 +13,29 @@ function safeAdminReturn(value:FormDataEntryValue|null,fallback='/admin'){const 
 
 function safeSlug(value:string){return value.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80)}
 
-
-type AdminDb=ReturnType<typeof createAdminClient>
-
-async function getRangePolicy(admin:AdminDb,userId:string,role:string,hasEnrollment:boolean){
- const code=role==='admin'?'admin':hasEnrollment?'pro':'free'
- const {data}=await admin.from('range_plan_limits').select('code,max_concurrent_sessions,max_ttl_minutes,monthly_minutes').eq('code',code).maybeSingle()
- return data||{code,max_concurrent_sessions:role==='admin'?10:1,max_ttl_minutes:role==='admin'?240:60,monthly_minutes:0}
-}
-
-async function ensureRangeCapacity(admin:AdminDb,userId:string,role:string,hasEnrollment:boolean,requestedTtl:number){
- const policy=await getRangePolicy(admin,userId,role,hasEnrollment)
- const nowDate=new Date();const now=nowDate.toISOString()
- await admin.from('lab_sessions').update({status:'expired',stopped_at:now,ended_reason:'ttl'}).eq('user_id',userId).eq('status','running').lt('expires_at',now)
- const {count}=await admin.from('lab_sessions').select('id',{count:'exact',head:true}).eq('user_id',userId).eq('status','running').gt('expires_at',now)
- if(role!=='admin' && Number(count||0)>=Number(policy.max_concurrent_sessions||1)) throw new Error('Limite de sessões simultâneas atingido.')
- let ttl=Math.min(Math.max(15,Number(requestedTtl||60)),Number(policy.max_ttl_minutes||60))
- const monthlyLimit=Number(policy.monthly_minutes||0)
- if(role!=='admin'&&monthlyLimit>0){
-  const monthStart=new Date(Date.UTC(nowDate.getUTCFullYear(),nowDate.getUTCMonth(),1)).toISOString()
-  const {data:usage}=await admin.from('lab_sessions').select('started_at,stopped_at,expires_at').eq('user_id',userId).gte('started_at',monthStart)
-  const used=Math.ceil((usage||[]).reduce((sum:number,row:any)=>{const start=new Date(row.started_at).getTime();const stop=Math.min(Date.now(),new Date(row.stopped_at||row.expires_at||now).getTime());return sum+Math.max(0,stop-start)},0)/60_000)
-  const remaining=monthlyLimit-used
-  if(remaining<15)throw new Error('Franquia mensal de Cyber Range atingida.')
-  ttl=Math.min(ttl,remaining)
+async function createRangeSession(input:{userId:string,labId:string,ttlMinutes:number}){
+ const provider=process.env.LAB_PROVIDER_API_URL
+ if(!provider)return null
+ const res=await fetch(`${provider.replace(/\/$/,'')}/sessions`,{
+  method:'POST',cache:'no-store',headers:{'Content-Type':'application/json',...(process.env.LAB_PROVIDER_API_KEY?{Authorization:`Bearer ${process.env.LAB_PROVIDER_API_KEY}`}:{})},
+  body:JSON.stringify({user_id:input.userId,lab_id:input.labId,ttl_minutes:input.ttlMinutes})
+ })
+ if(!res.ok)throw new Error(`range provider ${res.status}`)
+ const data=await res.json()
+ return {
+  sessionId:data.session_id?String(data.session_id):null,
+  connectionUrl:data.connection_url?String(data.connection_url):'',
+  vpnDownloadUrl:data.vpn_download_url?String(data.vpn_download_url):'',
+  targetAddress:String(data.target_address||data.target_ip||''),
+  expiresAt:data.expires_at?String(data.expires_at):null,
  }
- return ttl
 }
 
-async function auditRange(admin:AdminDb,input:{eventType:string,userId?:string|null,labId?:string|null,challengeId?:string|null,eventId?:string|null,providerSessionId?:string|null,details?:Record<string,unknown>}){
- try{await admin.from('range_audit_log').insert({event_type:input.eventType,user_id:input.userId||null,lab_id:input.labId||null,challenge_id:input.challengeId||null,ctf_event_id:input.eventId||null,provider_session_id:input.providerSessionId||null,details:input.details||{}})}catch{}
-}
-
-function newDynamicFlag(){
- return `fortify{${randomUUID().replace(/-/g,'')}}`
+async function destroyRangeSession(providerSessionId:string){
+ if(!providerSessionId||!process.env.LAB_PROVIDER_API_URL)return
+ await fetch(`${process.env.LAB_PROVIDER_API_URL.replace(/\/$/,'')}/sessions/${encodeURIComponent(providerSessionId)}`,{
+  method:'DELETE',cache:'no-store',headers:process.env.LAB_PROVIDER_API_KEY?{Authorization:`Bearer ${process.env.LAB_PROVIDER_API_KEY}`}:{},
+ }).catch(()=>null)
 }
 
 export async function loginAction(formData: FormData) {
@@ -205,39 +193,26 @@ export async function updateProfileAction(formData:FormData){
 
 
 export async function startLabAction(formData:FormData){
- const {user}=await requireUser();const labId=String(formData.get('lab_id')||'');const slug=String(formData.get('slug')||'');const admin=createAdminClient()
- if(!labId)redirect('/painel/labs')
- const [{data:profile},{data:enrollment},{data:lab}]=await Promise.all([
+ const {user}=await requireUser(); const labId=String(formData.get('lab_id')||''); const slug=String(formData.get('slug')||'')
+ const admin=createAdminClient(); const now=new Date().toISOString(); await admin.from('lab_sessions').update({status:'expired',stopped_at:now}).eq('user_id',user.id).eq('lab_id',labId).eq('status','running').lt('expires_at',now); const [{data:profile},{data:enrollment},{data:lab},{data:running}]=await Promise.all([
   admin.from('profiles').select('role,blocked').eq('id',user.id).maybeSingle(),
   admin.from('enrollments').select('id').eq('user_id',user.id).eq('status','active').limit(1).maybeSingle(),
   admin.from('labs').select('id,connection_url,provider_lab_id,estimated_minutes,published').eq('id',labId).eq('published',true).maybeSingle(),
+  admin.from('lab_sessions').select('id').eq('user_id',user.id).eq('lab_id',labId).eq('status','running').maybeSingle()
  ])
- const role=String(profile?.role||'student');const canAccess=!profile?.blocked&&(role==='admin'||Boolean(enrollment));if(!canAccess||!lab)redirect('/painel/labs')
- const now=new Date().toISOString();await admin.from('lab_sessions').update({status:'expired',stopped_at:now,ended_reason:'ttl'}).eq('user_id',user.id).eq('lab_id',labId).eq('status','running').lt('expires_at',now)
- const {data:running}=await admin.from('lab_sessions').select('id').eq('user_id',user.id).eq('lab_id',labId).eq('status','running').gt('expires_at',now).maybeSingle()
- if(!running){
-  let ttl:number
-  try{ttl=await ensureRangeCapacity(admin,user.id,role,Boolean(enrollment),lab.estimated_minutes||60)}catch(error:any){redirect(`/painel/labs/${slug}?erro=`+encodeURIComponent(String(error?.message||'Limite de sessões atingido.')))}
-  let connectionUrl=lab.connection_url||null;let providerSessionId:string|null=null;let targetAddress:string|null=null;let vpnDownloadUrl:string|null=null;let providerBaseUrl:string|null=null;let providerKind:string|null=null;let estimatedCostCents=0;let expires=new Date(Date.now()+ttl*60_000).toISOString()
-  if(hasRangeProvider()){
-   try{const data=await createRangeSession({userId:user.id,labId:String(lab.provider_lab_id||lab.id),ttlMinutes:ttl});if(data){connectionUrl=data.connectionUrl||connectionUrl;providerSessionId=data.sessionId;targetAddress=data.targetAddress||null;vpnDownloadUrl=data.vpnDownloadUrl||null;providerBaseUrl=data.providerBaseUrl;providerKind=data.providerKind;estimatedCostCents=data.estimatedCostCents;if(data.expiresAt)expires=data.expiresAt}}
-   catch(error:any){await auditRange(admin,{eventType:'session_provision_failed',userId:user.id,labId,details:{message:String(error?.message||error)}});redirect(`/painel/labs/${slug}?erro=provider`)}
-  }
-  const {error}=await admin.from('lab_sessions').insert({user_id:user.id,lab_id:labId,status:'running',connection_url:connectionUrl,provider_session_id:providerSessionId,target_address:targetAddress,vpn_download_url:vpnDownloadUrl,provider_base_url:providerBaseUrl,provider_kind:providerKind,estimated_cost_cents:estimatedCostCents,expires_at:expires})
-  if(error){if(providerSessionId)await destroyRangeSession(providerSessionId,providerBaseUrl);redirect(`/painel/labs/${slug}?erro=sessao`)}
-  await auditRange(admin,{eventType:'session_started',userId:user.id,labId,providerSessionId,details:{provider:providerKind,expires_at:expires,estimated_cost_cents:estimatedCostCents}})
- }
+ const canAccess=!profile?.blocked&&(String(profile?.role||'')==='admin'||Boolean(enrollment))
+ if(!canAccess||!lab)redirect('/painel/labs')
+ if(!running){let connectionUrl=lab.connection_url;let providerSessionId:string|null=null;let targetAddress:string|null=null;let vpnDownloadUrl:string|null=null;let expires=new Date(Date.now()+Math.max(15,lab.estimated_minutes||60)*60_000).toISOString();if(process.env.LAB_PROVIDER_API_URL){try{const data=await createRangeSession({userId:user.id,labId:String(lab.provider_lab_id||lab.id),ttlMinutes:lab.estimated_minutes||60});if(data){connectionUrl=data.connectionUrl||connectionUrl;providerSessionId=data.sessionId;targetAddress=data.targetAddress||null;vpnDownloadUrl=data.vpnDownloadUrl||null;if(data.expiresAt)expires=data.expiresAt}}catch{redirect(`/painel/labs/${slug}?erro=provider`)}}await admin.from('lab_sessions').insert({user_id:user.id,lab_id:labId,status:'running',connection_url:connectionUrl,provider_session_id:providerSessionId,target_address:targetAddress,vpn_download_url:vpnDownloadUrl,expires_at:expires})}
  revalidatePath(`/painel/labs/${slug}`);redirect(`/painel/labs/${slug}`)
 }
-
 export async function stopLabAction(formData:FormData){
- const {user}=await requireUser();const labId=String(formData.get('lab_id')||'');const slug=String(formData.get('slug')||'');const admin=createAdminClient()
- const {data:session}=await admin.from('lab_sessions').select('id,provider_session_id,provider_base_url').eq('user_id',user.id).eq('lab_id',labId).eq('status','running').maybeSingle()
- if(session?.provider_session_id)await destroyRangeSession(String(session.provider_session_id),session.provider_base_url?String(session.provider_base_url):null)
- await admin.from('lab_sessions').update({status:'stopped',stopped_at:new Date().toISOString(),ended_reason:'user'}).eq('user_id',user.id).eq('lab_id',labId).eq('status','running')
- await auditRange(admin,{eventType:'session_stopped',userId:user.id,labId,providerSessionId:session?.provider_session_id||null,details:{reason:'user'}})
+ const {user}=await requireUser();const labId=String(formData.get('lab_id')||'');const slug=String(formData.get('slug')||'');const admin=createAdminClient();
+ const {data:session}=await admin.from('lab_sessions').select('id,provider_session_id').eq('user_id',user.id).eq('lab_id',labId).eq('status','running').maybeSingle();
+ if(session?.provider_session_id)await destroyRangeSession(String(session.provider_session_id))
+ await admin.from('lab_sessions').update({status:'stopped',stopped_at:new Date().toISOString()}).eq('user_id',user.id).eq('lab_id',labId).eq('status','running');
  revalidatePath('/painel/labs');if(slug){revalidatePath(`/painel/labs/${slug}`);redirect(`/painel/labs/${slug}`)}
 }
+
 
 export async function submitChallengeAction(formData:FormData){
  const {supabase}=await requireUser();const challengeId=String(formData.get('challenge_id')||'');const slug=String(formData.get('slug')||'');const flag=String(formData.get('flag')||'').trim();const eventId=String(formData.get('ctf_event_id')||'')
@@ -246,7 +221,7 @@ export async function submitChallengeAction(formData:FormData){
  const args=eventId?{event_uuid:eventId,challenge_uuid:challengeId,candidate_flag:flag}:{challenge_uuid:challengeId,candidate_flag:flag}
  const {data,error}=await supabase.rpc(rpc,args as any)
  if(error||!data)redirect(`/painel/desafios/${slug}?result=invalid${eventId?`&ctf=${encodeURIComponent(eventId)}`:''}`)
- revalidatePath('/painel');revalidatePath('/painel/ranking');revalidatePath('/painel/conquistas');revalidatePath('/painel/ctf');if(eventId)revalidatePath(`/painel/ctf/${eventId}`)
+ revalidatePath('/painel');revalidatePath('/painel/ranking');revalidatePath('/painel/ctf');if(eventId)revalidatePath(`/painel/ctf/${eventId}`)
  redirect(`/painel/desafios/${slug}?result=solved${eventId?`&ctf=${encodeURIComponent(eventId)}`:''}`)
 }
 
@@ -255,56 +230,22 @@ export async function startChallengeTargetAction(formData:FormData){
  const [{data:profile},{data:enrollment},{data:challenge}]=await Promise.all([
   admin.from('profiles').select('role,blocked').eq('id',user.id).maybeSingle(),
   admin.from('enrollments').select('id').eq('user_id',user.id).eq('status','active').limit(1).maybeSingle(),
-  admin.from('challenges').select('id,lab_id,published,dynamic_flag_enabled,labs(id,provider_lab_id,estimated_minutes,connection_url,published)').eq('id',challengeId).eq('published',true).maybeSingle(),
+  admin.from('challenges').select('id,lab_id,published,labs(id,provider_lab_id,estimated_minutes,connection_url,published)').eq('id',challengeId).eq('published',true).maybeSingle()
  ])
- const role=String(profile?.role||'student');const canAccess=!profile?.blocked&&(role==='admin'||Boolean(enrollment));const lab=Array.isArray((challenge as any)?.labs)?(challenge as any).labs[0]:(challenge as any)?.labs
+ const canAccess=!profile?.blocked&&(String(profile?.role||'')==='admin'||Boolean(enrollment));const lab=Array.isArray((challenge as any)?.labs)?(challenge as any).labs[0]:(challenge as any)?.labs
  if(!canAccess||!challenge||!challenge.lab_id||!lab||!lab.published)redirect(`/painel/desafios/${slug}`)
- let eventEndsAt:string|null=null
- if(eventId){
-  const nowMs=Date.now();const [{data:participant},{data:eventLink}]=await Promise.all([
-   admin.from('ctf_participants').select('event_id').eq('event_id',eventId).eq('user_id',user.id).maybeSingle(),
-   admin.from('ctf_event_challenges').select('event_id,challenge_id,ctf_events(status,starts_at,ends_at)').eq('event_id',eventId).eq('challenge_id',challengeId).maybeSingle(),
-  ])
-  const event=Array.isArray((eventLink as any)?.ctf_events)?(eventLink as any).ctf_events[0]:(eventLink as any)?.ctf_events;const live=event?.status==='live'&&new Date(event.starts_at).getTime()<=nowMs&&new Date(event.ends_at).getTime()>=nowMs
-  if(!participant||!eventLink||!live)redirect(`/painel/ctf/${eventId}`);eventEndsAt=String(event.ends_at)
- }
- const now=new Date().toISOString();await admin.from('lab_sessions').update({status:'expired',stopped_at:now,ended_reason:'ttl'}).eq('user_id',user.id).eq('lab_id',challenge.lab_id).eq('status','running').lt('expires_at',now)
- const {data:existingRunning}=await admin.from('lab_sessions').select('id,ctf_event_id,challenge_id,provider_session_id,provider_base_url').eq('user_id',user.id).eq('lab_id',challenge.lab_id).eq('status','running').gt('expires_at',now).maybeSingle()
- let running=existingRunning
- // A generic Lab session must not be reused by a dynamic-flag CTF, otherwise that
- // target never received the participant-specific flag. Recycle it safely first.
- if(running&&eventId&&challenge.dynamic_flag_enabled&&(running.ctf_event_id!==eventId||running.challenge_id!==challengeId)){
-  if(running.provider_session_id)await destroyRangeSession(String(running.provider_session_id),running.provider_base_url?String(running.provider_base_url):null)
-  await admin.from('lab_sessions').update({status:'stopped',stopped_at:new Date().toISOString(),ended_reason:'ctf_rebind'}).eq('id',running.id)
-  running=null
- }
- if(!running){
-  let ttl:number
-  try{ttl=await ensureRangeCapacity(admin,user.id,role,Boolean(enrollment),lab.estimated_minutes||60)}catch(error:any){redirect(`/painel/desafios/${slug}?result=limit${eventId?`&ctf=${encodeURIComponent(eventId)}`:''}`)}
-  if(eventEndsAt){ttl=Math.max(15,Math.min(ttl,Math.ceil((new Date(eventEndsAt).getTime()-Date.now())/60_000)))}
-  let expires=new Date(Date.now()+ttl*60_000).toISOString();let dynamicFlag:string|null=null
-  if(eventId&&challenge.dynamic_flag_enabled&&!hasRangeProvider())redirect(`/painel/desafios/${slug}?result=provider${eventId?`&ctf=${encodeURIComponent(eventId)}`:''}`)
-  if(eventId&&challenge.dynamic_flag_enabled){
-   dynamicFlag=newDynamicFlag();const {error:flagError}=await admin.rpc('issue_ctf_dynamic_flag',{p_event_id:eventId,p_challenge_id:challengeId,p_user_id:user.id,p_flag:dynamicFlag,p_expires_at:expires});if(flagError){console.error('[CTF_DYNAMIC_FLAG]',flagError);redirect(`/painel/desafios/${slug}?result=flag${eventId?`&ctf=${encodeURIComponent(eventId)}`:''}`)}
-  }
-  let connectionUrl=lab.connection_url||null;let providerSessionId:string|null=null;let targetAddress:string|null=null;let vpnDownloadUrl:string|null=null;let providerBaseUrl:string|null=null;let providerKind:string|null=null;let estimatedCostCents=0
-  if(hasRangeProvider()){
-   try{const data=await createRangeSession({userId:user.id,labId:String(lab.provider_lab_id||lab.id),ttlMinutes:ttl,dynamicFlag,challengeId,eventId:eventId||null});if(data){connectionUrl=data.connectionUrl||connectionUrl;providerSessionId=data.sessionId;targetAddress=data.targetAddress||null;vpnDownloadUrl=data.vpnDownloadUrl||null;providerBaseUrl=data.providerBaseUrl;providerKind=data.providerKind;estimatedCostCents=data.estimatedCostCents;if(data.expiresAt)expires=data.expiresAt}}
-   catch(error:any){await auditRange(admin,{eventType:'challenge_provision_failed',userId:user.id,labId:challenge.lab_id,challengeId,eventId:eventId||null,details:{message:String(error?.message||error)}});redirect(`/painel/desafios/${slug}?result=provider${eventId?`&ctf=${encodeURIComponent(eventId)}`:''}`)}
-  }
-  const {error}=await admin.from('lab_sessions').insert({user_id:user.id,lab_id:challenge.lab_id,status:'running',connection_url:connectionUrl,provider_session_id:providerSessionId,target_address:targetAddress,vpn_download_url:vpnDownloadUrl,ctf_event_id:eventId||null,challenge_id:challengeId,provider_base_url:providerBaseUrl,provider_kind:providerKind,estimated_cost_cents:estimatedCostCents,expires_at:expires})
-  if(error){if(providerSessionId)await destroyRangeSession(providerSessionId,providerBaseUrl);redirect(`/painel/desafios/${slug}?result=session${eventId?`&ctf=${encodeURIComponent(eventId)}`:''}`)}
-  await auditRange(admin,{eventType:'challenge_session_started',userId:user.id,labId:challenge.lab_id,challengeId,eventId:eventId||null,providerSessionId,details:{dynamic_flag:Boolean(dynamicFlag),provider:providerKind,expires_at:expires,estimated_cost_cents:estimatedCostCents}})
- }
+ if(eventId){const nowMs=Date.now();const [{data:participant},{data:eventLink}]=await Promise.all([admin.from('ctf_participants').select('event_id').eq('event_id',eventId).eq('user_id',user.id).maybeSingle(),admin.from('ctf_event_challenges').select('event_id,challenge_id,ctf_events(status,starts_at,ends_at)').eq('event_id',eventId).eq('challenge_id',challengeId).maybeSingle()]);const event=Array.isArray((eventLink as any)?.ctf_events)?(eventLink as any).ctf_events[0]:(eventLink as any)?.ctf_events;const live=event?.status==='live'&&new Date(event.starts_at).getTime()<=nowMs&&new Date(event.ends_at).getTime()>=nowMs;if(!participant||!eventLink||!live)redirect(`/painel/ctf/${eventId}`)}
+ const now=new Date().toISOString();await admin.from('lab_sessions').update({status:'expired',stopped_at:now}).eq('user_id',user.id).eq('lab_id',challenge.lab_id).eq('status','running').lt('expires_at',now)
+ const {data:running}=await admin.from('lab_sessions').select('id').eq('user_id',user.id).eq('lab_id',challenge.lab_id).eq('status','running').gt('expires_at',now).maybeSingle()
+ if(!running){let connectionUrl=lab.connection_url||null;let providerSessionId:string|null=null;let targetAddress:string|null=null;let vpnDownloadUrl:string|null=null;let expires=new Date(Date.now()+Math.max(15,lab.estimated_minutes||60)*60_000).toISOString();if(process.env.LAB_PROVIDER_API_URL){try{const data=await createRangeSession({userId:user.id,labId:String(lab.provider_lab_id||lab.id),ttlMinutes:lab.estimated_minutes||60});if(data){connectionUrl=data.connectionUrl||connectionUrl;providerSessionId=data.sessionId;targetAddress=data.targetAddress||null;vpnDownloadUrl=data.vpnDownloadUrl||null;if(data.expiresAt)expires=data.expiresAt}}catch{redirect(`/painel/desafios/${slug}?result=provider${eventId?`&ctf=${encodeURIComponent(eventId)}`:''}`)}}await admin.from('lab_sessions').insert({user_id:user.id,lab_id:challenge.lab_id,status:'running',connection_url:connectionUrl,provider_session_id:providerSessionId,target_address:targetAddress,vpn_download_url:vpnDownloadUrl,expires_at:expires})}
  revalidatePath(`/painel/desafios/${slug}`);redirect(`/painel/desafios/${slug}${eventId?`?ctf=${encodeURIComponent(eventId)}`:''}`)
 }
 
 export async function stopChallengeTargetAction(formData:FormData){
  const {user}=await requireUser();const labId=String(formData.get('lab_id')||'');const slug=String(formData.get('slug')||'');const eventId=String(formData.get('ctf_event_id')||'');const admin=createAdminClient()
- const {data:session}=await admin.from('lab_sessions').select('id,provider_session_id,provider_base_url,challenge_id').eq('user_id',user.id).eq('lab_id',labId).eq('status','running').maybeSingle()
- if(session?.provider_session_id)await destroyRangeSession(String(session.provider_session_id),session.provider_base_url?String(session.provider_base_url):null)
- await admin.from('lab_sessions').update({status:'stopped',stopped_at:new Date().toISOString(),ended_reason:'user'}).eq('user_id',user.id).eq('lab_id',labId).eq('status','running')
- await auditRange(admin,{eventType:'challenge_session_stopped',userId:user.id,labId,challengeId:session?.challenge_id||null,eventId:eventId||null,providerSessionId:session?.provider_session_id||null,details:{reason:'user'}})
+ const {data:session}=await admin.from('lab_sessions').select('id,provider_session_id').eq('user_id',user.id).eq('lab_id',labId).eq('status','running').maybeSingle()
+ if(session?.provider_session_id)await destroyRangeSession(String(session.provider_session_id))
+ await admin.from('lab_sessions').update({status:'stopped',stopped_at:new Date().toISOString()}).eq('user_id',user.id).eq('lab_id',labId).eq('status','running')
  revalidatePath(`/painel/desafios/${slug}`);redirect(`/painel/desafios/${slug}${eventId?`?ctf=${encodeURIComponent(eventId)}`:''}`)
 }
 
@@ -314,23 +255,13 @@ export async function joinCtfAction(formData:FormData){
 
 export async function adminSetEnrollmentAction(formData:FormData){await requireAdmin();const userId=String(formData.get('user_id')||'');const courseId=String(formData.get('course_id')||'');const status=String(formData.get('status')||'active');if(!userId||!courseId||!['active','pending','blocked','expired'].includes(status))return;const admin=createAdminClient();await admin.from('enrollments').upsert({user_id:userId,course_id:courseId,status,source:'admin',activated_at:status==='active'?new Date().toISOString():null},{onConflict:'user_id,course_id'});revalidatePath('/admin/matriculas');revalidatePath('/painel/cursos');revalidatePath('/painel/labs');revalidatePath('/painel/desafios');revalidatePath('/painel')}
 export async function adminCreateCourseAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');const description=String(formData.get('description')||'').trim();const price=slug==='formacao-fortifysec'?99.90:Number(formData.get('price')||0);if(!title||!slug)return;await admin.from('courses').insert({title,slug,description,price_cents:Math.round(price*100),published:true});revalidatePath('/admin/cursos');revalidatePath('/painel/cursos')}
-export async function adminToggleUserAction(formData:FormData){
- const {user}=await requireAdmin();const userId=String(formData.get('user_id')||'');if(userId===user.id)return;const blocked=String(formData.get('blocked')||'false')==='true';const admin=createAdminClient();
- await admin.from('profiles').update({blocked:!blocked}).eq('id',userId)
- if(!blocked){
-  const {data:sessions}=await admin.from('lab_sessions').select('id,lab_id,challenge_id,ctf_event_id,provider_session_id,provider_base_url').eq('user_id',userId).eq('status','running')
-  for(const session of sessions||[]){if(session.provider_session_id)await destroyRangeSession(String(session.provider_session_id),session.provider_base_url?String(session.provider_base_url):null)}
-  await admin.from('lab_sessions').update({status:'revoked',stopped_at:new Date().toISOString(),ended_reason:'user_blocked'}).eq('user_id',userId).eq('status','running')
-  await auditRange(admin,{eventType:'user_range_revoked',userId,details:{sessions:Number((sessions||[]).length)}})
- }
- revalidatePath('/admin/usuarios');revalidatePath('/admin/range')
-}
+export async function adminToggleUserAction(formData:FormData){const {user}=await requireAdmin();const userId=String(formData.get('user_id')||'');if(userId===user.id)return;const blocked=String(formData.get('blocked')||'false')==='true';const admin=createAdminClient();await admin.from('profiles').update({blocked:!blocked}).eq('id',userId);if(!blocked)await admin.from('lab_sessions').update({status:'revoked',stopped_at:new Date().toISOString()}).eq('user_id',userId).eq('status','running');revalidatePath('/admin/usuarios')}
 export async function adminCreateLabAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');if(!title||!slug)return;await admin.from('labs').insert({title,slug,description:String(formData.get('description')||''),difficulty:String(formData.get('difficulty')||'Easy'),estimated_minutes:Number(formData.get('estimated_minutes')||60),connection_url:String(formData.get('connection_url')||'')||null,provider_lab_id:String(formData.get('provider_lab_id')||'')||null,instructions:String(formData.get('instructions')||''),tags:String(formData.get('tags')||'').split(',').map(s=>s.trim()).filter(Boolean),published:true});revalidatePath('/admin/labs');revalidatePath('/painel/labs')}
 export async function adminCreateChallengeAction(formData:FormData){
  await requireAdmin();const admin=createAdminClient();const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');const flag=String(formData.get('flag')||'').trim();const labId=String(formData.get('lab_id')||'')||null;if(!title||!slug||!flag)redirect('/admin/desafios?erro='+encodeURIComponent('Preencha título, slug e flag do Challenge.'));
  if(labId){const {data:lab,error:labError}=await admin.from('labs').select('id').eq('id',labId).maybeSingle();if(labError||!lab)redirect('/admin/desafios?erro='+encodeURIComponent('O Lab selecionado não existe.'))}
  const flagHash=`\\x${createHash('sha256').update(flag,'utf8').digest('hex')}`;
- const {data:newChallenge,error}=await admin.from('challenges').insert({title,slug,description:String(formData.get('description')||''),category:String(formData.get('category')||'Web'),difficulty:String(formData.get('difficulty')||'Easy'),xp_reward:Math.max(0,Number(formData.get('xp_reward')||50)),briefing:String(formData.get('briefing')||''),flag_hash:flagHash,published:true,lab_id:labId,dynamic_flag_enabled:Boolean(labId)}).select('id').single();
+ const {data:newChallenge,error}=await admin.from('challenges').insert({title,slug,description:String(formData.get('description')||''),category:String(formData.get('category')||'Web'),difficulty:String(formData.get('difficulty')||'Easy'),xp_reward:Math.max(0,Number(formData.get('xp_reward')||50)),briefing:String(formData.get('briefing')||''),flag_hash:flagHash,published:true,lab_id:labId}).select('id').single();
  if(error||!newChallenge){console.error('[ADMIN_CHALLENGE_CREATE]',error||'challenge id not returned');redirect('/admin/desafios?erro='+encodeURIComponent(error?.message||'Não foi possível gravar o Challenge.'))}
  revalidatePath('/admin/desafios');revalidatePath('/admin/ctf');revalidatePath('/painel/desafios');redirect('/admin/desafios?criado=1')
 }
@@ -540,30 +471,4 @@ export async function adminCancelSubscriptionAction(formData:FormData){
  await admin.from('subscriptions').update({status:'cancelled',updated_at:new Date().toISOString()}).eq('preapproval_id',preapprovalId)
  if(sub) await admin.from('enrollments').update({status:'expired'}).eq('user_id',sub.user_id).eq('course_id',sub.course_id)
  revalidatePath('/admin/matriculas')
-}
-
-export async function adminCreateLabTemplateAction(formData:FormData){
- await requireAdmin();const admin=createAdminClient();const providerLabId=String(formData.get('provider_lab_id')||'').trim();const title=String(formData.get('title')||'').trim();const provider=String(formData.get('provider')||'gcp_vm');if(!providerLabId||!title||!['gcp_vm','local_docker'].includes(provider))redirect('/admin/range?erro='+encodeURIComponent('Template inválido.'))
- const payload={provider_lab_id:providerLabId,title,provider,image_ref:String(formData.get('image_ref')||'').trim()||null,machine_type:String(formData.get('machine_type')||'').trim()||null,cpu:Number(formData.get('cpu')||0)||null,memory_mb:Number(formData.get('memory_mb')||0)||null,disk_gb:Number(formData.get('disk_gb')||0)||null,default_ttl_minutes:Math.max(15,Number(formData.get('default_ttl_minutes')||60)),estimated_cost_cents_per_hour:Math.max(0,Number(formData.get('estimated_cost_cents_per_hour')||0)),published:true,updated_at:new Date().toISOString()}
- const {error}=await admin.from('lab_templates').upsert(payload,{onConflict:'provider_lab_id'});if(error)redirect('/admin/range?erro='+encodeURIComponent(error.message));revalidatePath('/admin/range');redirect('/admin/range?template=1')
-}
-
-export async function adminUpdateRangePlanAction(formData:FormData){
- await requireAdmin();const admin=createAdminClient();const code=String(formData.get('code')||'');if(!['free','pro','admin'].includes(code))redirect('/admin/range?erro=plano');const payload={code,max_concurrent_sessions:Math.max(0,Number(formData.get('max_concurrent_sessions')||1)),max_ttl_minutes:Math.max(15,Number(formData.get('max_ttl_minutes')||60)),monthly_minutes:Math.max(0,Number(formData.get('monthly_minutes')||0)),updated_at:new Date().toISOString()};const {error}=await admin.from('range_plan_limits').upsert(payload,{onConflict:'code'});if(error)redirect('/admin/range?erro='+encodeURIComponent(error.message));revalidatePath('/admin/range');redirect('/admin/range?plano=1')
-}
-
-export async function adminUpdateCtfSecurityAction(formData:FormData){
- await requireAdmin();const admin=createAdminClient();const eventId=String(formData.get('event_id')||'').trim();if(!eventId)redirect('/admin/range?erro=ctf');const freezeRaw=String(formData.get('freeze_at')||'').trim();const attempts=Math.min(120,Math.max(3,Number(formData.get('max_attempts_per_minute')||10)));let freezeAt:string|null=null;if(freezeRaw){const d=new Date(freezeRaw);if(!Number.isFinite(d.getTime()))redirect('/admin/range?erro='+encodeURIComponent('Data de freeze inválida.'));freezeAt=d.toISOString()}
- const {error}=await admin.from('ctf_events').update({freeze_at:freezeAt,max_attempts_per_minute:attempts}).eq('id',eventId);if(error)redirect('/admin/range?erro='+encodeURIComponent(error.message));revalidatePath('/admin/range');revalidatePath('/admin/ctf');revalidatePath(`/painel/ctf/${eventId}`);redirect('/admin/range?ctf=1')
-}
-
-export async function adminMapChallengeSkillAction(formData:FormData){
- await requireAdmin();const admin=createAdminClient();const challengeId=String(formData.get('challenge_id')||'');const skillCode=String(formData.get('skill_code')||'');const weight=Math.min(10,Math.max(1,Number(formData.get('weight')||1)));if(!challengeId||!skillCode)redirect('/admin/range?erro=skill');
- const {error}=await admin.from('challenge_skills').upsert({challenge_id:challengeId,skill_code:skillCode,weight},{onConflict:'challenge_id,skill_code'});if(error)redirect('/admin/range?erro='+encodeURIComponent(error.message))
- const {error:rebuildError}=await admin.rpc('rebuild_verified_skill_progress');if(rebuildError){console.error('[RANGE_SKILL_REBUILD]',rebuildError);redirect('/admin/range?erro='+encodeURIComponent('Skill mapeada, mas não foi possível recalcular o histórico.'))}
- revalidatePath('/admin/range');revalidatePath('/painel/conquistas');redirect('/admin/range?skill=1')
-}
-
-export async function adminStopRangeSessionAction(formData:FormData){
- await requireAdmin();const admin=createAdminClient();const sessionId=String(formData.get('session_id')||'').trim();if(!sessionId)redirect('/admin/range?erro=sessao');const {data:session}=await admin.from('lab_sessions').select('id,user_id,lab_id,challenge_id,ctf_event_id,provider_session_id,provider_base_url').eq('id',sessionId).maybeSingle();if(!session)redirect('/admin/range?erro=sessao');if(session.provider_session_id)await destroyRangeSession(String(session.provider_session_id),session.provider_base_url?String(session.provider_base_url):null);await admin.from('lab_sessions').update({status:'revoked',stopped_at:new Date().toISOString(),ended_reason:'admin'}).eq('id',sessionId).eq('status','running');await auditRange(admin,{eventType:'session_revoked_by_admin',userId:session.user_id,labId:session.lab_id,challengeId:session.challenge_id,eventId:session.ctf_event_id,providerSessionId:session.provider_session_id,details:{reason:'admin'}});revalidatePath('/admin/range');redirect('/admin/range?encerrada=1')
 }

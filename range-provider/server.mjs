@@ -31,8 +31,6 @@ const GCP_EGRESS_INTERFACE = String(process.env.GCP_EGRESS_INTERFACE || '')
 const STATE_FILE = resolve(process.env.STATE_FILE || './data/state.json')
 const LABS_FILE = resolve(process.env.LABS_FILE || './labs.json')
 const MAX_TTL = Math.max(15, Number(process.env.MAX_TTL_MINUTES || 240))
-const MAX_ACTIVE_SESSIONS = Math.max(1, Number(process.env.MAX_ACTIVE_SESSIONS || 100))
-const MAX_SESSIONS_PER_USER = Math.max(1, Number(process.env.MAX_SESSIONS_PER_USER || 1))
 const GCP_SWEEP_INTERVAL_MS = Math.max(60_000, Number(process.env.GCP_SWEEP_INTERVAL_MS || 300_000))
 
 if (!API_KEY) throw new Error('PROVIDER_API_KEY is required')
@@ -90,16 +88,6 @@ function providerType(def) {
 function runningFor(userId, labId) {
   return Object.values(state.sessions).find(s => s.status === 'running' && s.userId === userId && s.labId === labId && new Date(s.expiresAt).getTime() > Date.now())
 }
-function activeSessions() {
-  return Object.values(state.sessions).filter(s => s.status === 'running' && new Date(s.expiresAt).getTime() > Date.now())
-}
-function runningForUser(userId) {
-  return activeSessions().filter(s => s.userId === userId)
-}
-function estimatedCostCents(def, ttlMinutes) {
-  const rate = Math.max(0, Number(def?.estimated_cost_cents_per_hour || 0))
-  return Math.ceil(rate * (Math.max(1, ttlMinutes) / 60))
-}
 function slotInUse(slot) {
   return reservedSlots.has(slot) || Object.values(state.sessions).some(s => s.slot === slot && ['running', 'provisioning'].includes(s.status))
 }
@@ -153,8 +141,6 @@ function localResponse(session) {
     target_address: session.targetUrl,
     expires_at: session.expiresAt,
     access_mode: 'direct',
-    provider: session.provider,
-    estimated_cost_cents: Number(session.estimatedCostCents || 0),
   }
 }
 function gcpResponse(session) {
@@ -165,20 +151,18 @@ function gcpResponse(session) {
     target_address: sessionTargetAddress(session.def, session.targetIp),
     expires_at: session.expiresAt,
     access_mode: 'vpn',
-    provider: session.provider,
-    estimated_cost_cents: Number(session.estimatedCostCents || 0),
   }
 }
 
-async function provisionLocalSession({ id, userId, labId, expiresAt, def, context, estimatedCostCents }) {
-  const local = await provisionLocalDocker({ sessionId: id, userId, labId, expiresAt, def, context })
-  const session = { id, provider: 'local_docker', status: 'running', userId, labId, targetUrl: local.targetUrl, expiresAt, estimatedCostCents, createdAt: new Date().toISOString(), local }
+async function provisionLocalSession({ id, userId, labId, expiresAt, def }) {
+  const local = await provisionLocalDocker({ sessionId: id, userId, labId, expiresAt, def })
+  const session = { id, provider: 'local_docker', status: 'running', userId, labId, targetUrl: local.targetUrl, expiresAt, createdAt: new Date().toISOString(), local }
   state.sessions[id] = session
   await saveState()
   return localResponse(session)
 }
 
-async function provisionGcpSession({ id, userId, labId, expiresAt, def, slot, context, estimatedCostCents }) {
+async function provisionGcpSession({ id, userId, labId, expiresAt, def, slot }) {
   const clientIp = `10.77.${slot}.2`
   const token = randomBytes(24).toString('base64url')
   const { priv: clientPrivateKey, pub: clientPublicKey } = await wgKeyPair()
@@ -189,7 +173,7 @@ async function provisionGcpSession({ id, userId, labId, expiresAt, def, slot, co
   let egressInterface = null
 
   try {
-    gcp = await provisionGcpVm({ sessionId: id, userId, labId, expiresAt, def, context })
+    gcp = await provisionGcpVm({ sessionId: id, userId, labId, expiresAt, def })
     const targetIp = gcp.targetIp
     const targetRoute = `${targetIp}/32`
     egressInterface = await egressInterfaceFor(targetIp)
@@ -205,7 +189,7 @@ async function provisionGcpSession({ id, userId, labId, expiresAt, def, slot, co
     const config = vpnConfig({ clientPrivateKey, clientIp, targetRoutes: targetRoute, serverPublicKey })
     const session = {
       id, provider: 'gcp', status: 'running', userId, labId, slot, targetIp, targetRoute, clientIp, clientPublicKey,
-      token, config, expiresAt, gcp, egressInterface, estimatedCostCents, def: { scheme: def.scheme || null, port: def.port || null }, createdAt: new Date().toISOString(),
+      token, config, expiresAt, gcp, egressInterface, def: { scheme: def.scheme || null, port: def.port || null }, createdAt: new Date().toISOString(),
     }
     state.sessions[id] = session
     await saveState()
@@ -222,7 +206,7 @@ async function provisionGcpSession({ id, userId, labId, expiresAt, def, slot, co
   }
 }
 
-async function provisionSession({ userId, labId, ttlMinutes, context = {} }) {
+async function provisionSession({ userId, labId, ttlMinutes }) {
   const def = labs[labId]
   if (!def) throw Object.assign(new Error('unknown lab_id'), { statusCode: 404 })
   const type = providerType(def)
@@ -230,13 +214,6 @@ async function provisionSession({ userId, labId, ttlMinutes, context = {} }) {
 
   const current = runningFor(userId, labId)
   if (current) return current.provider === 'gcp' ? gcpResponse(current) : localResponse(current)
-
-  if (activeSessions().length >= MAX_ACTIVE_SESSIONS) {
-    throw Object.assign(new Error('range capacity exhausted'), { statusCode: 503 })
-  }
-  if (runningForUser(userId).length >= MAX_SESSIONS_PER_USER) {
-    throw Object.assign(new Error('user session limit reached'), { statusCode: 429 })
-  }
 
   const key = `${userId}:${labId}`
   if (provisioningKeys.has(key)) throw Object.assign(new Error('session is already provisioning'), { statusCode: 409 })
@@ -247,12 +224,11 @@ async function provisionSession({ userId, labId, ttlMinutes, context = {} }) {
     const id = randomUUID()
     const ttl = Math.min(MAX_TTL, Math.max(15, Number(ttlMinutes || def.ttl_minutes || 60)))
     const expiresAt = new Date(Date.now() + ttl * 60_000).toISOString()
-    const cost = estimatedCostCents(def, ttl)
     if (type === 'gcp') {
       slot = allocateSlot()
-      return await provisionGcpSession({ id, userId, labId, expiresAt, def, slot, context, estimatedCostCents: cost })
+      return await provisionGcpSession({ id, userId, labId, expiresAt, def, slot })
     }
-    return await provisionLocalSession({ id, userId, labId, expiresAt, def, context, estimatedCostCents: cost })
+    return await provisionLocalSession({ id, userId, labId, expiresAt, def })
   } finally {
     releaseSlot(slot)
     provisioningKeys.delete(key)
@@ -298,8 +274,17 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url || '/', PUBLIC_BASE_URL)
 
-    if (req.method === 'GET' && url.pathname === '/healthz') {
-      return json(res, 200, { ok: true })
+    if (req.method === 'GET' && url.pathname === '/health') {
+      const running = Object.values(state.sessions).filter(s => s.status === 'running')
+      return json(res, 200, {
+        ok: true,
+        sessions: running.length,
+        local_sessions: running.filter(s => s.provider === 'local_docker').length,
+        gcp_sessions: running.filter(s => s.provider === 'gcp').length,
+        labs: Object.keys(labs).length,
+        gcp: gcpConfigurationStatus(),
+        local_docker: localDockerConfigurationStatus(),
+      })
     }
 
     const vpnMatch = url.pathname.match(/^\/vpn\/([A-Za-z0-9_-]+)$/)
@@ -318,22 +303,6 @@ const server = http.createServer(async (req, res) => {
 
     if (!authorized(req)) return json(res, 401, { error: 'unauthorized' })
 
-    if (req.method === 'GET' && url.pathname === '/health') {
-      const running = Object.values(state.sessions).filter(s => s.status === 'running' && new Date(s.expiresAt).getTime() > Date.now())
-      return json(res, 200, {
-        ok: true,
-        sessions: running.length,
-        max_sessions: MAX_ACTIVE_SESSIONS,
-        available_slots: Math.max(0, MAX_ACTIVE_SESSIONS - running.length),
-        max_sessions_per_user: MAX_SESSIONS_PER_USER,
-        local_sessions: running.filter(s => s.provider === 'local_docker').length,
-        gcp_sessions: running.filter(s => s.provider === 'gcp').length,
-        labs: Object.keys(labs).length,
-        gcp: gcpConfigurationStatus(),
-        local_docker: localDockerConfigurationStatus(),
-      })
-    }
-
     if (req.method === 'GET' && url.pathname === '/health/gcp') {
       const result = await checkGcpAccess()
       return json(res, result.ok ? 200 : 503, { ...result, config: gcpConfigurationStatus() })
@@ -347,18 +316,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/sessions') {
       const input = await body(req)
       if (!input.user_id || !input.lab_id) return json(res, 400, { error: 'user_id and lab_id are required' })
-      const dynamicFlag = input.dynamic_flag ? String(input.dynamic_flag) : null
-      if (dynamicFlag && (dynamicFlag.length < 12 || dynamicFlag.length > 256)) return json(res, 400, { error: 'invalid dynamic_flag' })
-      const result = await provisionSession({
-        userId: String(input.user_id),
-        labId: String(input.lab_id),
-        ttlMinutes: Number(input.ttl_minutes || 60),
-        context: {
-          dynamicFlag,
-          challengeId: input.challenge_id ? String(input.challenge_id) : null,
-          eventId: input.event_id ? String(input.event_id) : null,
-        },
-      })
+      const result = await provisionSession({ userId: String(input.user_id), labId: String(input.lab_id), ttlMinutes: Number(input.ttl_minutes || 60) })
       return json(res, 201, result)
     }
 
