@@ -10,8 +10,7 @@
     "port": 22,
     "ready_port": 22,
     "ready_timeout_seconds": 120,
-    "ttl_minutes": 30,
-    "estimated_cost_cents_per_hour": 8
+    "ttl_minutes": 30
   },
   "web-juice-01": {
     "provider": "gcp_vm",
@@ -22,8 +21,7 @@
     "port": 3000,
     "ready_port": 3000,
     "ready_timeout_seconds": 180,
-    "ttl_minutes": 60,
-    "estimated_cost_cents_per_hour": 8
+    "ttl_minutes": 60
   },
   "linux-privesc-01": {
     "provider": "gcp_vm",
@@ -34,9 +32,6 @@
     "port": 22,
     "ready_port": 22,
     "ready_timeout_seconds": 120,
-    "ttl_minutes": 90,
-    "estimated_cost_cents_per_hour": 8,
-    "dynamic_flag_path": "/root/flag.txt",
-    "dynamic_flag_mode": "0600"
+    "ttl_minutes": 90
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "fortifysec-unified",
-  "version": "9.0.0",
+  "version": "8.5.4",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -27,4 +27,5 @@
   "engines": {
     "node": ">=20.9.0"
   }
+  
 }
