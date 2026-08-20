@@ -258,139 +258,25 @@ export async function adminCreateCourseAction(formData:FormData){await requireAd
 export async function adminToggleUserAction(formData:FormData){const {user}=await requireAdmin();const userId=String(formData.get('user_id')||'');if(userId===user.id)return;const blocked=String(formData.get('blocked')||'false')==='true';const admin=createAdminClient();await admin.from('profiles').update({blocked:!blocked}).eq('id',userId);if(!blocked)await admin.from('lab_sessions').update({status:'revoked',stopped_at:new Date().toISOString()}).eq('user_id',userId).eq('status','running');revalidatePath('/admin/usuarios')}
 export async function adminCreateLabAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');if(!title||!slug)return;await admin.from('labs').insert({title,slug,description:String(formData.get('description')||''),difficulty:String(formData.get('difficulty')||'Easy'),estimated_minutes:Number(formData.get('estimated_minutes')||60),connection_url:String(formData.get('connection_url')||'')||null,provider_lab_id:String(formData.get('provider_lab_id')||'')||null,instructions:String(formData.get('instructions')||''),tags:String(formData.get('tags')||'').split(',').map(s=>s.trim()).filter(Boolean),published:true});revalidatePath('/admin/labs');revalidatePath('/painel/labs')}
 export async function adminCreateChallengeAction(formData:FormData){
- await requireAdmin()
- const admin=createAdminClient()
- const title=String(formData.get('title')||'').trim()
- const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-')
- const flag=String(formData.get('flag')||'').trim()
- const labId=String(formData.get('lab_id')||'')||null
- if(!title||!slug||!flag)redirect('/admin/desafios?erro='+encodeURIComponent('Informe título, slug e flag.'))
-
- const {data:newId,error}=await admin.rpc('admin_create_challenge',{
-  p_title:title,
-  p_slug:slug,
-  p_description:String(formData.get('description')||''),
-  p_category:String(formData.get('category')||'Web'),
-  p_difficulty:String(formData.get('difficulty')||'Easy'),
-  p_xp_reward:Math.max(0,Number(formData.get('xp_reward')||50)),
-  p_briefing:String(formData.get('briefing')||''),
-  p_flag:flag,
- })
- if(error||!newId){
-  console.error('[adminCreateChallengeAction]',error)
-  redirect('/admin/desafios?erro='+encodeURIComponent(error?.message||'O Supabase não retornou o ID do Challenge.'))
- }
-
- if(labId){
-  const {error:labError}=await admin.from('challenges').update({lab_id:labId}).eq('id',String(newId))
-  if(labError){
-   console.error('[adminCreateChallengeAction:lab]',labError)
-   redirect('/admin/desafios?erro='+encodeURIComponent('Challenge criado, mas não foi possível associar o Lab: '+labError.message))
-  }
- }
-
- revalidatePath('/admin/desafios')
- revalidatePath('/admin/ctf')
- revalidatePath('/painel/desafios')
- redirect('/admin/desafios?criado=1')
+ const {supabase}=await requireAdmin();const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');const flag=String(formData.get('flag')||'').trim();const labId=String(formData.get('lab_id')||'')||null;if(!title||!slug||!flag)return;
+ const {data:newId,error}=await supabase.rpc('admin_create_challenge_safe',{p_title:title,p_slug:slug,p_description:String(formData.get('description')||''),p_category:String(formData.get('category')||'Web'),p_difficulty:String(formData.get('difficulty')||'Easy'),p_xp_reward:Math.max(0,Number(formData.get('xp_reward')||50)),p_briefing:String(formData.get('briefing')||''),p_flag:flag,p_lab_id:labId});
+ if(error||!newId){console.error('[ADMIN_CHALLENGE_CREATE]',error||'challenge id not returned');return}
+ revalidatePath('/admin/desafios');revalidatePath('/admin/ctf');revalidatePath('/painel/desafios')
 }
 
 export async function adminCreateCtfAction(formData:FormData){
- await requireAdmin()
- const admin=createAdminClient()
- const title=String(formData.get('title')||'').trim()
- const starts=String(formData.get('starts_at')||'').trim()
- const ends=String(formData.get('ends_at')||'').trim()
- const status=String(formData.get('status')||'scheduled')
-
- if(!title||!starts||!ends)redirect('/admin/ctf?erro='+encodeURIComponent('Informe título, início e fim do CTF.'))
- if(!['scheduled','live','finished'].includes(status))redirect('/admin/ctf?erro='+encodeURIComponent('Status de CTF inválido.'))
-
- const startDate=new Date(starts)
- const endDate=new Date(ends)
- if(Number.isNaN(startDate.getTime())||Number.isNaN(endDate.getTime()))redirect('/admin/ctf?erro='+encodeURIComponent('Data de início ou fim inválida.'))
- if(endDate.getTime()<=startDate.getTime())redirect('/admin/ctf?erro='+encodeURIComponent('O fim do CTF precisa ser posterior ao início.'))
-
- const {data:event,error}=await admin.from('ctf_events').insert({
-  title,
-  description:String(formData.get('description')||'').trim(),
-  starts_at:startDate.toISOString(),
-  ends_at:endDate.toISOString(),
-  prize_text:String(formData.get('prize_text')||'').trim()||null,
-  status,
- }).select('id').single()
-
- if(error||!event){
-  console.error('[adminCreateCtfAction]',error)
-  redirect('/admin/ctf?erro='+encodeURIComponent(error?.message||'O CTF não foi gravado no Supabase.'))
- }
-
- revalidatePath('/admin/ctf')
- revalidatePath('/painel/ctf')
- redirect('/admin/ctf?criado=1')
+ const {supabase}=await requireAdmin();const title=String(formData.get('title')||'').trim();const starts=String(formData.get('starts_at')||'');const ends=String(formData.get('ends_at')||'');if(!title||!starts||!ends)redirect('/admin/ctf?erro='+encodeURIComponent('Preencha título, início e fim do CTF.'));
+ const startDate=new Date(starts);const endDate=new Date(ends);if(!Number.isFinite(startDate.getTime())||!Number.isFinite(endDate.getTime())||endDate<=startDate){console.error('[ADMIN_CTF_CREATE] invalid date range',{starts,ends});redirect('/admin/ctf?erro='+encodeURIComponent('A data final precisa ser posterior à data inicial.'))}
+ const {data:newId,error}=await supabase.rpc('admin_create_ctf_safe',{p_title:title,p_description:String(formData.get('description')||''),p_starts_at:startDate.toISOString(),p_ends_at:endDate.toISOString(),p_prize_text:String(formData.get('prize_text')||''),p_status:String(formData.get('status')||'scheduled')});
+ if(error||!newId){console.error('[ADMIN_CTF_CREATE]',error||'ctf id not returned');redirect('/admin/ctf?erro='+encodeURIComponent(error?.message||'Não foi possível criar o CTF.'))}
+ revalidatePath('/admin/ctf');revalidatePath('/painel/ctf');redirect('/admin/ctf?criado=1')
 }
 
 export async function adminCreateLessonAction(formData:FormData){
- await requireAdmin()
- const admin=createAdminClient()
- const courseId=String(formData.get('course_id')||'').trim()
- const moduleId=String(formData.get('module_id')||'').trim()||null
- const title=String(formData.get('title')||'').trim()
- const rawPosition=String(formData.get('position')||'').trim()
- const returnTo=safeAdminReturn(formData.get('return_to'),'/admin/aulas')
-
- if(!courseId||!title)redirect(`${returnTo}?erro=`+encodeURIComponent('Informe curso e título da aula.'))
-
- const {data:course,error:courseError}=await admin.from('courses').select('id').eq('id',courseId).maybeSingle()
- if(courseError||!course){
-  console.error('[adminCreateLessonAction:course]',courseError)
-  redirect(`${returnTo}?erro=`+encodeURIComponent(courseError?.message||'Curso não encontrado.'))
- }
-
- if(moduleId){
-  const {data:module,error:moduleError}=await admin.from('course_modules').select('id').eq('id',moduleId).eq('course_id',courseId).maybeSingle()
-  if(moduleError){
-   console.error('[adminCreateLessonAction:module]',moduleError)
-   redirect(`${returnTo}?erro=`+encodeURIComponent(moduleError.message))
-  }
-  if(!module)redirect(`${returnTo}?erro=`+encodeURIComponent('O módulo selecionado não pertence ao curso escolhido.'))
- }
-
- let position=Number(rawPosition)
- if(!rawPosition){
-  const {data:lastRows,error:lastError}=await admin.from('lessons').select('position').eq('course_id',courseId).order('position',{ascending:false}).limit(1)
-  if(lastError){
-   console.error('[adminCreateLessonAction:position]',lastError)
-   redirect(`${returnTo}?erro=`+encodeURIComponent(lastError.message))
-  }
-  position=Number(lastRows?.[0]?.position||0)+1
- }
- if(!Number.isInteger(position)||position<1)redirect(`${returnTo}?erro=`+encodeURIComponent('A posição da aula precisa ser um número inteiro maior que zero.'))
-
- const {data:lesson,error}=await admin.from('lessons').insert({
-  course_id:courseId,
-  module_id:moduleId,
-  title,
-  summary:String(formData.get('summary')||'').trim(),
-  content:String(formData.get('content')||''),
-  video_url:safeExternalUrl(String(formData.get('video_url')||'').trim()),
-  position,
-  xp_reward:Math.max(0,Number(formData.get('xp_reward')||10)),
-  published:asBool(formData.get('published')),
- }).select('id').single()
-
- if(error||!lesson){
-  console.error('[adminCreateLessonAction]',error)
-  const message=error?.code==='23505'
-   ? 'Já existe uma aula nessa posição para este curso. Deixe a posição em branco para usar a próxima automaticamente.'
-   : error?.message||'A aula não foi gravada no Supabase.'
-  redirect(`${returnTo}?erro=`+encodeURIComponent(message))
- }
-
- revalidatePath('/admin/aulas')
- revalidatePath(returnTo)
- revalidatePath('/painel/cursos')
- redirect(`${returnTo}?criada=1`)
+ const {supabase}=await requireAdmin();const courseId=String(formData.get('course_id')||'');const moduleId=String(formData.get('module_id')||'')||null;const title=String(formData.get('title')||'').trim();const rawPosition=Number(formData.get('position')||0);const position=Number.isFinite(rawPosition)&&rawPosition>0?Math.trunc(rawPosition):null;const returnTo=safeAdminReturn(formData.get('return_to'),'/admin/aulas');if(!courseId||!title)redirect(`${returnTo}?erro=dados`);
+ const {data:newId,error}=await supabase.rpc('admin_create_lesson_safe',{p_course_id:courseId,p_module_id:moduleId,p_title:title,p_summary:String(formData.get('summary')||'').trim(),p_content:String(formData.get('content')||''),p_video_url:safeExternalUrl(String(formData.get('video_url')||'').trim()),p_position:position,p_xp_reward:Math.max(0,Number(formData.get('xp_reward')||10)),p_published:asBool(formData.get('published'))});
+ if(error||!newId){console.error('[ADMIN_LESSON_CREATE]',error||'lesson id not returned');redirect(`${returnTo}?erro=salvar`)}
+ revalidatePath('/admin/aulas');revalidatePath(returnTo);revalidatePath('/painel/cursos');redirect(`${returnTo}?criada=1`)
 }
 
 export async function adminToggleCourseAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const courseId=String(formData.get('course_id')||'');const published=String(formData.get('published')||'false')==='true';await admin.from('courses').update({published:!published}).eq('id',courseId);revalidatePath('/admin/cursos');revalidatePath('/painel/cursos')}
@@ -410,11 +296,11 @@ export async function adminToggleModuleAction(formData:FormData){
 }
 
 export async function adminToggleLessonAction(formData:FormData){
- await requireAdmin();const admin=createAdminClient();const id=String(formData.get('lesson_id')||'');const published=asBool(formData.get('published'));const returnTo=safeAdminReturn(formData.get('return_to'),'/admin/aulas');if(!id)return;await admin.from('lessons').update({published:!published}).eq('id',id);revalidatePath('/admin/aulas');revalidatePath(returnTo);revalidatePath('/painel/cursos')
+ const {supabase}=await requireAdmin();const id=String(formData.get('lesson_id')||'');const published=asBool(formData.get('published'));const returnTo=safeAdminReturn(formData.get('return_to'),'/admin/aulas');if(!id)return;const {error}=await supabase.rpc('admin_set_lesson_published_safe',{p_lesson_id:id,p_published:!published});if(error){console.error('[ADMIN_LESSON_TOGGLE]',error);return}revalidatePath('/admin/aulas');revalidatePath(returnTo);revalidatePath('/painel/cursos')
 }
 
 export async function adminDeleteLessonAction(formData:FormData){
- await requireAdmin();const admin=createAdminClient();const id=String(formData.get('lesson_id')||'');const returnTo=safeAdminReturn(formData.get('return_to'),'/admin/aulas');if(!id)return;await admin.from('lessons').delete().eq('id',id);revalidatePath('/admin/aulas');revalidatePath(returnTo);revalidatePath('/painel/cursos')
+ const {supabase}=await requireAdmin();const id=String(formData.get('lesson_id')||'');const returnTo=safeAdminReturn(formData.get('return_to'),'/admin/aulas');if(!id)return;const {error}=await supabase.rpc('admin_delete_lesson_safe',{p_lesson_id:id});if(error){console.error('[ADMIN_LESSON_DELETE]',error);return}revalidatePath('/admin/aulas');revalidatePath(returnTo);revalidatePath('/painel/cursos')
 }
 
 export async function adminToggleLabPublishedAction(formData:FormData){
@@ -422,58 +308,30 @@ export async function adminToggleLabPublishedAction(formData:FormData){
 }
 
 export async function adminToggleChallengePublishedAction(formData:FormData){
- await requireAdmin();const admin=createAdminClient();const id=String(formData.get('challenge_id')||'');const published=asBool(formData.get('published'));if(!id)return;await admin.from('challenges').update({published:!published,updated_at:new Date().toISOString()}).eq('id',id);revalidatePath('/admin/desafios');revalidatePath('/painel/desafios')
+ const {supabase}=await requireAdmin();const id=String(formData.get('challenge_id')||'');const published=asBool(formData.get('published'));if(!id)return;const {error}=await supabase.rpc('admin_set_challenge_published_safe',{p_challenge_id:id,p_published:!published});if(error){console.error('[ADMIN_CHALLENGE_TOGGLE]',error);return}revalidatePath('/admin/desafios');revalidatePath('/admin/ctf');revalidatePath('/painel/desafios')
 }
 
 export async function adminUpdateCtfStatusAction(formData:FormData){
- await requireAdmin()
- const admin=createAdminClient()
- const id=String(formData.get('event_id')||'').trim()
- const status=String(formData.get('status')||'scheduled')
- if(!id||!['scheduled','live','finished'].includes(status))redirect('/admin/ctf?erro='+encodeURIComponent('Evento ou status inválido.'))
- const {error}=await admin.from('ctf_events').update({status}).eq('id',id)
- if(error){console.error('[adminUpdateCtfStatusAction]',error);redirect('/admin/ctf?erro='+encodeURIComponent(error.message))}
- revalidatePath('/admin/ctf')
- revalidatePath('/painel/ctf')
- redirect('/admin/ctf?status=1')
+ const {supabase}=await requireAdmin();const id=String(formData.get('event_id')||'').trim();const status=String(formData.get('status')||'scheduled');if(!id||!['scheduled','live','finished'].includes(status))redirect('/admin/ctf?erro='+encodeURIComponent('CTF ou status inválido.'));const {error}=await supabase.rpc('admin_update_ctf_status_safe',{p_event_id:id,p_status:status});if(error){console.error('[ADMIN_CTF_STATUS]',error);redirect('/admin/ctf?erro='+encodeURIComponent(error.message||'Não foi possível atualizar o status.'))}revalidatePath('/admin/ctf');revalidatePath('/painel/ctf');revalidatePath(`/painel/ctf/${id}`);redirect('/admin/ctf?status=1')
 }
 
 export async function adminLinkChallengeToCtfAction(formData:FormData){
- await requireAdmin()
- const admin=createAdminClient()
- const eventId=String(formData.get('event_id')||'').trim()
- const challengeId=String(formData.get('challenge_id')||'').trim()
- const position=Math.max(1,Number(formData.get('position')||1))
- if(!eventId||!challengeId)redirect('/admin/ctf?erro='+encodeURIComponent('Selecione um Challenge para vincular.'))
-
+ await requireAdmin();const admin=createAdminClient();const eventId=String(formData.get('event_id')||'').trim();const challengeId=String(formData.get('challenge_id')||'').trim();const rawPosition=Number(formData.get('position')||1);const position=Number.isFinite(rawPosition)&&rawPosition>0?Math.trunc(rawPosition):1;
+ if(!eventId||!challengeId)redirect('/admin/ctf?erro='+encodeURIComponent('Selecione um CTF e um Challenge.'));
  const [{data:event,error:eventError},{data:challenge,error:challengeError}]=await Promise.all([
-  admin.from('ctf_events').select('id').eq('id',eventId).maybeSingle(),
-  admin.from('challenges').select('id,published').eq('id',challengeId).maybeSingle(),
- ])
- if(eventError||!event){console.error('[adminLinkChallengeToCtfAction:event]',eventError);redirect('/admin/ctf?erro='+encodeURIComponent(eventError?.message||'CTF não encontrado.'))}
- if(challengeError||!challenge){console.error('[adminLinkChallengeToCtfAction:challenge]',challengeError);redirect('/admin/ctf?erro='+encodeURIComponent(challengeError?.message||'Challenge não encontrado.'))}
- if(!challenge.published)redirect('/admin/ctf?erro='+encodeURIComponent('Publique o Challenge antes de vinculá-lo ao CTF.'))
-
- const {error}=await admin.from('ctf_event_challenges').upsert({event_id:eventId,challenge_id:challengeId,position},{onConflict:'event_id,challenge_id'})
- if(error){console.error('[adminLinkChallengeToCtfAction]',error);redirect('/admin/ctf?erro='+encodeURIComponent(error.message))}
- revalidatePath('/admin/ctf')
- revalidatePath('/painel/ctf')
- revalidatePath(`/painel/ctf/${eventId}`)
- redirect('/admin/ctf?vinculado=1')
+  admin.from('ctf_events').select('id,title').eq('id',eventId).maybeSingle(),
+  admin.from('challenges').select('id,title,published').eq('id',challengeId).maybeSingle(),
+ ]);
+ if(eventError||!event){console.error('[ADMIN_CTF_LINK_EVENT]',eventError||'ctf not found');redirect('/admin/ctf?erro='+encodeURIComponent('CTF não encontrado.'))}
+ if(challengeError||!challenge){console.error('[ADMIN_CTF_LINK_CHALLENGE]',challengeError||'challenge not found');redirect('/admin/ctf?erro='+encodeURIComponent('Challenge não encontrado.'))}
+ if(!challenge.published)redirect('/admin/ctf?erro='+encodeURIComponent('O Challenge precisa estar publicado antes de ser vinculado.'));
+ const {error}=await admin.from('ctf_event_challenges').upsert({event_id:eventId,challenge_id:challengeId,position},{onConflict:'event_id,challenge_id'});
+ if(error){console.error('[ADMIN_CTF_LINK]',error);redirect('/admin/ctf?erro='+encodeURIComponent(error.message||'Não foi possível vincular o Challenge.'))}
+ revalidatePath('/admin/ctf');revalidatePath('/painel/ctf');revalidatePath(`/painel/ctf/${eventId}`);redirect('/admin/ctf?vinculado=1')
 }
 
 export async function adminUnlinkChallengeFromCtfAction(formData:FormData){
- await requireAdmin()
- const admin=createAdminClient()
- const eventId=String(formData.get('event_id')||'').trim()
- const challengeId=String(formData.get('challenge_id')||'').trim()
- if(!eventId||!challengeId)redirect('/admin/ctf?erro='+encodeURIComponent('Vínculo inválido.'))
- const {error}=await admin.from('ctf_event_challenges').delete().eq('event_id',eventId).eq('challenge_id',challengeId)
- if(error){console.error('[adminUnlinkChallengeFromCtfAction]',error);redirect('/admin/ctf?erro='+encodeURIComponent(error.message))}
- revalidatePath('/admin/ctf')
- revalidatePath('/painel/ctf')
- revalidatePath(`/painel/ctf/${eventId}`)
- redirect('/admin/ctf?removido=1')
+ await requireAdmin();const admin=createAdminClient();const eventId=String(formData.get('event_id')||'').trim();const challengeId=String(formData.get('challenge_id')||'').trim();if(!eventId||!challengeId)redirect('/admin/ctf?erro='+encodeURIComponent('Vínculo de CTF inválido.'));const {error}=await admin.from('ctf_event_challenges').delete().eq('event_id',eventId).eq('challenge_id',challengeId);if(error){console.error('[ADMIN_CTF_UNLINK]',error);redirect('/admin/ctf?erro='+encodeURIComponent(error.message||'Não foi possível remover o Challenge do CTF.'))}revalidatePath('/admin/ctf');revalidatePath('/painel/ctf');revalidatePath(`/painel/ctf/${eventId}`);redirect('/admin/ctf?removido=1')
 }
 
 export async function adminUpdateSiteSettingsAction(formData:FormData){
