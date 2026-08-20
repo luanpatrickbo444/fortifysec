@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireAdmin, requireCompany, requireUser } from '@/lib/auth'
 import { ensureApplicationProfile } from '@/lib/profile-sync'
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 
 function asBool(v:FormDataEntryValue|null){return String(v||'false')==='true'}
 function safeExternalUrl(value:string){try{const u=new URL(value);return u.protocol==='https:'||u.protocol==='http:'?u.toString():null}catch{return null}}
@@ -258,10 +258,12 @@ export async function adminCreateCourseAction(formData:FormData){await requireAd
 export async function adminToggleUserAction(formData:FormData){const {user}=await requireAdmin();const userId=String(formData.get('user_id')||'');if(userId===user.id)return;const blocked=String(formData.get('blocked')||'false')==='true';const admin=createAdminClient();await admin.from('profiles').update({blocked:!blocked}).eq('id',userId);if(!blocked)await admin.from('lab_sessions').update({status:'revoked',stopped_at:new Date().toISOString()}).eq('user_id',userId).eq('status','running');revalidatePath('/admin/usuarios')}
 export async function adminCreateLabAction(formData:FormData){await requireAdmin();const admin=createAdminClient();const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');if(!title||!slug)return;await admin.from('labs').insert({title,slug,description:String(formData.get('description')||''),difficulty:String(formData.get('difficulty')||'Easy'),estimated_minutes:Number(formData.get('estimated_minutes')||60),connection_url:String(formData.get('connection_url')||'')||null,provider_lab_id:String(formData.get('provider_lab_id')||'')||null,instructions:String(formData.get('instructions')||''),tags:String(formData.get('tags')||'').split(',').map(s=>s.trim()).filter(Boolean),published:true});revalidatePath('/admin/labs');revalidatePath('/painel/labs')}
 export async function adminCreateChallengeAction(formData:FormData){
- const {supabase}=await requireAdmin();const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');const flag=String(formData.get('flag')||'').trim();const labId=String(formData.get('lab_id')||'')||null;if(!title||!slug||!flag)return;
- const {data:newId,error}=await supabase.rpc('admin_create_challenge_safe',{p_title:title,p_slug:slug,p_description:String(formData.get('description')||''),p_category:String(formData.get('category')||'Web'),p_difficulty:String(formData.get('difficulty')||'Easy'),p_xp_reward:Math.max(0,Number(formData.get('xp_reward')||50)),p_briefing:String(formData.get('briefing')||''),p_flag:flag,p_lab_id:labId});
- if(error||!newId){console.error('[ADMIN_CHALLENGE_CREATE]',error||'challenge id not returned');return}
- revalidatePath('/admin/desafios');revalidatePath('/admin/ctf');revalidatePath('/painel/desafios')
+ await requireAdmin();const admin=createAdminClient();const title=String(formData.get('title')||'').trim();const slug=String(formData.get('slug')||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');const flag=String(formData.get('flag')||'').trim();const labId=String(formData.get('lab_id')||'')||null;if(!title||!slug||!flag)redirect('/admin/desafios?erro='+encodeURIComponent('Preencha título, slug e flag do Challenge.'));
+ if(labId){const {data:lab,error:labError}=await admin.from('labs').select('id').eq('id',labId).maybeSingle();if(labError||!lab)redirect('/admin/desafios?erro='+encodeURIComponent('O Lab selecionado não existe.'))}
+ const flagHash=`\\x${createHash('sha256').update(flag,'utf8').digest('hex')}`;
+ const {data:newChallenge,error}=await admin.from('challenges').insert({title,slug,description:String(formData.get('description')||''),category:String(formData.get('category')||'Web'),difficulty:String(formData.get('difficulty')||'Easy'),xp_reward:Math.max(0,Number(formData.get('xp_reward')||50)),briefing:String(formData.get('briefing')||''),flag_hash:flagHash,published:true,lab_id:labId}).select('id').single();
+ if(error||!newChallenge){console.error('[ADMIN_CHALLENGE_CREATE]',error||'challenge id not returned');redirect('/admin/desafios?erro='+encodeURIComponent(error?.message||'Não foi possível gravar o Challenge.'))}
+ revalidatePath('/admin/desafios');revalidatePath('/admin/ctf');revalidatePath('/painel/desafios');redirect('/admin/desafios?criado=1')
 }
 
 export async function adminCreateCtfAction(formData:FormData){
@@ -308,7 +310,7 @@ export async function adminToggleLabPublishedAction(formData:FormData){
 }
 
 export async function adminToggleChallengePublishedAction(formData:FormData){
- const {supabase}=await requireAdmin();const id=String(formData.get('challenge_id')||'');const published=asBool(formData.get('published'));if(!id)return;const {error}=await supabase.rpc('admin_set_challenge_published_safe',{p_challenge_id:id,p_published:!published});if(error){console.error('[ADMIN_CHALLENGE_TOGGLE]',error);return}revalidatePath('/admin/desafios');revalidatePath('/admin/ctf');revalidatePath('/painel/desafios')
+ await requireAdmin();const admin=createAdminClient();const id=String(formData.get('challenge_id')||'').trim();const published=asBool(formData.get('published'));if(!id)redirect('/admin/desafios?erro='+encodeURIComponent('Challenge inválido.'));const {error}=await admin.from('challenges').update({published:!published,updated_at:new Date().toISOString()}).eq('id',id);if(error){console.error('[ADMIN_CHALLENGE_TOGGLE]',error);redirect('/admin/desafios?erro='+encodeURIComponent(error.message||'Não foi possível atualizar o Challenge.'))}revalidatePath('/admin/desafios');revalidatePath('/admin/ctf');revalidatePath('/painel/desafios');redirect('/admin/desafios')
 }
 
 export async function adminUpdateCtfStatusAction(formData:FormData){
