@@ -1,0 +1,12 @@
+{
+  "name": "fortifysec-range-gateway-safe",
+  "version": "10.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20.9.0" },
+  "scripts": {
+    "start": "node server.mjs",
+    "start:env": "node --env-file=.env server.mjs",
+    "check": "node --check server.mjs"
+  }
+}

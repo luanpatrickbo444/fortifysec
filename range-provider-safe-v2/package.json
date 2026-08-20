@@ -1,0 +1,18 @@
+{
+  "name": "fortifysec-range-provider-safe-v2",
+  "version": "10.0.0-safe-additive",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "start:env": "node --env-file=.env server.mjs",
+    "start:local": "node --env-file=.env.local server.mjs",
+    "check": "node --check server.mjs && node --check providers/local-docker.mjs && node --check providers/gcp.mjs"
+  },
+  "dependencies": {
+    "@google-cloud/compute": "^6.14.0"
+  }
+}

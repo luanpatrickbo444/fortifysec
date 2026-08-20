@@ -1,0 +1,22 @@
+[Unit]
+Description=FortifySec Range Provider
+After=network-online.target wg-quick@wg0.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/fortifysec/range-provider
+EnvironmentFile=/opt/fortifysec/range-provider/.env
+ExecStart=/usr/bin/node /opt/fortifysec/range-provider/server.mjs
+Restart=always
+RestartSec=5
+User=root
+Group=root
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/opt/fortifysec/range-provider/data
+
+[Install]
+WantedBy=multi-user.target

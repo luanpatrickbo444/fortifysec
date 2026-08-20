@@ -1,0 +1,43 @@
+FORTIFYSEC V10 — CÓDIGO COMPLETO CORRIGIDO (BASE VISUAL ESTÁVEL + MELHORIAS ADDITIVE-ONLY)
+
+BASE
+- Reconstruída da versão visual estável CTF LINK SAFE.
+- Aplicada somente a correção ACTION ONLY de Challenge em app/actions.ts.
+- Em seguida foram adicionadas as melhorias V10 APENAS em caminhos novos.
+
+GARANTIA VISUAL
+As melhorias V10 NÃO substituíram nem editaram:
+- app/globals.css
+- app/layout.tsx
+- components/DashboardShell.tsx
+- app/actions.ts (além da correção ACTION ONLY já estável)
+- app/admin/ctf/page.tsx
+- app/admin/desafios/page.tsx
+- package.json
+- postcss.config.mjs
+- next.config.ts
+- proxy.ts
+
+MELHORIAS V10 ADICIONADAS
+- /admin/range
+- /painel/conquistas
+- API administrativa do Range
+- flag dinâmica / anti-cheat / freeze de ranking via migration aditiva
+- quotas e configurações do Range
+- skills verificadas / badges
+- Range Provider V2 isolado em range-provider-safe-v2/
+- Range Gateway isolado em range-gateway-safe/
+- limite padrão de 100 sessões ativas e 1 sessão por usuário no provider V2
+
+ANTES DE PUBLICAR
+1. Faça backup/commit da versão que está funcionando.
+2. Execute a migration: supabase/migrations/009_cyber_range_hardening_additive.sql
+3. Configure os .env a partir dos arquivos .env.example.
+4. Execute: npm install
+5. Execute: npm run build
+6. Só então faça git add/commit/push.
+
+IMPORTANTE
+- Não contém node_modules nem .next.
+- Não contém segredos reais.
+- Se seu GitHub atual tiver alterações posteriores à base estável, prefira o PATCH additive-only ao invés de substituir o projeto inteiro.

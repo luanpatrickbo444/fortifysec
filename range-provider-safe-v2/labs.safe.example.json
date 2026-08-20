@@ -1,0 +1,28 @@
+{
+  "web-nginx-smoke": {
+    "provider": "local_docker",
+    "image": "nginx:alpine",
+    "scheme": "http",
+    "port": 80,
+    "ttl_minutes": 30,
+    "memory": "256m",
+    "cpus": "0.5",
+    "pids_limit": 128,
+    "read_only": false,
+    "ready_timeout_seconds": 30,
+    "estimated_cost_cents_per_hour": 0
+  },
+  "gcp-smoke-linux": {
+    "provider": "gcp_vm",
+    "image_project": "debian-cloud",
+    "image_family": "debian-12",
+    "machine_type": "e2-small",
+    "disk_size_gb": 20,
+    "scheme": "ssh",
+    "port": 22,
+    "ready_port": 22,
+    "ready_timeout_seconds": 120,
+    "ttl_minutes": 30,
+    "estimated_cost_cents_per_hour": 5
+  }
+}
