@@ -1,149 +1,30 @@
-import { Boxes, Clock3, GraduationCap, LockKeyhole, Network, Radio, Server, ShieldCheck, Zap, Activity, TerminalSquare, ArrowRight } from 'lucide-react'
+import { notFound, redirect } from 'next/navigation'
+import { Clock3, Crosshair, Download, ExternalLink, Network, Power, Radio, ShieldCheck, TerminalSquare } from 'lucide-react'
 import { DifficultyMeter } from '@/components/ui/DifficultyMeter'
+import { SubmitButton } from '@/components/ui/SubmitButton'
 import { requireUser } from '@/lib/auth'
+import { startLabAction, stopLabAction } from '@/app/actions'
 import { getPlatformAccess } from '@/lib/platform-access'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
-type Lab = {
-  id: string
-  title: string
-  slug: string
-  description: string
-  difficulty: string
-  estimated_minutes: number
-  tags: string[] | null
-}
-
-type RunningSession = {
-  lab_id: string
-  status: string
-  expires_at: string | null
-}
-
-function LockedCyberRange() {
-  return (
-    <section className="range-access-gate">
-      <div className="range-gate-icon"><LockKeyhole size={28} /></div>
-      <div className="kicker">CYBER RANGE / ACCESS CONTROL</div>
-      <h2>CyberLab disponível para alunos matriculados</h2>
-      <p>Conclua sua matrícula em uma formação FortifySec para acessar máquinas, redes isoladas e sessões práticas.</p>
-      <div className="range-gate-features">
-        <span><ShieldCheck size={15} /> Ambientes isolados</span>
-        <span><Network size={15} /> Sessões individuais</span>
-        <span><Zap size={15} /> Prática orientada</span>
-      </div>
-      <a className="btn" href="/painel/cursos"><GraduationCap size={16} /> VER MINHA FORMAÇÃO →</a>
-    </section>
-  )
-}
-
-function RangeEmpty() {
-  return (
-    <section className="range-empty-panel">
-      <div className="range-empty-icon"><TerminalSquare size={30} /></div>
-      <div>
-        <span className="section-index">RANGE STATUS</span>
-        <h2>Nenhum laboratório publicado ainda</h2>
-        <p>Seu acesso está ativo. Assim que o administrador publicar um Lab, ele aparecerá automaticamente nesta área.</p>
-      </div>
-      <div className="range-empty-steps">
-        <div><strong>01</strong><span>Lab publicado pelo administrador</span></div>
-        <div><strong>02</strong><span>Target aparece no catálogo</span></div>
-        <div><strong>03</strong><span>Você inicia uma sessão isolada</span></div>
-      </div>
-    </section>
-  )
-}
-
-export default async function LabsPage() {
-  const { user, supabase } = await requireUser()
-  const access = await getPlatformAccess(user.id)
-
-  if (!access.canAccessCyberRange) {
-    return (
-      <div className="internal-route-page" data-route="painel-labs-locked">
-        <section className="internal-hero range-hero">
-          <div>
-            <div className="kicker">CYBER RANGE / LABS</div>
-            <h1>Máquinas & Labs</h1>
-            <p>Ambientes práticos isolados para executar técnicas dentro de um escopo controlado.</p>
-          </div>
-          <div className="internal-hero-badge locked"><LockKeyhole size={18} /><span>STATUS</span><strong>LOCKED</strong></div>
-        </section>
-        <div className="range-overview-strip">
-          <div><small>ACCESS</small><strong>MATRÍCULA NECESSÁRIA</strong></div>
-          <div><small>NETWORK</small><strong>ISOLATED RANGE</strong></div>
-          <div><small>SESSION</small><strong>INDIVIDUAL</strong></div>
-        </div>
-        <LockedCyberRange />
-      </div>
-    )
-  }
-
-  const [{ data: labsData, error: labsError }, { data: sessionsData, error: sessionsError }] = await Promise.all([
-    supabase.from('labs').select('id,title,slug,description,difficulty,estimated_minutes,tags').eq('published', true).order('created_at', { ascending: false }),
-    supabase.from('lab_sessions').select('lab_id,status,expires_at').eq('user_id', user.id).eq('status', 'running'),
-  ])
-
-  const labs = (labsData || []) as Lab[]
-  const sessions = (sessionsData || []) as RunningSession[]
-  const running = new Map(sessions.map((session) => [session.lab_id, session]))
-
-  return (
-    <div className="internal-route-page" data-route="painel-labs">
-      <section className="internal-hero range-hero">
-        <div>
-          <div className="kicker">CYBER RANGE / LABS</div>
-          <h1>Máquinas & Labs</h1>
-          <p>Escolha um alvo, abra o briefing e provisione sua sessão dentro do Cyber Range FortifySec.</p>
-        </div>
-        <div className="internal-hero-badge online"><Radio size={18} /><span>RANGE</span><strong>ONLINE</strong></div>
-      </section>
-
-      <div className="range-overview-strip">
-        <div><small>TARGETS</small><strong>{labs.length} DISPONÍVEIS</strong></div>
-        <div><small>SESSIONS</small><strong>{sessions.length} EM EXECUÇÃO</strong></div>
-        <div><small>ACCESS</small><strong>VERIFIED</strong></div>
-      </div>
-
-      {(labsError || sessionsError) && (
-        <div className="inline-diagnostic">
-          <strong>Não foi possível carregar todos os dados do Cyber Range.</strong>
-          <span>{labsError?.message || sessionsError?.message}</span>
-        </div>
-      )}
-
-      {labs.length > 0 ? (
-        <section className="lab-grid enhanced-grid">
-          {labs.map((lab) => {
-            const session = running.get(lab.id)
-            return (
-              <article className={`lab-card product-card ${session ? 'is-running' : ''}`} key={lab.id}>
-                <div className="lab-cover">
-                  <div className="cover-topline"><span className="cover-code">LAB://{lab.slug.toUpperCase()}</span><Boxes size={18} /></div>
-                  <div className="lab-scanline" />
-                </div>
-                <div className="lab-body">
-                  <div className="panel-head"><span className={`pill ${session ? 'active' : ''}`}>{session ? '● RUNNING' : 'READY'}</span><DifficultyMeter difficulty={lab.difficulty} /></div>
-                  <h3>{lab.title}</h3>
-                  <p className="muted card-copy">{lab.description || 'Ambiente prático FortifySec.'}</p>
-                  <div className="lab-specs"><span><Clock3 size={13} />{lab.estimated_minutes} min</span><span><Network size={13} />{session ? 'sessão ativa' : 'isolated range'}</span></div>
-                  <div className="tag-row">{(lab.tags || []).slice(0, 4).map((tag) => <span className="micro-tag" key={tag}>#{tag}</span>)}</div>
-                  <a className="btn full-btn" href={`/painel/labs/${lab.slug}`}>{session ? 'ABRIR WORKSPACE' : 'ABRIR LAB'} <ArrowRight size={14} /></a>
-                </div>
-              </article>
-            )
-          })}
-        </section>
-      ) : <RangeEmpty />}
-
-      <section className="range-help-grid">
-        <article><Activity size={18} /><strong>Como funciona</strong><span>Abra um alvo e inicie uma sessão temporária.</span></article>
-        <article><ShieldCheck size={18} /><strong>Escopo controlado</strong><span>Use somente os ambientes disponibilizados.</span></article>
-        <article><Server size={18} /><strong>Estado da sessão</strong><span>Targets ativos aparecem como RUNNING.</span></article>
-      </section>
-    </div>
-  )
+export default async function LabPage({params,searchParams}:{params:Promise<{slug:string}>,searchParams:Promise<{erro?:string}>}){
+ const {slug}=await params;const query=await searchParams; const {user,supabase}=await requireUser()
+ const access=await getPlatformAccess(user.id)
+ if(!access.canAccessCyberRange)redirect('/painel/labs')
+ const {data:lab}=await supabase.from('labs').select('id,title,slug,description,difficulty,estimated_minutes,tags,instructions').eq('slug',slug).eq('published',true).maybeSingle()
+ if(!lab)notFound();
+ const {data:session}=await supabase.from('lab_sessions').select('id,status,started_at,expires_at,connection_url,target_address,vpn_download_url').eq('user_id',user.id).eq('lab_id',lab.id).eq('status','running').gt('expires_at',new Date().toISOString()).order('started_at',{ascending:false}).limit(1).maybeSingle()
+ return <>
+   <div className="lab-workspace-head"><div><div className="kicker">CYBER RANGE / ACTIVE TARGET</div><h1>{lab.title}</h1><p>{lab.description}</p></div><div className="workspace-status"><span className={`status-orb ${session?'online':'offline'}`}/><div><small>SESSION STATUS</small><strong>{session?'RUNNING':'OFFLINE'}</strong></div></div></div>
+   {query.erro==='provider'&&<div className="alert danger-alert">Não foi possível provisionar o laboratório. Verifique o provider ou tente novamente.</div>}
+   <div className="lab-workspace-grid">
+     <section className="workspace-main">
+       <div className="card mission-card"><div className="panel-head"><div><span className="section-index">01</span><h3>Mission briefing</h3></div><DifficultyMeter difficulty={lab.difficulty}/></div><p className="muted briefing-text" style={{whiteSpace:'pre-wrap'}}>{lab.instructions||'Leia o objetivo, inicie a sessão e acesse o ambiente somente dentro do escopo autorizado. Documente seus passos e mantenha a atividade limitada ao ambiente FortifySec.'}</p><div className="tag-row">{(lab.tags||[]).map((t:string)=><span className="micro-tag" key={t}>#{t}</span>)}</div></div>
+       <div className="card terminal-panel"><div className="terminal-toolbar"><span><TerminalSquare size={15}/> RANGE CONSOLE</span><span className={`pill ${session?'active':''}`}>{session?'CONNECTED':'WAITING'}</span></div><div className="lab-console workspace-console"><div><strong>fortify@range</strong>:~$ status --target {lab.slug}</div><br/>{session?<><div>[+] auth .............. <strong>verified</strong></div><div>[+] target ............ {lab.slug}</div><div>[+] session ........... <strong>running</strong></div><div>[+] started ........... {new Date(session.started_at).toLocaleString('pt-BR')}</div><div>[+] expires ........... {session.expires_at?new Date(session.expires_at).toLocaleString('pt-BR'):'—'}</div><br/><div className="terminal-cyan">target:</div><div className="endpoint-text">{session.target_address||'Aguardando endereço do alvo.'}</div>{session.vpn_download_url?<><div className="terminal-cyan">vpn:</div><div className="endpoint-text">{session.vpn_download_url}</div></>:<><div className="terminal-cyan">access:</div><div className="endpoint-text">provider target</div></>}</>:<><div>[-] session ........... offline</div><div>[-] endpoint .......... hidden</div><br/><div>Use <span className="terminal-green">INICIAR LAB</span> para solicitar uma sessão autorizada.</div></>}</div></div>
+     </section>
+     <aside className="workspace-side">
+       <div className="card target-card"><div className="panel-head"><span className="section-index">TARGET</span><Crosshair size={19}/></div><div className="target-row"><span><Clock3 size={14}/> TTL</span><strong>{lab.estimated_minutes} MIN</strong></div><div className="target-row"><span><Network size={14}/> NETWORK</span><strong>ISOLATED</strong></div><div className="target-row"><span><ShieldCheck size={14}/> ACCESS</span><strong>VERIFIED</strong></div><div className="target-row"><span><Radio size={14}/> STATE</span><strong className={session?'terminal-green':''}>{session?'ONLINE':'OFFLINE'}</strong></div></div>
+       <div className="card session-control"><span className="section-index">SESSION CONTROL</span><h3>{session?'Ambiente em execução':'Pronto para iniciar'}</h3><p className="muted">{session?'Encerre a sessão quando terminar para liberar os recursos do range.':'Prepare-se: o ambiente será provisionado para sua sessão.'}</p>{session?<><div className="hero-actions" style={{marginBottom:12}}>{session.target_address?.startsWith('http')&&<a className="btn full-btn" href={session.target_address} target="_blank" rel="noreferrer"><ExternalLink size={15}/> ABRIR TARGET</a>}{session.vpn_download_url&&<a className="btn secondary full-btn" href={session.vpn_download_url}><Download size={15}/> BAIXAR VPN</a>}</div><form action={stopLabAction}><input type="hidden" name="lab_id" value={lab.id}/><input type="hidden" name="slug" value={lab.slug}/><SubmitButton className="btn danger full-btn" idleLabel="ENCERRAR SESSÃO" pendingLabel="ENCERRANDO..."/></form></>:<form action={startLabAction}><input type="hidden" name="lab_id" value={lab.id}/><input type="hidden" name="slug" value={lab.slug}/><SubmitButton className="btn full-btn" idleLabel="INICIAR LAB →" pendingLabel="PROVISIONANDO LAB..."/></form>}<div className="security-note"><Power size={14}/><span>Sessão isolada e temporária para sua prática.</span></div></div>
+     </aside>
+   </div>
+ </>
 }

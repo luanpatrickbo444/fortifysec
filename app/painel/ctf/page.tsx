@@ -1,127 +1,199 @@
-import { RadioTower, Swords, Trophy } from 'lucide-react'
-import { SubmitButton } from '@/components/ui/SubmitButton'
+import Link from 'next/link'
+import { Flag, RadioTower, Swords, Trophy } from 'lucide-react'
+import { DifficultyMeter } from '@/components/ui/DifficultyMeter'
 import { requireUser } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { joinCtfAction } from '@/app/actions'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-function PageHead({ hasLiveEvent = false }: { hasLiveEvent?: boolean }) {
+function EventUnavailable({
+  title,
+  message,
+}: {
+  title: string
+  message: string
+}) {
   return (
-    <div className="page-head internal-page-head">
-      <div>
-        <div className="kicker">COMPETE / CTF</div>
-        <h1>Capture The Flag</h1>
-        <p>Inscreva-se nos eventos, resolva as missões e dispute o ranking específico de cada CTF.</p>
+    <>
+      <div className="page-head internal-page-head">
+        <div>
+          <div className="kicker">COMPETE / CTF</div>
+          <h1>{title}</h1>
+          <p>{message}</p>
+        </div>
+        <span className="pill">CTF</span>
       </div>
-      <span className={`pill ${hasLiveEvent ? 'active' : ''}`}>
-        <RadioTower size={13} />
-        {hasLiveEvent ? 'EVENTO AO VIVO' : 'COMPETITION HUB'}
-      </span>
-    </div>
+      <div className="empty-state">
+        <p>{message}</p>
+        <a className="btn secondary" href="/painel/ctf">VOLTAR AOS CTFs →</a>
+      </div>
+    </>
   )
 }
 
-export default async function Ctf() {
+export default async function CtfEventPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const { user } = await requireUser()
 
+  // O detalhe nunca redireciona para o próprio hub. Um ID antigo/inválido deve
+  // renderizar um estado estável, evitando ciclos do App Router/RSC.
   let admin
   try {
     admin = createAdminClient()
   } catch {
     return (
-      <>
-        <PageHead />
-        <div className="empty-state">CTFs temporariamente indisponíveis. Tente novamente em instantes.</div>
-      </>
+      <EventUnavailable
+        title="CTF temporariamente indisponível"
+        message="Não foi possível acessar o serviço de CTF agora."
+      />
     )
   }
 
-  // Primeiro carregamos SOMENTE o catálogo de CTFs. Se não houver eventos,
-  // encerramos a renderização aqui. Isso evita consultas/ações secundárias no
-  // estado vazio e impede ciclos de navegação quando o banco ainda não possui CTFs.
-  const { data: events, error: eventsError } = await admin
+  // Primeiro confirma que o evento realmente existe. Só depois carregamos o
+  // restante do dashboard do CTF.
+  const { data: event, error: eventError } = await admin
     .from('ctf_events')
     .select('id,title,description,starts_at,ends_at,prize_text,status')
-    .order('starts_at', { ascending: false })
-    .limit(20)
+    .eq('id', id)
+    .maybeSingle()
 
-  if (eventsError) {
+  if (eventError || !event) {
     return (
-      <>
-        <PageHead />
-        <div className="empty-state">Não foi possível carregar os CTFs agora. Tente novamente.</div>
-      </>
+      <EventUnavailable
+        title="CTF não encontrado"
+        message="Este evento não existe mais ou ainda não foi publicado."
+      />
     )
   }
 
-  if (!events?.length) {
-    return (
-      <>
-        <PageHead />
-        <div className="empty-state">Nenhum CTF disponível ainda.</div>
-      </>
-    )
-  }
-
-  // Só precisamos consultar inscrições quando existem eventos para mostrar.
-  // Se essa consulta falhar, o catálogo continua funcionando e apenas considera
-  // o usuário como ainda não inscrito.
-  const { data: participants } = await admin
+  const { data: participant, error: participantError } = await admin
     .from('ctf_participants')
-    .select('event_id')
+    .select('event_id,joined_at')
+    .eq('event_id', id)
     .eq('user_id', user.id)
+    .maybeSingle()
 
-  const joined = new Set((participants || []).map((p: any) => p.event_id))
-  const live = events.find((e: any) => e.status === 'live')
+  if (participantError || !participant) {
+    return (
+      <EventUnavailable
+        title={event.title}
+        message="Você ainda não está inscrito neste CTF. Volte ao hub para entrar no evento."
+      />
+    )
+  }
+
+  const [linksResult, rankingResult, solvesResult] = await Promise.all([
+    admin
+      .from('ctf_event_challenges')
+      .select('event_id,challenge_id,position,points_override,challenges(id,title,slug,category,difficulty,xp_reward,published,lab_id)')
+      .eq('event_id', id)
+      .order('position'),
+    admin.rpc('get_ctf_leaderboard', { event_uuid: id, limit_count: 50 }),
+    admin
+      .from('ctf_solves')
+      .select('challenge_id,points,solved_at')
+      .eq('event_id', id)
+      .eq('user_id', user.id),
+  ])
+
+  const links = (linksResult.data || []).filter((link: any) => {
+    const challenge = Array.isArray(link.challenges) ? link.challenges[0] : link.challenges
+    return Boolean(challenge?.published)
+  })
+  const ranking = rankingResult.data || []
+  const solves = solvesResult.data || []
+  const solved = new Map(solves.map((s: any) => [s.challenge_id, s]))
+  const live =
+    event.status === 'live' &&
+    Date.now() >= new Date(event.starts_at).getTime() &&
+    Date.now() <= new Date(event.ends_at).getTime()
 
   return (
     <>
-      <PageHead hasLiveEvent={Boolean(live)} />
+      <div className="page-head internal-page-head">
+        <div>
+          <div className="kicker">CTF / EVENT CONTROL</div>
+          <h1>{event.title}</h1>
+          <p>{event.description}</p>
+        </div>
+        <span className={`pill ${live ? 'active' : ''}`}>
+          <RadioTower size={13} />
+          {live ? 'AO VIVO' : String(event.status).toUpperCase()}
+        </span>
+      </div>
 
-      <div className="challenge-grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(320px,1fr))' }}>
-        {events.map((e: any) => {
-          const isJoined = joined.has(e.id)
-          const ended = e.status === 'finished' || new Date(e.ends_at).getTime() <= Date.now()
+      <div className="meta-row" style={{ marginBottom: 22 }}>
+        <span>INÍCIO {new Date(event.starts_at).toLocaleString('pt-BR')}</span>
+        <span>FIM {new Date(event.ends_at).toLocaleString('pt-BR')}</span>
+        <span>{event.prize_text || 'PRÊMIO A DEFINIR'}</span>
+      </div>
 
-          return (
-            <article className={`challenge-card ctf-player-card ${e.status}`} key={e.id}>
-              <div className="challenge-top" />
-              <div className="challenge-body">
-                <div className="panel-head">
-                  <span className={`pill ${e.status === 'live' ? 'active' : ''}`}>{String(e.status).toUpperCase()}</span>
-                  <Trophy size={17} />
-                </div>
-                <h2>{e.title}</h2>
-                <p className="muted">{e.description}</p>
-                <div className="meta-row">
-                  <span>INÍCIO {new Date(e.starts_at).toLocaleString('pt-BR')}</span>
-                  <span>FIM {new Date(e.ends_at).toLocaleString('pt-BR')}</span>
-                </div>
-                <div className="meta-row">
-                  <span>{e.prize_text || 'PRÊMIO A DEFINIR'}</span>
-                  <span>{isJoined ? 'INSCRITO' : 'NÃO INSCRITO'}</span>
-                </div>
+      <div className="content-grid ctf-student-layout">
+        <section>
+          <div className="section-head">
+            <div>
+              <span className="section-index">MISSIONS</span>
+              <h2>Challenges do evento</h2>
+            </div>
+            <p className="section-copy">Challenges com alvo podem provisionar uma máquina isolada e VPN exclusiva para sua sessão.</p>
+          </div>
 
-                {isJoined ? (
-                  <a className="btn full-btn" href={`/painel/ctf/${e.id}`}>
-                    <Swords size={15} /> ABRIR EVENTO →
-                  </a>
-                ) : ended ? (
-                  <button className="btn secondary full-btn" disabled>
-                    EVENTO ENCERRADO
-                  </button>
-                ) : (
-                  <form action={joinCtfAction}>
-                    <input type="hidden" name="event_id" value={e.id} />
-                    <SubmitButton className="btn full-btn" idleLabel="ENTRAR NO CTF →" pendingLabel="INSCREVENDO..." />
-                  </form>
-                )}
+          <div className="challenge-grid" style={{ gridTemplateColumns: '1fr' }}>
+            {links.map((l: any) => {
+              const c = Array.isArray(l.challenges) ? l.challenges[0] : l.challenges
+              const ownSolve = solved.get(l.challenge_id)
+              const points = l.points_override ?? c?.xp_reward ?? 0
+
+              return (
+                <Link
+                  href={live ? `/painel/desafios/${c?.slug}?ctf=${encodeURIComponent(id)}` : '#'}
+                  className={`ctf-player-challenge ${!live ? 'locked' : ''}`}
+                  key={l.challenge_id}
+                >
+                  <span className="rank">#{String(l.position).padStart(2, '0')}</span>
+                  <Swords size={15} />
+                  <div>
+                    <strong>{c?.title}</strong>
+                    <small>
+                      {c?.category} · {points} PTS {c?.lab_id ? '· VPN TARGET' : ''}
+                    </small>
+                  </div>
+                  <DifficultyMeter difficulty={c?.difficulty} />
+                  <span className={`pill ${ownSolve ? 'active' : ''}`}>{ownSolve ? 'PWNED' : live ? 'OPEN' : 'LOCKED'}</span>
+                </Link>
+              )
+            })}
+          </div>
+          {!links.length && <div className="empty-state">Nenhum Challenge vinculado a este evento.</div>}
+        </section>
+
+        <aside className="card">
+          <div className="panel-head">
+            <div>
+              <span className="section-index">EVENT RANK</span>
+              <h3>Leaderboard</h3>
+            </div>
+            <Trophy size={18} />
+          </div>
+          <div className="activity-list">
+            {ranking.map((r: any, i: number) => (
+              <div className={`activity-row ${r.user_id === user.id ? 'current-user-row' : ''}`} key={r.user_id}>
+                <span className="rank">#{i + 1}</span>
+                <div>
+                  <strong>{r.name}</strong>
+                  <span>{r.solves} solves</span>
+                </div>
+                <strong>{r.points} PTS</strong>
               </div>
-            </article>
-          )
-        })}
+            ))}
+          </div>
+          {!ranking.length && (
+            <div className="empty-state">
+              <Flag size={18} /> Nenhum solve ainda.
+            </div>
+          )}
+        </aside>
       </div>
     </>
   )

@@ -1,0 +1,13 @@
+FortifySec - Challenge/CTF ACTION ONLY
+
+Este patch altera SOMENTE app/actions.ts.
+Nao contem CSS, layout, pagina admin, componente ou configuracao.
+
+Objetivo:
+- gravar Challenge via Admin Client;
+- salvar published=true;
+- manter flag em SHA-256;
+- exibir erro real na criacao;
+- publicar/despublicar Challenge sem RPC silenciosa.
+
+Aplique somente depois de restaurar o commit visual anterior.
