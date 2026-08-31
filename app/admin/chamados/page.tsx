@@ -1,0 +1,14 @@
+import Link from 'next/link'
+import { PortalHeader } from '@/components/PortalHeader'
+import { StatusPill } from '@/components/StatusPill'
+import { getAdminTickets } from '@/lib/admin-data'
+
+function meta(status:string){const map:Record<string,{label:string,tone:'green'|'warning'|'danger'|'cyan'}>={open:{label:'ABERTO',tone:'cyan'},in_progress:{label:'EM ATENDIMENTO',tone:'warning'},waiting_customer:{label:'AGUARDANDO CLIENTE',tone:'warning'},resolved:{label:'RESOLVIDO',tone:'green'},closed:{label:'FECHADO',tone:'green'}};return map[status]??{label:String(status).toUpperCase(),tone:'cyan' as const}}
+
+export default async function Page(){
+  const tickets=await getAdminTickets();const active=tickets.filter((t:any)=>['open','in_progress','waiting_customer'].includes(t.status));const critical=active.filter((t:any)=>t.priority==='critical');const waiting=active.filter((t:any)=>t.status==='waiting_customer');const resolved=tickets.filter((t:any)=>['resolved','closed'].includes(t.status))
+  return <><PortalHeader kicker="ADMIN / SERVICE DESK" title="Chamados de suporte" copy="Fila operacional de solicitações dos clientes, com status, prioridade e histórico de atendimento."/>
+    <section className="portal-metrics admin-metrics"><article><span>ATIVOS</span><strong>{active.length}</strong><small>em atendimento</small></article><article><span>CRÍTICOS</span><strong>{critical.length}</strong><small>prioridade máxima</small></article><article><span>AGUARDANDO CLIENTE</span><strong>{waiting.length}</strong><small>dependem de retorno</small></article><article><span>CONCLUÍDOS</span><strong>{resolved.length}</strong><small>resolvidos/fechados</small></article></section>
+    <section className="portal-card"><div className="card-head"><div><span className="section-index">SERVICE DESK QUEUE</span><h2>Fila de chamados</h2></div><StatusPill tone={critical.length?'danger':active.length?'warning':'green'}>{active.length} ATIVOS</StatusPill></div><div className="data-table"><div className="table-row head admin-ticket-row"><span>Cliente / chamado</span><span>Prioridade</span><span>Atualizado</span><span>Status</span><span>Ação</span></div>{tickets.length?tickets.map((t:any)=>{const st=meta(t.status);return <div className="table-row admin-ticket-row" key={t.id}><div><strong>{t.organization?.name??'Cliente'} · {t.subject}</strong><small className="table-subtext">#{String(t.id).slice(0,8)} · {t.category||'support'}</small></div><StatusPill tone={t.priority==='critical'?'danger':t.priority==='high'?'warning':'cyan'}>{t.priority}</StatusPill><span>{new Date(t.updated_at??t.created_at).toLocaleString('pt-BR')}</span><StatusPill tone={st.tone}>{st.label}</StatusPill><Link className="text-link" href={`/admin/chamados/${t.id}`}>OPERAR →</Link></div>}) : <div className="table-empty">Nenhum chamado registrado.</div>}</div></section>
+  </>
+}

@@ -1,0 +1,14 @@
+import type { Metadata } from 'next'
+import { leadEnglishAction } from '@/app/en/actions'
+import { CheckCircle2, DatabaseBackup, FileSearch, ShieldCheck } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Contact & Assessment',
+  description: 'Request an initial Fortify Cloud data protection assessment for your business.',
+  alternates: { canonical: '/en/contact', languages: { 'pt-BR': '/contato', 'en': '/en/contact' } },
+}
+
+export default async function Contact({searchParams}:{searchParams:Promise<{ok?:string,error?:string}>}){
+  const q=await searchParams
+  return <main><section className="contact-page"><div className="container contact-grid"><div><div className="kicker">FORTIFY CLOUD / ASSESSMENT</div><h1>Let's understand how your business data is protected today.</h1><p className="hero-copy">The first step is understanding the environment, data volume, criticality and how the company would recover if its systems stopped right now.</p><div className="diagnostic-list"><span><FileSearch/>Environment inventory</span><span><DatabaseBackup/>Current backup status</span><span><ShieldCheck/>Risks and single points of failure</span><span><CheckCircle2/>Next steps and recommended plan</span></div></div><form className="contact-form" action={leadEnglishAction}><span className="section-index">REQUEST CONTACT</span><h2>Initial assessment</h2>{q.ok&&<div className="form-success">We received your information. Your request has been registered.</div>}{q.error&&<div className="form-error">We could not register your request. Please review the required fields.</div>}<label>Name<input name="name" required placeholder="Your name"/></label><label>Company<input name="company" required placeholder="Company name"/></label><div className="form-row"><label>Business email<input type="email" name="email" required placeholder="you@company.com"/></label><label>Phone<input name="phone" placeholder="+55 65 99999-9999"/></label></div><div className="form-row"><label>Number of employees<select name="employees" defaultValue=""><option value="" disabled>Select</option><option>1–20</option><option>21–50</option><option>51–200</option><option>201–500</option><option>500+</option></select></label><label>Estimated data volume<select name="data_volume" defaultValue=""><option value="" disabled>Select</option><option>Up to 500 GB</option><option>500 GB–2 TB</option><option>2–10 TB</option><option>10–50 TB</option><option>50 TB+</option><option>Not sure</option></select></label></div><label>What do you need to protect?<textarea name="message" rows={5} placeholder="Servers, files, databases, Microsoft 365, VMs, cloud..."/></label><button className="btn full" type="submit">REQUEST ASSESSMENT →</button><small>By submitting, you authorize FortifySec to contact you regarding this business request.</small></form></div></section></main>
+}

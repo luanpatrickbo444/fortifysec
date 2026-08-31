@@ -1,0 +1,5 @@
+-- OPCIONAL: execute apenas depois de criar um usuário real no Supabase Auth.
+-- Substitua os UUIDs abaixo antes de rodar.
+-- insert into public.cloud_profiles(id,full_name,role) values ('USER_UUID','Administrador Fortify','admin') on conflict(id) do update set role='admin';
+-- insert into public.cloud_organizations(id,name,plan,status) values ('ORG_UUID','Empresa Cliente','Business','active');
+-- insert into public.cloud_organization_members(organization_id,user_id,member_role) values ('ORG_UUID','USER_UUID','admin');
