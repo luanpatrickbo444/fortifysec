@@ -431,12 +431,12 @@ export default function Home() {
                     )
                   )}
                 </ul>
-                <button
-                  type="button"
-                  className="mt-7 h-12 w-full rounded-md border border-border text-sm font-semibold hover:bg-elevated"
-                >
-                  Começar
-                </button>
+           <a
+  href="https://www.mercadopago.com.br/link-tools/congrats/7e2f87e2-386e-45e0-8782-851be92da48e"
+  className="mt-7 flex h-12 w-full items-center justify-center rounded-md border border-border text-sm font-semibold hover:bg-elevated"
+>
+  Começar
+</a>
               </article>
 
               <article className="relative rounded-xl border border-violet/50 bg-surface p-6 md:-translate-y-2 shadow-[0_0_40px_rgba(167,139,250,0.12)]">
