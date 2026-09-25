@@ -168,12 +168,14 @@ export default function Home() {
               <GraduationCap className="size-4" />
               Já sou aluno
             </a>
-            <button
-              type="button"
-              className="hidden h-10 rounded-md bg-lime px-4 text-sm font-semibold text-lime-fg hover:brightness-110 lg:inline-flex lg:items-center"
-            >
-              Quero assinar
-            </button>
+         <a
+  href="https://mpago.li/2JmjDYP"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="hidden h-10 rounded-md bg-lime px-4 text-sm font-semibold text-lime-fg hover:brightness-110 lg:inline-flex lg:items-center"
+>
+  Quero assinar
+</a>
           </div>
 
           <button
@@ -221,12 +223,14 @@ export default function Home() {
               Novidades o ano todo. Tudo numa única formação — labs, CTFs,
               certificações práticas e comunidade.
             </p>
-            <button
-              type="button"
-              className="mt-8 inline-flex h-12 items-center rounded-md bg-lime px-7 text-sm font-bold tracking-wide text-lime-fg hover:brightness-110"
-            >
-              QUERO ASSINAR AGORA
-            </button>
+          <a
+  href="https://mpago.li/2JmjDYP"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="mt-8 inline-flex h-12 items-center rounded-md bg-lime px-7 text-sm font-bold tracking-wide text-lime-fg hover:brightness-110"
+>
+  QUERO ASSINAR AGORA
+</a>
           </div>
 
           <div className="card-stack relative mx-auto h-[420px] w-full max-w-[420px] sm:h-[480px]">
@@ -543,12 +547,14 @@ export default function Home() {
               A maior formação prática de cibersegurança para quem quer sair do
               tutorial e atuar de verdade.
             </p>
-            <button
-              type="button"
-              className="mt-8 inline-flex h-12 items-center rounded-md bg-lime px-8 text-sm font-bold text-lime-fg hover:brightness-110"
-            >
-              QUERO ASSINAR AGORA
-            </button>
+          <a
+  href="https://mpago.li/2JmjDYP"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="mt-8 inline-flex h-12 items-center rounded-md bg-lime px-8 text-sm font-bold text-lime-fg hover:brightness-110"
+>
+  QUERO ASSINAR AGORA
+</a>
           </div>
         </section>
       </main>
