@@ -460,12 +460,14 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  className="mt-7 h-12 w-full rounded-md bg-lime text-sm font-semibold text-lime-fg hover:brightness-110"
-                >
-                  Quero esse
-                </button>
+              <a
+  href="https://mpago.la/1voYnoa"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="mt-7 flex h-12 w-full items-center justify-center rounded-md bg-lime text-sm font-semibold text-lime-fg hover:brightness-110"
+>
+  Quero esse
+</a>
               </article>
 
               <article className="relative rounded-xl border border-border bg-surface p-6">
@@ -486,12 +488,14 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  className="mt-7 h-12 w-full rounded-md border border-border text-sm font-semibold hover:bg-elevated"
-                >
-                  Começar
-                </button>
+            <a
+  href="https://mpago.li/2JmjDYP"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="mt-7 flex h-12 w-full items-center justify-center rounded-md border border-border text-sm font-semibold hover:bg-elevated"
+>
+  Começar
+</a>
               </article>
             </div>
           </div>
