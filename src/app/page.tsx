@@ -158,7 +158,7 @@ export default function Home() {
               className="inline-flex h-10 items-center gap-2 rounded-md border border-border px-3 text-sm text-fg hover:bg-elevated"
             >
               <MessageCircle className="size-4 text-lime" />
-              <span className="hidden lg:inline">(11) 99588-0000</span>
+              <span className="hidden lg:inline">(65) 99922-1436</span>
             </a>
             <a
               className="inline-flex h-10 items-center gap-2 rounded-md border border-border px-3 text-sm text-fg hover:bg-elevated"
@@ -197,7 +197,7 @@ export default function Home() {
                 className="inline-flex items-center gap-2 text-lime"
                 onClick={() => setMenuOpen(false)}
               >
-                <MessageCircle className="size-4" /> (11) 99588-0000
+                <MessageCircle className="size-4" /> (65) 99922-1436
               </a>
             </nav>
           </div>
