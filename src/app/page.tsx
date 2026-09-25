@@ -432,7 +432,7 @@ export default function Home() {
                   )}
                 </ul>
            <a
-  href="https://www.mercadopago.com.br/link-tools/congrats/7e2f87e2-386e-45e0-8782-851be92da48e"
+  href="https://mpago.la/2qB2gTv"
   className="mt-7 flex h-12 w-full items-center justify-center rounded-md border border-border text-sm font-semibold hover:bg-elevated"
 >
   Começar
