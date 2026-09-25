@@ -163,7 +163,7 @@ export default function Home() {
             </a>
             <a
               className="inline-flex h-10 items-center gap-2 rounded-md border border-border px-3 text-sm text-fg hover:bg-elevated"
-              href="#planos"
+              href="../login/page"
             >
               <GraduationCap className="size-4" />
               Já sou aluno
