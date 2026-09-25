@@ -155,7 +155,7 @@ export default function Home() {
 
           <div className="hidden items-center gap-2 sm:flex">
             <a
-              href="#contato"
+              href="https://wa.me/5565999221436"
               className="inline-flex h-10 items-center gap-2 rounded-md border border-border px-3 text-sm text-fg hover:bg-elevated"
             >
               <MessageCircle className="size-4 text-lime" />
@@ -194,7 +194,7 @@ export default function Home() {
               <a href="#ctf" onClick={() => setMenuOpen(false)}>CTF</a>
               <a href="#planos" onClick={() => setMenuOpen(false)}>Planos</a>
               <a
-                href="#contato"
+                href="https://wa.me/5565999221436"
                 className="inline-flex items-center gap-2 text-lime"
                 onClick={() => setMenuOpen(false)}
               >
@@ -558,7 +558,7 @@ export default function Home() {
             <span className="display font-semibold">FORTIFY</span>
           </div>
           <a
-            href="https://wa.me/5511995880000"
+            href="https://wa.me/5565999221436"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-sm text-muted hover:text-fg"
