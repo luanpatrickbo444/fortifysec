@@ -31,3 +31,35 @@ body {
     radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139, 92, 246, 0.25), transparent),
     var(--color-bg);
 }
+
+.poster-labs {
+  background:
+    linear-gradient(rgba(0,0,0,.25), rgba(0,0,0,.6)),
+    url('/images/labs.jpg');
+  background-size: cover;
+  background-position: center;
+  transition: transform .4s ease;
+}
+
+.poster-soc {
+  background:
+    linear-gradient(rgba(0,0,0,.25), rgba(0,0,0,.6)),
+    url('/images/soc.jpg');
+  background-size: cover;
+  background-position: center;
+  transition: transform .4s ease;
+}
+
+.poster-ctf {
+  background:
+    linear-gradient(rgba(0,0,0,.25), rgba(0,0,0,.6)),
+    url('/images/ctf.jpg');
+  background-size: cover;
+  background-position: center;
+  transition: transform .4s ease;
+}
+
+.card-stack article:hover {
+  transform: scale(1.05);
+  z-index: 50;
+}
