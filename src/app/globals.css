@@ -659,3 +659,58 @@ a:focus-visible {
     transform: none;
   }
 }
+
+/* =========================================================
+   BOTÕES QUERO ASSINAR / QUERO ESSE
+   ========================================================= */
+
+.bg-lime,
+a.bg-lime,
+button.bg-lime {
+  color: #0a0a0a !important;
+  font-weight: 700;
+}
+
+.bg-lime:hover,
+a.bg-lime:hover,
+button.bg-lime:hover {
+  color: #000000 !important;
+}
+
+.bg-lime:visited,
+a.bg-lime:visited {
+  color: #0a0a0a !important;
+}
+
+/* Botão principal */
+a[class*="bg-lime"] {
+  text-shadow: none;
+  letter-spacing: 0.03em;
+}
+
+/* Efeito premium */
+a[class*="bg-lime"]:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow:
+    0 10px 30px rgba(200, 245, 66, 0.25),
+    0 0 20px rgba(200, 245, 66, 0.15);
+}
+
+/* FORÇA TEXTO PRETO EM TODOS OS BOTÕES VERDES */
+
+.bg-lime,
+.bg-lime *,
+a.bg-lime,
+a.bg-lime *,
+button.bg-lime,
+button.bg-lime * {
+  color: #000 !important;
+}
+
+.bg-lime:hover,
+.bg-lime:hover *,
+a.bg-lime:hover,
+a.bg-lime:hover * {
+  color: #000 !important;
+}
