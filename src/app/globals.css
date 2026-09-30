@@ -1,5 +1,8 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+<<<<<<< HEAD
 /* =========================================================
    FORTIFY ONE — GLOBAL CSS
    ========================================================= */
@@ -714,3 +717,68 @@ a.bg-lime:hover,
 a.bg-lime:hover * {
   color: #000 !important;
 }
+=======
+:root {
+  --fortify-dark: #0a0a12;
+  --fortify-neon: #c4f542;
+  --fortify-purple: #7c3aed;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #0a0a12;
+  color: #e2e8f0;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a12;
+}
+::-webkit-scrollbar-thumb {
+  background: #7c3aed;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a78bfa;
+}
+
+.glass {
+  background: rgba(18, 18, 31, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(124, 58, 237, 0.15);
+}
+
+.glass-strong {
+  background: rgba(18, 18, 31, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+}
+
+.neon-text {
+  text-shadow: 0 0 20px rgba(196, 245, 66, 0.4);
+}
+
+.purple-glow {
+  box-shadow: 0 0 40px rgba(124, 58, 237, 0.25);
+}
+
+.bg-grid {
+  background-size: 60px 60px;
+  background-image:
+    linear-gradient(rgba(124, 58, 237, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 58, 237, 0.04) 1px, transparent 1px);
+}
+
+::selection {
+  background: rgba(124, 58, 237, 0.4);
+  color: #fff;
+}
+>>>>>>> a125ad8 (redesign fortify)
