@@ -1,7 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Trophy, Shield, FlaskConical, Award, Users, Laptop } from "lucide-react";
+import {
+  ArrowRight,
+  Trophy,
+  Shield,
+  FlaskConical,
+  Award,
+  Users,
+  Laptop,
+} from "lucide-react";
 
 const features = [
   {
@@ -36,17 +44,84 @@ const features = [
   },
 ];
 
+function HackerSilhouette() {
+  return (
+    <div className="relative w-full h-full flex items-end justify-center overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-t from-fortify-dark via-fortify-purple/30 to-indigo-950/80" />
+      <div
+        className="absolute inset-0 opacity-40"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, rgba(196,245,66,0.15) 1px, transparent 1px)",
+          backgroundSize: "14px 14px",
+        }}
+      />
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full bg-fortify-purple/50 blur-3xl" />
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-28 h-28 rounded-full bg-fortify-neon/25 blur-2xl" />
+
+      <svg
+        viewBox="0 0 200 300"
+        className="relative z-10 w-[85%] max-w-[240px] h-auto"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#1e1b4b" />
+            <stop offset="100%" stopColor="#0a0a12" />
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        <path
+          d="M45 85 Q100 15 155 85 L155 120 Q100 145 45 120 Z"
+          fill="#0f0f1a"
+          stroke="#7c3aed"
+          strokeWidth="1.5"
+          opacity="0.95"
+        />
+        <ellipse cx="100" cy="95" rx="32" ry="38" fill="#050508" />
+        <g filter="url(#glow)">
+          <ellipse cx="86" cy="92" rx="7" ry="4" fill="#c4f542">
+            <animate attributeName="opacity" values="0.6;1;0.6" dur="2.5s" repeatCount="indefinite" />
+          </ellipse>
+          <ellipse cx="114" cy="92" rx="7" ry="4" fill="#c4f542">
+            <animate attributeName="opacity" values="0.6;1;0.6" dur="2.5s" repeatCount="indefinite" />
+          </ellipse>
+        </g>
+        <path d="M90 110 Q100 115 110 110" stroke="#333" strokeWidth="1.5" fill="none" />
+        <path
+          d="M40 125 Q100 145 160 125 L175 280 Q100 310 25 280 Z"
+          fill="url(#bodyGrad)"
+          stroke="#7c3aed"
+          strokeWidth="1"
+          strokeOpacity="0.4"
+        />
+        <path
+          d="M75 145 Q100 165 125 145 L130 240 Q100 255 70 240 Z"
+          fill="#12122a"
+          opacity="0.8"
+        />
+        <ellipse cx="100" cy="130" rx="62" ry="16" fill="#0a0a14" />
+      </svg>
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-fortify-neon/10 to-transparent opacity-50 pointer-events-none" />
+    </div>
+  );
+}
+
 export default function Hero() {
   return (
     <section className="relative min-h-screen pt-28 pb-16 overflow-hidden">
-      {/* Background effects */}
       <div className="absolute inset-0 bg-glow-purple pointer-events-none" />
       <div className="absolute inset-0 bg-glow-neon pointer-events-none" />
       <div className="absolute inset-0 bg-grid pointer-events-none opacity-60" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-          {/* Left content */}
           <div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -87,35 +162,26 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* Right - CTF Card stack */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
             className="relative flex justify-center lg:justify-end"
           >
-            <div className="relative w-[280px] sm:w-[320px]">
-              {/* Back cards */}
-              <div className="absolute -right-4 top-6 w-full h-[380px] rounded-2xl bg-fortify-card border border-fortify-border/50 rotate-6 opacity-40" />
-              <div className="absolute -right-2 top-3 w-full h-[380px] rounded-2xl bg-fortify-card border border-fortify-border/60 rotate-3 opacity-60" />
+            <div className="relative w-[280px] sm:w-[340px]">
+              <div className="absolute -right-4 top-6 w-full h-[420px] rounded-2xl bg-fortify-card border border-fortify-border/50 rotate-6 opacity-40" />
+              <div className="absolute -right-2 top-3 w-full h-[420px] rounded-2xl bg-fortify-card border border-fortify-border/60 rotate-3 opacity-60" />
 
-              {/* Main card */}
               <div className="relative glass-strong rounded-2xl overflow-hidden purple-glow animate-float">
-                <div className="absolute top-4 left-4 z-10">
-                  <span className="text-[10px] tracking-widest text-fortify-purple-light font-medium bg-fortify-purple/20 px-2.5 py-1 rounded-full">
+                <div className="absolute top-4 left-4 z-20">
+                  <span className="text-[10px] tracking-widest text-fortify-purple-light font-medium bg-fortify-purple/30 px-2.5 py-1 rounded-full border border-fortify-purple/40">
                     10ª EDIÇÃO
                   </span>
                 </div>
-                <div className="h-[280px] bg-gradient-to-br from-fortify-purple/30 via-fortify-dark to-fortify-darker flex items-center justify-center relative">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(124,58,237,0.3),transparent_60%)]" />
-                  <div className="relative text-center">
-                    <Trophy className="w-16 h-16 text-fortify-neon mx-auto mb-3 drop-shadow-[0_0_15px_rgba(196,245,66,0.5)]" />
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-fortify-purple to-indigo-900 mx-auto flex items-center justify-center border-2 border-fortify-purple-light/30">
-                      <span className="text-3xl">🛡️</span>
-                    </div>
-                  </div>
+                <div className="h-[300px] relative">
+                  <HackerSilhouette />
                 </div>
-                <div className="p-6">
+                <div className="p-6 relative z-10 bg-fortify-darker/80 border-t border-fortify-border/50">
                   <h3 className="font-display font-bold text-xl text-white mb-1">
                     CAPTURE THE FLAG
                   </h3>
@@ -128,7 +194,6 @@ export default function Hero() {
           </motion.div>
         </div>
 
-        {/* Feature grid */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
