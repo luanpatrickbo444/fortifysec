@@ -1,12 +1,4 @@
 import type { Metadata } from "next";
-<<<<<<< HEAD
-import "./globals.css";
-
-export const metadata: Metadata = {
-  title: "Fortify One — Hacking e Cibersegurança",
-  description:
-    "Fortify One — hacking e cibersegurança do zero ao avançado. Grade completa, labs, CTFs e certificação prática.",
-=======
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
@@ -42,7 +34,6 @@ export const metadata: Metadata = {
     locale: "pt_BR",
     type: "website",
   },
->>>>>>> a125ad8 (redesign fortify)
 };
 
 export default function RootLayout({
@@ -51,27 +42,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-<<<<<<< HEAD
-    <html lang="pt-BR">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="min-h-screen bg-bg text-fg antialiased">{children}</body>
-=======
     <html lang="pt-BR" className={`${inter.variable} ${space.variable}`}>
       <body className="font-sans antialiased bg-fortify-dark text-slate-200">
         {children}
       </body>
->>>>>>> a125ad8 (redesign fortify)
     </html>
   );
 }
