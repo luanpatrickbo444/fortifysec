@@ -1,0 +1,73 @@
+name: fortifysec-ctf
+services:
+  ctfd:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        CTFD_IMAGE: ${CTFD_IMAGE:-ctfd/ctfd:latest}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${CTFD_PORT:-8000}:8000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:?Configure SECRET_KEY in .env}
+      DATABASE_URL: mysql+pymysql://${DB_USER:-ctfd}:${DB_PASSWORD:?Configure DB_PASSWORD in .env}@db:3306/${DB_NAME:-ctfd}
+      REDIS_URL: redis://redis:6379/0
+      UPLOAD_FOLDER: /var/uploads
+      LOG_FOLDER: /var/log/CTFd
+      REVERSE_PROXY: "true"
+      WORKERS: "2"
+      ACCESS_LOG: "-"
+      ERROR_LOG: "-"
+    volumes:
+      - uploads:/var/uploads
+      - logs:/var/log/CTFd
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks: [internal, proxy]
+    security_opt:
+      - no-new-privileges:true
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Configure DB_ROOT_PASSWORD in .env}
+      MARIADB_DATABASE: ${DB_NAME:-ctfd}
+      MARIADB_USER: ${DB_USER:-ctfd}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?Configure DB_PASSWORD in .env}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    networks: [internal]
+    security_opt:
+      - no-new-privileges:true
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 15
+    networks: [internal]
+    security_opt:
+      - no-new-privileges:true
+networks:
+  internal:
+    internal: true
+  proxy:
+volumes:
+  db_data:
+  redis_data:
+  uploads:
+  logs:

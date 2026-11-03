@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style id="fs-notifications-v13">
+body:has(.fs-notifications-header) {
+  background: #080b12 !important;
+}
+
+.fs-notifications-header {
+  max-width: 980px;
+  margin: 36px auto 24px;
+  padding: 0 20px;
+}
+
+.fs-notifications-eyebrow {
+  color: #fb365e;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.fs-notifications-title {
+  color: #fff;
+  font-size: clamp(30px,4vw,43px);
+  font-weight: 800;
+  margin: 12px 0;
+}
+
+.fs-notifications-subtitle {
+  color: #9aa8bd;
+  font-size: 14px;
+}
+
+body:has(.fs-notifications-header) .jumbotron {
+  display: none !important;
+}
+
+body:has(.fs-notifications-header) main > .container {
+  max-width: 980px;
+  background: #111725;
+  border: 1px solid #30394b;
+  border-radius: 18px;
+  padding: 35px;
+  margin-bottom: 65px;
+}
+
+body:has(.fs-notifications-header) main .container h2,
+body:has(.fs-notifications-header) main .container h3 {
+  color: #fff;
+}
+
+@media(max-width:600px) {
+  .fs-notifications-header {
+    margin-top: 24px;
+  }
+
+  body:has(.fs-notifications-header) main > .container {
+    padding: 22px;
+  }
+}
+</style>
+
+
+<section class="fs-notifications-header">
+  <div class="fs-notifications-eyebrow">
+    FORTIFYSEC / CTF ARENA 2027
+  </div>
+  <h1 class="fs-notifications-title">
+    Central de notificações
+  </h1>
+  <p class="fs-notifications-subtitle">
+    Acompanhe os avisos e atualizações da competição.
+  </p>
+</section>
+
+	<div class="jumbotron">
+		<div class="container">
+			<h1>
+				{% trans %}Notifications{% endtrans %}
+			</h1>
+		</div>
+	</div>
+	<div class="container">
+		{% if not notifications %}
+		<h2 class="text-center">
+			{% trans %}Você ainda não recebeu notificações.{% endtrans %}
+		</h2>
+		{% endif %}
+		{% for notification in notifications %}
+		<div class="card bg-body-tertiary mb-4">
+			<div class="card-body">
+				<h3 class="card-title">{{ notification.title }}</h3>
+				<blockquote class="blockquote mb-0">
+					<p>{{ notification.html }}</p>
+					<small class="text-muted"><span data-time="{{ notification.date | isoformat }}"></span></small>
+				</blockquote>
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ Assets.js("assets/js/notifications.js") }}
+{% endblock %}
+

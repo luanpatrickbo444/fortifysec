@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ title or Configs.ctf_name }}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="{{ Configs.ctf_small_icon }}" type="image/x-icon">
+
+  {{ meta | safe }}
+
+  {% block stylesheets %}
+    {{ Assets.css("assets/scss/main.scss") }}
+  {% endblock %}
+
+  {{ Plugins.styles }}
+
+  {{ Assets.js("assets/js/color_mode_switcher.js", type=None) }}
+
+  <script type="text/javascript">
+      window.init = {
+          'urlRoot': "{{ request.script_root }}",
+          'csrfNonce': "{{ Session.nonce }}",
+          'userMode': "{{ Configs.user_mode }}",
+          'userId': {{ Session.id }},
+          'userName': {{ User.name | tojson }},
+          'userEmail': {{ User.email | tojson }},
+          'userVerified': {{ User.verified | tojson }},
+          'teamId': {{ Team.id | tojson }},
+          'teamName': {{ Team.name | tojson }},
+          'start': {{ Configs.start | tojson }},
+          'end': {{ Configs.end | tojson }},
+          'themeSettings': {{ Configs.theme_settings | tojson }},
+          'eventSounds': [
+            "/themes/core/static/sounds/notification.webm",
+            "/themes/core/static/sounds/notification.mp3",
+          ],
+      }
+  </script>
+
+  {{ Configs.theme_header }}
+  <link rel="stylesheet" href="/themes/fortifysec/static/css/fortifysec.css?v=3">
+  <link rel="stylesheet" href="/themes/fortifysec/static/css/challenges-v5.css?v=5">
+  <script defer src="/themes/fortifysec/static/js/challenges-v5.js?v=5"></script>
+  <link rel="stylesheet" href="/themes/fortifysec/static/css/challenges-v6.css?v=6">
+  <script defer src="/themes/fortifysec/static/js/challenges-v6.js?v=6"></script>
+
+  <link rel="stylesheet" href="/themes/fortifysec/static/css/navbar-fix.css?v=1">
+<link rel="stylesheet" href="/themes/fortifysec/static/css/challenges-layout-2027.css?v=1">
+<!-- FS-SCOREBOARD-2027 -->
+<link rel="stylesheet" href="/themes/fortifysec/static/css/scoreboard-2027.css?v=1">
+
+<!-- /FS-SCOREBOARD-2027 -->
+<link rel="stylesheet" href="/themes/fortifysec/static/css/scoreboard-premium-2027.css?v=2">
+<link rel="stylesheet" href="/themes/fortifysec/static/css/auth-v8-1.css?v=1">
+<link rel="stylesheet" href="/themes/fortifysec/static/css/auth-no-navbar.css?v=1">
+
+<script>
+if (window.location.pathname === "/") {
+    window.location.replace("/login");
+}
+</script>
+
+<link rel="stylesheet" href="/themes/fortifysec/static/css/fortifysec-v10.css?v=10">
+<link rel="stylesheet" href="/themes/fortifysec/static/css/team-v11.css?v=11">
+<link rel="stylesheet" href="/themes/fortifysec/static/css/settings-premium-v16.css?v=16">
+</head>
+<body>
+{% include "components/navbar.html" %}
+
+<main role="main">
+  {% block content %}
+  {% endblock %}
+</main>
+
+{% include "components/snackbar.html" %}
+
+<footer class="footer">
+  <div class="container text-center">
+    <a href="https://ctfd.io" class="text-secondary">
+      <small class="text-muted">
+        {% trans %}Powered by CTFd{% endtrans %}
+      </small>
+    </a>
+  </div>
+</footer>
+
+{% include "components/notifications.html" %}
+
+{% block scripts %}
+  {{ Assets.js("assets/js/page.js") }}
+{% endblock %}
+
+{{ Plugins.scripts }}
+
+{{ Configs.theme_footer }}
+<script defer src="/themes/fortifysec/static/js/fortifysec-v10.js?v=10"></script>
+<script defer src="/themes/fortifysec/static/js/team-v11.js?v=11"></script>
+<script>
+if (window.location.pathname === '/settings' ||
+    window.location.pathname.startsWith('/settings/')) {
+  document.body.classList.add('fs-settings-v16');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+/* FortifySec CTF Arena 2027 — scoreboard only */
+body.fs27-scoreboard {background:#080c13!important;color:#e9eef7!important}
+body.fs27-scoreboard .jumbotron {background:radial-gradient(ellipse at 80% 0%,rgba(190,18,60,.23),transparent 65%),linear-gradient(120deg,#131b2b,#0b1019)!important;border-bottom:1px solid #64243d!important;padding:38px 20px 42px!important;margin-bottom:0!important}
+body.fs27-scoreboard .jumbotron h1 {font-size:clamp(1.9rem,4vw,3.3rem)!important;font-weight:850!important;letter-spacing:-.035em!important;margin-bottom:10px!important}
+body.fs27-scoreboard main>.container,body.fs27-scoreboard #scoreboard>.container {max-width:1200px!important}
+.fs27-dashboard {max-width:1200px;margin:36px auto 30px;padding:0 22px;font-family:inherit;color:#f8fafc}
+.fs27-eyebrow {font-size:.72rem;font-weight:800;letter-spacing:.18em;color:#fb7185;margin-bottom:12px}
+.fs27-title {font-size:clamp(2rem,4.2vw,3.6rem);line-height:1.1;font-weight:850;letter-spacing:-.04em;margin:0 0 12px;color:#fff}
+.fs27-description {color:#9eacc2;font-size:1rem;max-width:690px;margin:0 0 26px;line-height:1.6}
+.fs27-stats {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:24px}
+.fs27-stat {background:linear-gradient(150deg,#192436,#111823);border:1px solid #334055;border-radius:16px;padding:20px;min-height:105px}
+.fs27-stat-label {display:block;color:#aab7c9;font-size:.73rem;text-transform:uppercase;letter-spacing:.09em;font-weight:700;margin-bottom:12px}
+.fs27-stat-value {font-size:1.55rem;font-weight:850;color:#fff;line-height:1.2}
+.fs27-prizes {display:flex;flex-wrap:wrap;gap:9px;margin:0 0 30px}
+.fs27-prizes span {background:#221b2a;border:1px solid #5c2940;border-radius:100px;color:#f8cbd3;font-size:.8rem;padding:8px 13px;font-weight:700}
+.fs27-section-title {font-size:1.3rem;font-weight:800;margin:0 0 18px;color:#fff}
+.fs27-podium {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0 0 28px}
+.fs27-podium-card {border:1px solid #39465c;border-radius:18px;background:linear-gradient(145deg,#1b2535,#101723);padding:22px;text-align:center;min-width:0;box-shadow:0 15px 32px #0004}
+.fs27-podium-card.fs27-first {border-color:#c38e3a;background:linear-gradient(155deg,#30281d,#161d2a)}
+.fs27-medal {font-size:2.2rem;display:block;margin-bottom:8px}
+.fs27-place {font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:#aebdd0;font-weight:800;margin-bottom:12px}
+.fs27-name {font-size:1.15rem;font-weight:800;overflow-wrap:anywhere;margin-bottom:10px}
+.fs27-name a {color:#f8fafc!important;text-decoration:none}
+.fs27-score {font-size:1.8rem;font-weight:900;color:#fda4af}
+.fs27-score small {font-size:.7rem;color:#9caec6;margin-left:6px}
+.fs27-empty {border:1px solid #374359;border-radius:20px;background:radial-gradient(circle at top right,#63223b30,transparent 55%),#121a27;text-align:center;padding:48px 24px;margin:0 0 30px}
+.fs27-empty-icon {font-size:3.2rem;margin-bottom:15px}
+.fs27-empty h3 {font-size:1.55rem;font-weight:850;color:#fff;margin:0 0 12px}
+.fs27-empty p {color:#b0bdd0;max-width:530px;margin:0 auto 22px;line-height:1.65}
+.fs27-action {display:inline-block!important;background:#be123c;color:#fff!important;padding:12px 20px;border-radius:10px;text-decoration:none!important;font-weight:750}
+.fs27-action:hover {background:#e11d48}
+body.fs27-scoreboard table {border-collapse:separate!important;border-spacing:0 8px!important;width:100%;color:#e9eef7!important}
+body.fs27-scoreboard table th {color:#9eacc2!important;border:0!important;text-transform:uppercase;font-size:.76rem;letter-spacing:.08em}
+body.fs27-scoreboard table tbody tr {background:#172131!important}
+body.fs27-scoreboard table tbody td {padding:16px!important;border-top:1px solid #344155!important;border-bottom:1px solid #344155!important}
+body.fs27-scoreboard table tbody td:first-child {border-left:1px solid #344155!important;border-radius:12px 0 0 12px}
+body.fs27-scoreboard table tbody td:last-child {border-right:1px solid #344155!important;border-radius:0 12px 12px 0}
+body.fs27-scoreboard table a {color:#f4f6fa!important}
+@media(max-width:720px){.fs27-stats,.fs27-podium{grid-template-columns:1fr}.fs27-dashboard{margin-top:24px;padding:0 15px}.fs27-stat{min-height:90px}.fs27-podium-card{padding:18px}}

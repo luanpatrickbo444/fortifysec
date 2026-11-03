@@ -1,0 +1,164 @@
+/* FORTIFYSEC CTF ARENA 2027 - V10 */
+
+:root {
+  --fs-red: #f52d59;
+  --fs-bg: #080b12;
+  --fs-panel: #101624;
+  --fs-border: #283143;
+  --fs-muted: #99a6ba;
+}
+
+body {
+  background: var(--fs-bg) !important;
+}
+
+/* MENU SUPERIOR */
+
+nav.navbar {
+  background: rgba(9, 13, 22, .98) !important;
+  border-bottom: 1px solid rgba(245,45,89,.22) !important;
+  box-shadow: 0 10px 35px rgba(0,0,0,.15);
+  min-height: 72px;
+  padding: 12px 0 !important;
+}
+
+nav.navbar > .container {
+  max-width: 1440px;
+  gap: 18px;
+}
+
+nav.navbar .navbar-brand {
+  color: #fff !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  letter-spacing: -.3px;
+  white-space: nowrap;
+}
+
+nav.navbar .navbar-brand::before {
+  content: "◆";
+  color: var(--fs-red);
+  font-size: 18px;
+  margin-right: 10px;
+}
+
+nav.navbar .navbar-nav {
+  align-items: center;
+  gap: 5px;
+}
+
+nav.navbar .nav-link {
+  color: #aeb9ca !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+  border-radius: 9px;
+  padding: 10px 12px !important;
+  transition: background .2s, color .2s;
+}
+
+nav.navbar .nav-link:hover,
+nav.navbar .nav-link.active {
+  color: #fff !important;
+  background: rgba(245,45,89,.12);
+}
+
+nav.navbar .navbar-toggler {
+  border: 1px solid var(--fs-border);
+}
+
+/* TITULOS */
+
+body.fs-v10-team .jumbotron {
+  display: none !important;
+}
+
+.fs-v10-team-hero {
+  max-width: 880px;
+  margin: 32px auto 0;
+  padding: 34px 24px;
+  text-align: center;
+  background:
+    radial-gradient(ellipse at top, rgba(245,45,89,.12), transparent 65%),
+    linear-gradient(145deg, #141b2b, #0c111b);
+  border: 1px solid var(--fs-border);
+  border-radius: 18px;
+}
+
+.fs-v10-eyebrow {
+  color: var(--fs-red);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+}
+
+.fs-v10-team-hero h1 {
+  color: #fff;
+  font-size: clamp(28px, 4vw, 43px);
+  font-weight: 800;
+  margin: 13px 0;
+  letter-spacing: -1px;
+}
+
+.fs-v10-team-hero p {
+  color: var(--fs-muted);
+  font-size: 14px;
+  line-height: 1.8;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+body.fs-v10-team main .container {
+  max-width: 1080px;
+}
+
+body.fs-v10-team main h2,
+body.fs-v10-team main h3 {
+  color: #fff;
+}
+
+body.fs-v10-team main .btn-primary,
+body.fs-v10-team main .btn-success {
+  background: linear-gradient(110deg,#f52d59,#b70f3e) !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  border-radius: 10px !important;
+  padding: 12px 24px !important;
+  font-weight: 750 !important;
+  min-width: 180px;
+  box-shadow: 0 6px 20px rgba(245,45,89,.12);
+}
+
+body.fs-v10-team main .btn-primary:hover,
+body.fs-v10-team main .btn-success:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+
+body.fs-v10-team main input,
+body.fs-v10-team main select {
+  background: #111827 !important;
+  color: #f8fafc !important;
+  border: 1px solid #344055 !important;
+  border-radius: 9px !important;
+}
+
+@media(max-width: 992px) {
+  nav.navbar .navbar-nav {
+    align-items: stretch;
+  }
+
+  nav.navbar .nav-link {
+    padding: 12px !important;
+  }
+}
+
+@media(max-width: 600px) {
+  nav.navbar .navbar-brand {
+    font-size: 12px !important;
+  }
+
+  .fs-v10-team-hero {
+    margin: 20px 14px 0;
+    padding: 28px 16px;
+  }
+}

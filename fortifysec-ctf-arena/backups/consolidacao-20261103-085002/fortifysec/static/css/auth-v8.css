@@ -1,0 +1,27 @@
+/* FortifySec CTF Arena 2027 - auth V8; native CTFd forms remain intact */
+body:has(.fs-auth-v8) { background:#080c14!important; color:#e9eef7; }
+body:has(.fs-auth-v8) main { min-height:calc(100vh - 150px); }
+body:has(.fs-auth-v8) main .jumbotron { background:linear-gradient(125deg,#111c2d,#190e1c)!important; border-bottom:1px solid #6f2138!important; padding:32px 16px!important; }
+body:has(.fs-auth-v8) main .jumbotron h1 {font-size:clamp(1.7rem,3vw,2.4rem)!important;font-weight:800!important;letter-spacing:-.025em;text-align:center}
+body:has(.fs-auth-v8) main .container {max-width:1140px}
+body:has(.fs-auth-v8) main .row:has(form) {justify-content:center!important;}
+body:has(.fs-auth-v8) main .row:has(form)>[class*="col-"] {width:100%!important;max-width:480px!important;flex:0 1 480px!important;}
+body:has(.fs-auth-v8) main form {background:linear-gradient(155deg,#192337,#111827)!important;border:1px solid #34445b!important;border-top:3px solid #f43f5e!important;border-radius:20px!important;padding:clamp(22px,4vw,36px)!important;box-shadow:0 22px 60px #0007!important;margin:28px auto 35px!important;color:#e9eef7!important;}
+body:has(.fs-auth-v8) main form label {color:#dbe4f0!important;font-size:.87rem;font-weight:700;margin-bottom:7px}
+body:has(.fs-auth-v8) main form .form-control,body:has(.fs-auth-v8) main form input:not([type="checkbox"]):not([type="radio"]),body:has(.fs-auth-v8) main form select {background:#0b1220!important;color:#f8fafc!important;border:1px solid #41516b!important;border-radius:10px!important;min-height:46px!important;box-shadow:none!important;}
+body:has(.fs-auth-v8) main form input:focus,body:has(.fs-auth-v8) main form select:focus {border-color:#fb7185!important;box-shadow:0 0 0 3px #fb71852b!important;outline:none!important}
+body:has(.fs-auth-v8) main form input::placeholder {color:#8391a6!important}
+body:has(.fs-auth-v8) main form .btn-primary,body:has(.fs-auth-v8) main form button[type="submit"],body:has(.fs-auth-v8) main form input[type="submit"] {background:linear-gradient(110deg,#e11d48,#be123c)!important;border:0!important;color:white!important;border-radius:10px!important;padding:12px 22px!important;font-weight:800!important;min-height:46px;box-shadow:0 9px 26px #e11d4830;transition:transform .2s,filter .2s}
+body:has(.fs-auth-v8) main form .btn-primary:hover,body:has(.fs-auth-v8) main form button[type="submit"]:hover {filter:brightness(1.12);transform:translateY(-2px)}
+body:has(.fs-auth-v8) main a {color:#fda4af}
+body:has(.fs-auth-v8) main .text-muted,body:has(.fs-auth-v8) main small {color:#9cacc2!important}
+body:has(.fs-auth-v8) main .alert {border-radius:10px}
+.fs-auth-v8 {max-width:720px;margin:34px auto 0;text-align:center;padding:0 18px}
+.fs-auth-v8__eyebrow {display:inline-flex;align-items:center;gap:8px;color:#fda4af;font-size:.72rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+.fs-auth-v8__eyebrow::before {content:'◆';color:#fb365c}
+.fs-auth-v8 h2 {color:#fff;font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:850;letter-spacing:-.04em;margin:13px 0 9px}
+.fs-auth-v8 p {color:#aab8ca;margin:0 auto;max-width:520px;line-height:1.65}
+.fs-auth-v8__features {display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
+.fs-auth-v8__features span {border:1px solid #39455b;border-radius:99px;background:#152032;padding:7px 12px;color:#c9d5e6;font-size:.73rem}
+@media(max-width:600px){body:has(.fs-auth-v8) main form {margin:20px 10px 30px!important;padding:22px!important}.fs-auth-v8{margin-top:22px}}
+@media(prefers-reduced-motion:reduce){body:has(.fs-auth-v8) main form button {transition:none!important}}

@@ -1,0 +1,33 @@
+/* FortifySec Arena — Challenges V4. Scoped to the native CTFd challenges page. */
+body:has(#challenges-board), body:has(.challenges-board) { background: #080b12 !important; color:#e8edf7; }
+body:has(#challenges-board) .jumbotron, body:has(.challenges-board) .jumbotron { background: radial-gradient(ellipse at 90% 20%,rgba(225,29,72,.18),transparent 50%),linear-gradient(135deg,#121825,#090d16) !important; border-bottom:1px solid #532234; color:#f8fafc; }
+body:has(#challenges-board) .jumbotron h1,body:has(.challenges-board) .jumbotron h1{font-weight:850;letter-spacing:-.045em;text-transform:uppercase}
+body:has(#challenges-board) .container,body:has(.challenges-board) .container{max-width:1320px}
+/* Board category sections, including default CTFd category headers */
+#challenges-board h2,#challenges-board h3,.challenges-board h2,.challenges-board h3{color:#f1f5f9;font-weight:800;letter-spacing:-.025em}
+#challenges-board .category-header,.challenges-board .category-header{border-bottom:1px solid #263243;padding-bottom:12px;margin:28px 0 16px}
+/* Native challenge buttons retain their CTFd click listeners and modals. */
+#challenges-board .challenge-button,.challenges-board .challenge-button{position:relative!important;overflow:hidden!important;isolation:isolate;display:inline-flex!important;flex-direction:column;align-items:flex-start!important;justify-content:space-between!important;vertical-align:top;min-height:166px!important;width:220px!important;max-width:100%;margin:8px!important;padding:20px!important;text-align:left!important;border:1px solid #2c3545!important;border-radius:17px!important;background:linear-gradient(145deg,#1a2231 0%,#101722 100%)!important;color:#f8fafc!important;box-shadow:0 10px 30px rgba(0,0,0,.2)!important;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease!important;white-space:normal!important}
+#challenges-board .challenge-button:before,.challenges-board .challenge-button:before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#e11d48,#fb7185,transparent);opacity:.85}
+#challenges-board .challenge-button:hover,.challenges-board .challenge-button:hover{transform:translateY(-5px)!important;border-color:#e11d48!important;box-shadow:0 18px 40px rgba(225,29,72,.18)!important}
+#challenges-board .challenge-button:focus-visible,.challenges-board .challenge-button:focus-visible{outline:3px solid #fb7185!important;outline-offset:3px}
+#challenges-board .challenge-button .challenge-name,.challenges-board .challenge-button .challenge-name{font-size:1.05rem!important;line-height:1.35;font-weight:750!important;letter-spacing:-.02em;display:block;max-width:100%;overflow-wrap:anywhere}
+#challenges-board .challenge-button .challenge-value,.challenges-board .challenge-button .challenge-value{font-size:1.25rem!important;font-weight:850!important;color:#fda4af!important;display:block;margin-top:14px}
+#challenges-board .challenge-button .challenge-value:after,.challenges-board .challenge-button .challenge-value:after{content:" PTS";font-size:.64rem;letter-spacing:.12em;color:#a7b1c4}
+#challenges-board .challenge-button.solved-challenge,.challenges-board .challenge-button.solved-challenge,#challenges-board .challenge-button.fortify-solved,.challenges-board .challenge-button.fortify-solved{border-color:#148f71!important;background:linear-gradient(145deg,#12382f,#101b24)!important}
+#challenges-board .challenge-button.solved-challenge:before,.challenges-board .challenge-button.solved-challenge:before,#challenges-board .challenge-button.fortify-solved:before,.challenges-board .challenge-button.fortify-solved:before{background:#34d399}
+.fortify-challenge-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;max-width:100%}
+.fortify-challenge-pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:.66rem;font-weight:800;letter-spacing:.045em;text-transform:uppercase;border:1px solid #465168;color:#c6d1e4;background:#222b3a;line-height:1.2}
+.fortify-challenge-pill[data-level="easy"]{border-color:#145c4a;color:#6ee7b7;background:#123b31}
+.fortify-challenge-pill[data-level="medium"]{border-color:#785419;color:#fcd34d;background:#3c301b}
+.fortify-challenge-pill[data-level="hard"]{border-color:#7f1d35;color:#fda4af;background:#421a2b}
+.fortify-challenge-pill[data-level="solved"]{border-color:#145c4a;color:#6ee7b7;background:#123b31}
+/* Challenge modal and controls */
+body:has(#challenges-board) .modal-content,body:has(.challenges-board) .modal-content{background:#141c29;color:#edf2fb;border:1px solid #354052;border-radius:18px;box-shadow:0 28px 90px #0009}
+body:has(#challenges-board) .modal-header,body:has(.challenges-board) .modal-header,body:has(#challenges-board) .modal-footer,body:has(.challenges-board) .modal-footer{border-color:#303b4c}
+body:has(#challenges-board) .modal-content .form-control,body:has(.challenges-board) .modal-content .form-control{background:#0c121d;color:#fff;border:1px solid #3a465a}
+body:has(#challenges-board) .modal-content .form-control:focus,body:has(.challenges-board) .modal-content .form-control:focus{border-color:#fb7185;box-shadow:0 0 0 3px #e11d4826}
+body:has(#challenges-board) .btn-primary,body:has(.challenges-board) .btn-primary{background:#be123c;border-color:#be123c}
+body:has(#challenges-board) .btn-primary:hover,body:has(.challenges-board) .btn-primary:hover{background:#e11d48;border-color:#e11d48}
+@media(max-width:650px){#challenges-board .challenge-button,.challenges-board .challenge-button{width:calc(100% - 16px)!important;min-height:145px!important}}
+@media(prefers-reduced-motion:reduce){#challenges-board .challenge-button,.challenges-board .challenge-button{transition:none!important}}

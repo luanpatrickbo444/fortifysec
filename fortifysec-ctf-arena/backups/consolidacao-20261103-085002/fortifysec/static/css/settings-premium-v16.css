@@ -1,0 +1,141 @@
+
+/* FORTIFYSEC SETTINGS PREMIUM V16 */
+
+body.fs-settings-v16 {
+  background: #080b12 !important;
+}
+
+body.fs-settings-v16 main .jumbotron {
+  background: transparent !important;
+  border: none !important;
+  padding: 36px 16px 22px !important;
+  margin-bottom: 10px !important;
+}
+
+body.fs-settings-v16 main .jumbotron h1 {
+  color: #fff !important;
+  font-weight: 800 !important;
+  letter-spacing: -1.4px;
+  font-size: clamp(30px,4vw,44px) !important;
+}
+
+body.fs-settings-v16 main > .container {
+  max-width: 1150px;
+  padding-top: 24px;
+  padding-bottom: 70px;
+}
+
+body.fs-settings-v16 main .nav-pills {
+  background: #121827;
+  border: 1px solid #30394b;
+  border-radius: 15px;
+  padding: 12px;
+  gap: 6px;
+}
+
+body.fs-settings-v16 main .nav-pills .nav-link {
+  color: #aab7ca !important;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 9px;
+  padding: 13px 16px;
+}
+
+body.fs-settings-v16 main .nav-pills .nav-link:hover {
+  background: #1d2638;
+  color: #fff !important;
+}
+
+body.fs-settings-v16 main .nav-pills .nav-link.active {
+  background: linear-gradient(110deg,#f52d59,#b70f3e) !important;
+  color: #fff !important;
+}
+
+body.fs-settings-v16 main form {
+  background: linear-gradient(145deg,#141b29,#0d121d);
+  border: 1px solid #30394b;
+  border-radius: 17px;
+  padding: 30px;
+  box-shadow: 0 15px 40px rgba(0,0,0,.15);
+}
+
+body.fs-settings-v16 main form label {
+  color: #d9e1ec !important;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 9px;
+}
+
+body.fs-settings-v16 main form .form-control,
+body.fs-settings-v16 main form .form-select,
+body.fs-settings-v16 main form select {
+  background: #0d1421 !important;
+  border: 1px solid #354157 !important;
+  color: #f8fafc !important;
+  border-radius: 9px !important;
+  min-height: 43px;
+  padding: 10px 13px;
+  box-shadow: none !important;
+}
+
+body.fs-settings-v16 main form .form-control:focus,
+body.fs-settings-v16 main form select:focus {
+  border-color: #fb365e !important;
+  box-shadow: 0 0 0 3px rgba(251,54,94,.12) !important;
+}
+
+body.fs-settings-v16 main form .btn-primary,
+body.fs-settings-v16 main form input[type=submit] {
+  background: linear-gradient(110deg,#f52d59,#b70f3e) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 12px 24px !important;
+  font-weight: 750 !important;
+}
+
+body.fs-settings-v16 main .alert {
+  background: #161d2b !important;
+  border: 1px solid #354157 !important;
+  color: #cbd5e1 !important;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+body.fs-settings-v16 main .alert a {
+  color: #fb6584 !important;
+}
+
+body.fs-settings-v16 main hr {
+  border-color: #354157;
+  opacity: .8;
+}
+
+.fs-settings-intro {
+  max-width: 1150px;
+  margin: 30px auto 0;
+  padding: 0 16px;
+}
+
+.fs-settings-intro .eyebrow {
+  color: #fb365e;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.fs-settings-intro p {
+  color: #94a3b8;
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+
+@media(max-width:767px) {
+  body.fs-settings-v16 main > .container {
+    padding: 18px 16px 45px;
+  }
+
+  body.fs-settings-v16 main form {
+    padding: 20px;
+  }
+}

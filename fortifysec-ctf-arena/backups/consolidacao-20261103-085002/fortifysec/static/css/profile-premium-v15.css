@@ -1,0 +1,119 @@
+
+/* FORTIFYSEC PROFILE PREMIUM V15 */
+
+body:has(.fs-profile-v15) {
+  background: #080b12 !important;
+}
+
+body:has(.fs-profile-v15) .jumbotron {
+  max-width: 1060px;
+  margin: 35px auto 24px !important;
+  padding: 48px 30px !important;
+  background:
+    radial-gradient(ellipse at 85% 0%,rgba(245,45,89,.12),transparent 60%),
+    linear-gradient(135deg,#171d2c,#0c111b) !important;
+  border: 1px solid #30394b;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 18px 55px rgba(0,0,0,.2);
+}
+
+body:has(.fs-profile-v15) .jumbotron h1 {
+  color: #fff !important;
+  font-size: clamp(32px,4vw,48px) !important;
+  font-weight: 850 !important;
+  letter-spacing: -1.5px;
+}
+
+body:has(.fs-profile-v15) .jumbotron .badge {
+  background: #251723 !important;
+  border: 1px solid rgba(245,45,89,.35);
+  color: #fda4af !important;
+  border-radius: 9px !important;
+  padding: 8px 13px;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.fs-profile-v15 {
+  max-width: 1060px;
+  margin: 0 auto 22px;
+  padding: 0 18px;
+}
+
+.fs-profile-v15-topline {
+  color: #fb365e;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.fs-profile-v15-title {
+  color: #fff;
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.fs-profile-v15-subtitle {
+  color: #94a3b8;
+  font-size: 13px;
+  margin: 9px 0 0;
+}
+
+body:has(.fs-profile-v15) main > .container {
+  max-width: 1060px;
+}
+
+body:has(.fs-profile-v15) main table {
+  width: 100%;
+  background: #121827;
+  border: 1px solid #30394b;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+body:has(.fs-profile-v15) main table th {
+  background: #192132;
+  color: #fda4af !important;
+  font-size: 11px;
+  letter-spacing: .7px;
+  text-transform: uppercase;
+  padding: 15px !important;
+  border-bottom: 1px solid #30394b !important;
+}
+
+body:has(.fs-profile-v15) main table td {
+  color: #e5e7eb !important;
+  padding: 15px !important;
+  border-bottom: 1px solid #273044 !important;
+}
+
+body:has(.fs-profile-v15) main table tr:hover td {
+  background: rgba(245,45,89,.045);
+}
+
+body:has(.fs-profile-v15) main h2,
+body:has(.fs-profile-v15) main h3 {
+  color: #fff;
+  font-weight: 750;
+}
+
+body:has(.fs-profile-v15) main .text-muted {
+  color: #94a3b8 !important;
+}
+
+body:has(.fs-profile-v15) main .btn-primary {
+  background: linear-gradient(110deg,#f52d59,#b70f3e);
+  border: none;
+  border-radius: 10px;
+}
+
+@media(max-width:600px) {
+  body:has(.fs-profile-v15) .jumbotron {
+    margin: 18px 12px !important;
+    padding: 30px 16px !important;
+  }
+}

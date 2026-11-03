@@ -1,0 +1,35 @@
+/* FortifySec CTF Arena 2027 */
+/* Ocultar navbar apenas nas telas de autenticacao */
+
+body:has(.fs9-auth) > nav.navbar,
+body:has(.fs9-auth) > header nav.navbar {
+  display: none !important;
+}
+
+/* Centralizar o login sem a barra superior */
+body:has(.fs9-auth) main {
+  min-height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 35px 20px 70px !important;
+}
+
+body:has(.fs9-auth) .fs9-auth {
+  width: 100% !important;
+  max-width: 460px !important;
+  margin: 0 auto !important;
+  padding-top: 0 !important;
+}
+
+/* Ocultar rodape somente na autenticacao */
+body:has(.fs9-auth) > footer.footer {
+  display: none !important;
+}
+
+@media (max-width: 600px) {
+  body:has(.fs9-auth) main {
+    align-items: flex-start !important;
+    padding: 35px 14px 50px !important;
+  }
+}

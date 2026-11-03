@@ -1,0 +1,30 @@
+/* FortifySec Ranking V7 — isolated to /scoreboard */
+body.fs-ranking-v7{background:#080b12;color:#e9edf7}
+body.fs-ranking-v7 .jumbotron{background:linear-gradient(120deg,#151a28,#1a0c19)!important;border-bottom:1px solid #4b2031;color:#fff;padding:2.5rem 1rem}
+body.fs-ranking-v7 .jumbotron h1{font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+body.fs-ranking-v7 .fs-rank-wrap{max-width:1140px;margin:0 auto 2rem;padding:0 16px}
+body.fs-ranking-v7 .fs-rank-intro{padding:30px 0 16px}
+body.fs-ranking-v7 .fs-rank-eyebrow{color:#fb7185;font-size:.76rem;letter-spacing:.18em;font-weight:800}
+body.fs-ranking-v7 .fs-rank-title{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:800;color:#fff;margin:8px 0}
+body.fs-ranking-v7 .fs-rank-sub{color:#a9b6c9;margin:0}
+body.fs-ranking-v7 .fs-podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:14px;margin:25px 0}
+body.fs-ranking-v7 .fs-podium-card{position:relative;min-width:0;padding:22px 18px;background:linear-gradient(160deg,#1a2232,#101621);border:1px solid #344054;border-radius:18px;box-shadow:0 14px 30px #0004;transition:transform .2s,border-color .2s}
+body.fs-ranking-v7 .fs-podium-card:hover{transform:translateY(-5px);border-color:#fb7185}
+body.fs-ranking-v7 .fs-podium-card.fs-first{padding-top:34px;border-color:#b88b42;background:linear-gradient(155deg,#30241d,#171923)}
+body.fs-ranking-v7 .fs-medal{font-size:2rem;display:block;margin-bottom:12px}
+body.fs-ranking-v7 .fs-place{font-size:.76rem;color:#b9c5d5;text-transform:uppercase;letter-spacing:.12em}
+body.fs-ranking-v7 .fs-player{display:block;font-size:clamp(1rem,2vw,1.3rem);font-weight:750;color:#fff;margin:8px 0;overflow-wrap:anywhere}
+body.fs-ranking-v7 .fs-player a{color:inherit;text-decoration:none}
+body.fs-ranking-v7 .fs-player a:hover{color:#fb7185}
+body.fs-ranking-v7 .fs-score{color:#fb7185;font-weight:800;font-size:1.4rem;font-variant-numeric:tabular-nums}
+body.fs-ranking-v7 .fs-score small{font-size:.7rem;color:#b7c2d3;font-weight:600;margin-left:5px}
+body.fs-ranking-v7 .fs-empty{background:#151c29;border:1px dashed #455167;border-radius:16px;padding:22px;color:#b7c2d3}
+body.fs-ranking-v7 table{background:#111722!important;color:#e9edf7!important;border:1px solid #2c3546;border-radius:14px;overflow:hidden;border-collapse:separate;border-spacing:0}
+body.fs-ranking-v7 table th{background:#1d2635!important;color:#e9edf7!important;border-color:#354154!important;padding:14px!important}
+body.fs-ranking-v7 table td{background:#111722!important;color:#e9edf7!important;border-color:#283243!important;padding:14px!important;vertical-align:middle}
+body.fs-ranking-v7 table tbody tr:hover td{background:#1e293b!important}
+body.fs-ranking-v7 table a{color:#ff8197}
+body.fs-ranking-v7 table a:hover{color:#ffb0be}
+body.fs-ranking-v7 .fs-rank-wrap a:focus-visible,body.fs-ranking-v7 table a:focus-visible{outline:2px solid #fb7185;outline-offset:3px}
+@media(max-width:650px){body.fs-ranking-v7 .fs-podium{grid-template-columns:1fr}body.fs-ranking-v7 .fs-podium-card.fs-first{order:-1}body.fs-ranking-v7 .fs-rank-wrap{padding:0 12px}body.fs-ranking-v7 table td,body.fs-ranking-v7 table th{padding:9px!important}}
+@media(prefers-reduced-motion:reduce){body.fs-ranking-v7 .fs-podium-card{transition:none}}

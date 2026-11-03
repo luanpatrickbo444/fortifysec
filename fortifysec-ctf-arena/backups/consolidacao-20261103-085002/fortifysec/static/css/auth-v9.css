@@ -1,0 +1,224 @@
+/* FORTIFYSEC CTF ARENA 2027 - AUTH V9 */
+
+main:has(.fs9-auth) {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(225,29,72,.13), transparent 55%),
+    #080b12 !important;
+  min-height: calc(100vh - 75px);
+  padding: 0 20px 90px;
+  color: #f8fafc;
+}
+
+.fs9-auth,
+.fs9-auth * {
+  box-sizing: border-box;
+}
+
+.fs9-auth {
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  padding-top: 52px;
+}
+
+.fs9-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.fs9-symbol {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 22px;
+  background: rgba(225,29,72,.12);
+  border: 1px solid rgba(251,113,133,.3);
+  border-radius: 16px;
+  color: #fb3d63;
+  font-size: 30px;
+  box-shadow: 0 0 40px rgba(225,29,72,.12);
+}
+
+.fs9-eyebrow {
+  color: #fb7185;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .19em;
+  margin-bottom: 14px;
+}
+
+.fs9-header h1 {
+  font-size: clamp(30px, 5vw, 40px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -.04em;
+  color: #fff;
+  margin: 0 0 14px;
+}
+
+.fs9-header p {
+  color: #9ca9bc;
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.fs9-card {
+  padding: 34px;
+  background: linear-gradient(145deg,#171f2e,#111723);
+  border: 1px solid #303a4d;
+  border-top: 3px solid #f43f5e;
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgba(0,0,0,.32);
+}
+
+.fs9-card form {
+  margin: 0;
+  padding: 0;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.fs9-field {
+  margin-bottom: 20px;
+}
+
+.fs9-field label {
+  display: block;
+  color: #dbe3ef;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 9px;
+}
+
+.fs9-field .form-control {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  color: #fff !important;
+  background: #0b111d !important;
+  border: 1px solid #364155 !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+.fs9-field .form-control:focus {
+  border-color: #f43f5e !important;
+  outline: 3px solid rgba(244,63,94,.12) !important;
+}
+
+.fs9-auth input:-webkit-autofill,
+.fs9-auth input:-webkit-autofill:hover,
+.fs9-auth input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #fff !important;
+  -webkit-box-shadow: 0 0 0 1000px #0b111d inset !important;
+  box-shadow: 0 0 0 1000px #0b111d inset !important;
+  caret-color: #fff !important;
+}
+
+.fs9-help {
+  color: #8c9aad;
+  font-size: 12px;
+  margin-top: 7px;
+}
+
+.fs9-actions {
+  margin-top: 26px;
+}
+
+.fs9-submit,
+.fs9-auth input[type="submit"].fs9-submit {
+  display: block !important;
+  width: 100% !important;
+  min-height: 49px !important;
+  padding: 12px 18px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: linear-gradient(105deg,#f43f5e,#be123c) !important;
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+}
+
+.fs9-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(225,29,72,.22);
+}
+
+.fs9-links {
+  margin-top: 22px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: #9ca9bc;
+  font-size: 13px;
+}
+
+.fs9-auth a {
+  color: #fb7185;
+  text-decoration: none;
+}
+
+.fs9-auth a:hover {
+  color: #fff;
+}
+
+.fs9-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #69788f;
+  font-size: 11px;
+  margin: 25px 0;
+}
+
+.fs9-divider::before,
+.fs9-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #303a4d;
+}
+
+.fs9-oauth {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #354156;
+  border-radius: 10px;
+  text-align: center;
+  color: #fff !important;
+  background: #1c2739;
+}
+
+.fs9-auth .text-muted,
+.fs9-auth .form-text {
+  color: #96a4b8 !important;
+}
+
+@media (max-width: 540px) {
+  main:has(.fs9-auth) {
+    padding: 0 14px 55px;
+  }
+
+  .fs9-auth {
+    padding-top: 32px;
+  }
+
+  .fs9-card {
+    padding: 25px 20px;
+  }
+}
+
+/* FORTIFYSEC AUTH V9 - FIX */
+main:has(.fs9-auth) { padding-top: 45px !important; }
+main:has(.fs9-auth) .fs9-auth { padding-top: 35px !important; margin-top: 0 !important; }
+main:has(.fs9-auth) .fs9-symbol { margin-top: 0 !important; }
+@media (max-width: 600px) { main:has(.fs9-auth) { padding-top: 25px !important; } }
