@@ -1,23 +1,17 @@
 # FortifySec CTF — Next.js 15
 
-Projeto completo independente, com interface cyberpunk e CSS próprio, sem Tailwind.
+Projeto independente, com `app/` como único App Router. Não misture com a pasta `src/` ou `fortify-one-next/` de outro projeto.
 
 ## Executar
 
 ```bash
 npm install
+npm run build
 npm run dev
 ```
 
-## Build de produção
+## Publicar no repositório existente
 
-```bash
-npm run build
-npm start
-```
+Faça backup antes. Substitua o conteúdo antigo da raiz pelos arquivos deste pacote; remova pastas antigas `src/` e `fortify-one-next/` **somente se não fizerem parte do site que deseja publicar**. Remova configurações antigas `postcss.config.*` se não usa Tailwind. Então execute `npm install`, `npm run build`, `git add -A`, `git commit -m 'fix: clean Next.js project'`, `git push origin main`.
 
-## Substituir projeto anterior
-
-Faça backup da pasta anterior e copie **todos os arquivos deste ZIP** para a raiz de um diretório limpo. Não mantenha as pastas `fortify-one-next/` ou `src/` antigas, nem `postcss.config.mjs`, `next.config.mjs` ou `tailwind.config.ts` do repositório anterior. Elas não fazem parte desta versão.
-
-O formulário é demonstrativo: grava dados apenas no navegador; não registra participantes em um servidor. O ranking também é ilustrativo.
+O formulário de interesse é apenas demonstrativo: salva no navegador, não envia inscrições a um servidor.

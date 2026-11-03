@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import {useEffect,useState} from 'react';
-import {Shield,Flag,Trophy,Users,Globe,Terminal,LockKeyhole,Code2,Search,Network,Bug,ScanSearch,Menu,X,ChevronDown,ArrowRight,CheckCircle2,Mail,ExternalLink,Copy,Check,Clock,BookOpen} from 'lucide-react';
+import {Shield,Flag,Trophy,Users,Globe,Terminal,LockKeyhole,Code2,Search,Network,Bug,ScanSearch,Menu,X,ChevronDown,ArrowRight,CheckCircle2,ExternalLink,Copy,Check,Clock} from 'lucide-react';
 
 const prizes=[{place:'01',name:'CAMPEÃO',value:'R$ 3.000',icon:'🥇'},{place:'02',name:'VICE-CAMPEÃO',value:'R$ 1.500',icon:'🥈'},{place:'03',name:'TERCEIRO LUGAR',value:'R$ 500',icon:'🥉'}];
 const tracks=[{icon:Code2,title:'WEB',desc:'Vulnerabilidades em aplicações e APIs.',level:'INICIANTE → AVANÇADO',count:'04 desafios'},{icon:LockKeyhole,title:'CRYPTO',desc:'Cifras, hashes e lógica criptográfica.',level:'INTERMEDIÁRIO',count:'03 desafios'},{icon:ScanSearch,title:'FORENSE',desc:'Análise de arquivos, logs e evidências.',level:'INICIANTE → AVANÇADO',count:'03 desafios'},{icon:Search,title:'OSINT',desc:'Investigação em fontes abertas e correlação.',level:'INICIANTE',count:'03 desafios'},{icon:Bug,title:'REVERSING',desc:'Engenharia reversa de binários didáticos.',level:'AVANÇADO',count:'02 desafios'},{icon:Network,title:'REDES',desc:'Protocolos, pacotes e tráfego em laboratório.',level:'INTERMEDIÁRIO',count:'03 desafios'}];
