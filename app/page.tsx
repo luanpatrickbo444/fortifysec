@@ -1,5 +1,6 @@
+"use client";
+
 import Image from "next/image";
-'use client';
 import {useEffect,useState} from 'react';
 import {Shield,Flag,Trophy,Users,Globe,Terminal,LockKeyhole,Code2,Search,Network,Bug,ScanSearch,Menu,X,ChevronDown,ArrowRight,CheckCircle2,Mail,ExternalLink,Copy,Check,Clock,BookOpen} from 'lucide-react';
 
