@@ -1,0 +1,1 @@
+Each line is a 32-bit unsigned little-endian word. Convert words back to bytes, strip trailing NUL.

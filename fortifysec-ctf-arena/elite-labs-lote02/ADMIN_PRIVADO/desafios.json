@@ -1,0 +1,68 @@
+[
+  {
+    "id": "FS-007",
+    "name": "Tenant Boundary II",
+    "category": "Web",
+    "value": 500,
+    "description": "Execute `python3 server.py` e investigue o controle de acesso da API local. Seu objetivo e recuperar a informacao pertencente a outro tenant.",
+    "flag": "FSCTF{TENANT_BOUNDARY_14C8FE49DF}",
+    "archive": "FS-007.zip",
+    "state": "hidden",
+    "type": "standard"
+  },
+  {
+    "id": "FS-008",
+    "name": "Keystream Collision",
+    "category": "Criptografia",
+    "value": 550,
+    "description": "Dois fluxos foram cifrados com a mesma chave XOR. Voce conhece o texto claro do primeiro. Recupere a mensagem confidencial do segundo.",
+    "flag": "FSCTF{STREAM_COLLISION_B97E892105}",
+    "archive": "FS-008.zip",
+    "state": "hidden",
+    "type": "standard"
+  },
+  {
+    "id": "FS-009",
+    "name": "Audit Trail Recovery",
+    "category": "Forensics",
+    "value": 500,
+    "description": "Analise o banco SQLite de um sistema de auditoria. Identifique a evidencia de recuperacao registrada logo apos uma exclusao suspeita.",
+    "flag": "FSCTF{AUDIT_TRAIL_7A74DC1A49}",
+    "archive": "FS-009.zip",
+    "state": "hidden",
+    "type": "standard"
+  },
+  {
+    "id": "FS-010",
+    "name": "DNS Exfil Fragments",
+    "category": "Redes",
+    "value": 600,
+    "description": "Examine o PCAP no Wireshark ou tshark. Um agente fragmentou um segredo em consultas DNS. Reconstrua os fragmentos pela ordem indicada.",
+    "flag": "FSCTF{DNS_EXFIL_BEB0AE6DBA}",
+    "archive": "FS-010.zip",
+    "state": "hidden",
+    "type": "standard"
+  },
+  {
+    "id": "FS-011",
+    "name": "ELF Checkpoint",
+    "category": "Reverse",
+    "value": 650,
+    "description": "Analise um binario ELF Linux x86-64 e recupere o token de validacao. Ferramentas sugeridas: file, strings, objdump, Ghidra e GDB.",
+    "flag": "FSCTF{ELF_CHECKPOINT_B165226730}",
+    "archive": "FS-011.zip",
+    "state": "hidden",
+    "type": "standard"
+  },
+  {
+    "id": "FS-012",
+    "name": "Operacao Aurora",
+    "category": "OSINT",
+    "value": 450,
+    "description": "Investigue um conjunto de documentos ficticios offline. Correlacione identificadores, ordem de montagem e fragmentos para reconstruir a flag.",
+    "flag": "FSCTF{CORRELATION_CASE_B39A17E410}",
+    "archive": "FS-012.zip",
+    "state": "hidden",
+    "type": "standard"
+  }
+]

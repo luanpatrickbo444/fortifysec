@@ -1,0 +1,189 @@
+/* FORTIFYSEC CTF ARENA 2027 - TEAMS PREMIUM */
+
+body:has(.fs-teams-premium) {
+  background: #070a11 !important;
+}
+
+.fs-teams-premium {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 34px 22px 22px;
+  color: #f4f6fb;
+}
+
+.fs-teams-eyebrow {
+  color: #fb365e;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.fs-teams-heading {
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  margin: 10px 0;
+}
+
+.fs-teams-heading span {
+  color: #fb365e;
+}
+
+.fs-teams-description {
+  color: #97a3b7;
+  font-size: 14px;
+  line-height: 1.8;
+  max-width: 650px;
+}
+
+.fs-teams-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.fs-teams-stat {
+  background: linear-gradient(145deg, #151b29, #0d121d);
+  border: 1px solid #252d3e;
+  border-radius: 14px;
+  padding: 21px;
+}
+
+.fs-teams-stat-label {
+  font-size: 11px;
+  color: #9aa7bb;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.fs-teams-stat-value {
+  font-size: 30px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-top: 8px;
+}
+
+.fs-teams-stat:last-child .fs-teams-stat-value {
+  color: #fb365e;
+}
+
+.fs-teams-section {
+  margin-top: 32px;
+  padding: 22px;
+  background: #0e131e;
+  border: 1px solid #242c3a;
+  border-radius: 16px;
+}
+
+.fs-teams-section-title {
+  font-size: 18px;
+  font-weight: 750;
+  color: #ffffff;
+  margin: 0 0 6px;
+}
+
+.fs-teams-section-subtitle {
+  color: #8996aa;
+  font-size: 12px;
+  margin-bottom: 22px;
+}
+
+body:has(.fs-teams-premium) .form-control,
+body:has(.fs-teams-premium) .form-select,
+body:has(.fs-teams-premium) select {
+  background: #111827 !important;
+  border: 1px solid #303b50 !important;
+  border-radius: 9px !important;
+  color: #e6ebf5 !important;
+  min-height: 43px;
+}
+
+body:has(.fs-teams-premium) .form-control:focus,
+body:has(.fs-teams-premium) select:focus {
+  border-color: #fb365e !important;
+  box-shadow: 0 0 0 3px rgba(251,54,94,.12) !important;
+}
+
+body:has(.fs-teams-premium) .btn-primary {
+  background: linear-gradient(110deg,#fb365e,#b70d39) !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  min-height: 43px;
+  font-weight: 700;
+}
+
+body:has(.fs-teams-premium) table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+body:has(.fs-teams-premium) table thead th {
+  color: #aab6c9 !important;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 18px 12px !important;
+  border-bottom: 1px solid #30394a !important;
+}
+
+body:has(.fs-teams-premium) table tbody td {
+  color: #e7ecf5 !important;
+  padding: 17px 12px !important;
+  border-bottom: 1px solid #202838 !important;
+}
+
+body:has(.fs-teams-premium) table tbody tr:hover {
+  background: rgba(251,54,94,.055);
+}
+
+body:has(.fs-teams-premium) table tbody a {
+  color: #f5f7fb !important;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+body:has(.fs-teams-premium) table tbody a:hover {
+  color: #fb365e !important;
+}
+
+.fs-teams-empty {
+  text-align: center;
+  padding: 48px 20px;
+  border: 1px dashed #354054;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.fs-teams-empty-icon {
+  font-size: 38px;
+  color: #fb365e;
+  margin-bottom: 12px;
+}
+
+.fs-teams-empty h3 {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 750;
+}
+
+.fs-teams-empty p {
+  color: #94a1b5;
+  font-size: 13px;
+}
+
+@media(max-width:700px) {
+  .fs-teams-premium {
+    padding: 25px 14px;
+  }
+
+  .fs-teams-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .fs-teams-section {
+    padding: 15px;
+    overflow-x: auto;
+  }
+}

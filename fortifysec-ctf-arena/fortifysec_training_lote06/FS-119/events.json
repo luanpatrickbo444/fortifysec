@@ -1,0 +1,356 @@
+[
+  {
+    "seq": 38,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 32,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 47,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 18,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 60,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 42,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 1,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 49,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 66,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 49,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 88,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 61,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 45,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 2,
+    "source": "collector",
+    "part": "a30e5ad",
+    "integrity": "50147d10"
+  },
+  {
+    "seq": 42,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 85,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 85,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 74,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 27,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 6,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 67,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 19,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 0,
+    "source": "collector",
+    "part": "FS{ecdd",
+    "integrity": "a88ebe20"
+  },
+  {
+    "seq": 70,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 29,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 51,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 92,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 6,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 27,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 60,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 40,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 8,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 14,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 37,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 58,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 84,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 46,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 20,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 95,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 96,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 1,
+    "source": "collector",
+    "part": "f1a3e36",
+    "integrity": "94ff520c"
+  },
+  {
+    "seq": 67,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 3,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 86,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 23,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 94,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 95,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 2,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 3,
+    "source": "collector",
+    "part": "ae4d95}",
+    "integrity": "25a1fec3"
+  },
+  {
+    "seq": 37,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 32,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 10,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 8,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 17,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 27,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 5,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 1,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 8,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 33,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  }
+]

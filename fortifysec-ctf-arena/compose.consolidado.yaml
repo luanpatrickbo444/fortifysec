@@ -1,0 +1,5 @@
+services:
+  ctfd:
+    image: fortifysec-ctf-ctfd:consolidado-v1
+    pull_policy: never
+    build: !reset null

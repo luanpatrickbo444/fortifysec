@@ -1,0 +1,302 @@
+[
+  {
+    "id": "FS-033",
+    "name": "FS-033 — Key Schedule",
+    "category": "Cryptography",
+    "value": 500,
+    "description": "Recover the flag from the supplied cryptographic telemetry. Use the accompanying protocol notes.",
+    "flag": "FORTIFY{FS033_21a77815a755dd5133}",
+    "path": "FS-033/public",
+    "hint": "The public notes describe the transformation."
+  },
+  {
+    "id": "FS-034",
+    "name": "FS-034 — Offset Protocol",
+    "category": "Cryptography",
+    "value": 530,
+    "description": "Recover the flag from the supplied cryptographic telemetry. Use the accompanying protocol notes.",
+    "flag": "FORTIFY{FS034_b0d399b86b8ba37d9b}",
+    "path": "FS-034/public",
+    "hint": "The public notes describe the transformation."
+  },
+  {
+    "id": "FS-035",
+    "name": "FS-035 — Reverse Base85",
+    "category": "Cryptography",
+    "value": 560,
+    "description": "Recover the flag from the supplied cryptographic telemetry. Use the accompanying protocol notes.",
+    "flag": "FORTIFY{FS035_10b37e88cf242812c5}",
+    "path": "FS-035/public",
+    "hint": "The public notes describe the transformation."
+  },
+  {
+    "id": "FS-036",
+    "name": "FS-036 — Compressed Whisper",
+    "category": "Cryptography",
+    "value": 590,
+    "description": "Recover the flag from the supplied cryptographic telemetry. Use the accompanying protocol notes.",
+    "flag": "FORTIFY{FS036_951bcd7f5844291535}",
+    "path": "FS-036/public",
+    "hint": "The public notes describe the transformation."
+  },
+  {
+    "id": "FS-037",
+    "name": "FS-037 — Nibble Swap",
+    "category": "Cryptography",
+    "value": 620,
+    "description": "Recover the flag from the supplied cryptographic telemetry. Use the accompanying protocol notes.",
+    "flag": "FORTIFY{FS037_bc6ddef5677340d1a7}",
+    "path": "FS-037/public",
+    "hint": "The public notes describe the transformation."
+  },
+  {
+    "id": "FS-038",
+    "name": "FS-038 — Nonce Derived Key",
+    "category": "Cryptography",
+    "value": 650,
+    "description": "Recover the flag from the supplied cryptographic telemetry. Use the accompanying protocol notes.",
+    "flag": "FORTIFY{FS038_dc5d4cb83c3888d70d}",
+    "path": "FS-038/public",
+    "hint": "The public notes describe the transformation."
+  },
+  {
+    "id": "FS-039",
+    "name": "FS-039 — Incident Database",
+    "category": "Forensics",
+    "value": 550,
+    "description": "Analyze the provided incident evidence and recover the hidden flag.",
+    "flag": "FORTIFY{FS039_0e250b5c2c8f8fda2d}",
+    "path": "FS-039/public",
+    "hint": "Identify the anomalous record or artifact."
+  },
+  {
+    "id": "FS-040",
+    "name": "FS-040 — Exfil Event Stream",
+    "category": "Forensics",
+    "value": 575,
+    "description": "Analyze the provided incident evidence and recover the hidden flag.",
+    "flag": "FORTIFY{FS040_080c5a8ba6f3ff30ed}",
+    "path": "FS-040/public",
+    "hint": "Identify the anomalous record or artifact."
+  },
+  {
+    "id": "FS-041",
+    "name": "FS-041 — Archive Artifact",
+    "category": "Forensics",
+    "value": 600,
+    "description": "Analyze the provided incident evidence and recover the hidden flag.",
+    "flag": "FORTIFY{FS041_432ca9de3d8fd8f61b}",
+    "path": "FS-041/public",
+    "hint": "Identify the anomalous record or artifact."
+  },
+  {
+    "id": "FS-042",
+    "name": "FS-042 — PNG Metadata",
+    "category": "Forensics",
+    "value": 625,
+    "description": "Analyze the provided incident evidence and recover the hidden flag.",
+    "flag": "FORTIFY{FS042_dfb33cb0f6f3adff76}",
+    "path": "FS-042/public",
+    "hint": "Identify the anomalous record or artifact."
+  },
+  {
+    "id": "FS-043",
+    "name": "FS-043 — Gateway Alert",
+    "category": "Forensics",
+    "value": 650,
+    "description": "Analyze the provided incident evidence and recover the hidden flag.",
+    "flag": "FORTIFY{FS043_28bb89dc407e6a65d0}",
+    "path": "FS-043/public",
+    "hint": "Identify the anomalous record or artifact."
+  },
+  {
+    "id": "FS-044",
+    "name": "FS-044 — Telemetry Correlation",
+    "category": "Forensics",
+    "value": 675,
+    "description": "Analyze the provided incident evidence and recover the hidden flag.",
+    "flag": "FORTIFY{FS044_7abf1dac66495c8a04}",
+    "path": "FS-044/public",
+    "hint": "Identify the anomalous record or artifact."
+  },
+  {
+    "id": "FS-045",
+    "name": "FS-045 — UDP Fragment Case 01",
+    "category": "Networking",
+    "value": 600,
+    "description": "Reconstruct a UDP transmission from a real PCAP file. Fragments arrive in reverse order and are encoded.",
+    "flag": "FORTIFY{FS045_17e5a94343c9ea984a}",
+    "path": "FS-045/public",
+    "hint": "Filter the capture by destination UDP port and sort sequence identifiers."
+  },
+  {
+    "id": "FS-046",
+    "name": "FS-046 — UDP Fragment Case 02",
+    "category": "Networking",
+    "value": 625,
+    "description": "Reconstruct a UDP transmission from a real PCAP file. Fragments arrive in reverse order and are encoded.",
+    "flag": "FORTIFY{FS046_3f6897001c5672b5b4}",
+    "path": "FS-046/public",
+    "hint": "Filter the capture by destination UDP port and sort sequence identifiers."
+  },
+  {
+    "id": "FS-047",
+    "name": "FS-047 — UDP Fragment Case 03",
+    "category": "Networking",
+    "value": 650,
+    "description": "Reconstruct a UDP transmission from a real PCAP file. Fragments arrive in reverse order and are encoded.",
+    "flag": "FORTIFY{FS047_c386030486be11f63e}",
+    "path": "FS-047/public",
+    "hint": "Filter the capture by destination UDP port and sort sequence identifiers."
+  },
+  {
+    "id": "FS-048",
+    "name": "FS-048 — UDP Fragment Case 04",
+    "category": "Networking",
+    "value": 675,
+    "description": "Reconstruct a UDP transmission from a real PCAP file. Fragments arrive in reverse order and are encoded.",
+    "flag": "FORTIFY{FS048_e76b24cb7fb0ea443e}",
+    "path": "FS-048/public",
+    "hint": "Filter the capture by destination UDP port and sort sequence identifiers."
+  },
+  {
+    "id": "FS-049",
+    "name": "FS-049 — UDP Fragment Case 05",
+    "category": "Networking",
+    "value": 700,
+    "description": "Reconstruct a UDP transmission from a real PCAP file. Fragments arrive in reverse order and are encoded.",
+    "flag": "FORTIFY{FS049_7e825fe806e0d7907a}",
+    "path": "FS-049/public",
+    "hint": "Filter the capture by destination UDP port and sort sequence identifiers."
+  },
+  {
+    "id": "FS-050",
+    "name": "FS-050 — UDP Fragment Case 06",
+    "category": "Networking",
+    "value": 725,
+    "description": "Reconstruct a UDP transmission from a real PCAP file. Fragments arrive in reverse order and are encoded.",
+    "flag": "FORTIFY{FS050_ee0ba1f1e7ce9e5521}",
+    "path": "FS-050/public",
+    "hint": "Filter the capture by destination UDP port and sort sequence identifiers."
+  },
+  {
+    "id": "FS-051",
+    "name": "FS-051 — ELF Checkpoint 01",
+    "category": "Reverse Engineering",
+    "value": 700,
+    "description": "Reverse engineer an actual x86-64 ELF executable and recover its required passphrase. Static analysis recommended.",
+    "flag": "FORTIFY{FS051_9ab0c44f012c9d253b}",
+    "path": "FS-051/public",
+    "hint": "The binary compares bytes transformed with a constant XOR key."
+  },
+  {
+    "id": "FS-052",
+    "name": "FS-052 — ELF Checkpoint 02",
+    "category": "Reverse Engineering",
+    "value": 735,
+    "description": "Reverse engineer an actual x86-64 ELF executable and recover its required passphrase. Static analysis recommended.",
+    "flag": "FORTIFY{FS052_6f7c4843d2cbcce980}",
+    "path": "FS-052/public",
+    "hint": "The binary compares bytes transformed with a constant XOR key."
+  },
+  {
+    "id": "FS-053",
+    "name": "FS-053 — ELF Checkpoint 03",
+    "category": "Reverse Engineering",
+    "value": 770,
+    "description": "Reverse engineer an actual x86-64 ELF executable and recover its required passphrase. Static analysis recommended.",
+    "flag": "FORTIFY{FS053_ea8a9352138ca56581}",
+    "path": "FS-053/public",
+    "hint": "The binary compares bytes transformed with a constant XOR key."
+  },
+  {
+    "id": "FS-054",
+    "name": "FS-054 — ELF Checkpoint 04",
+    "category": "Reverse Engineering",
+    "value": 805,
+    "description": "Reverse engineer an actual x86-64 ELF executable and recover its required passphrase. Static analysis recommended.",
+    "flag": "FORTIFY{FS054_c5f3cb722f51f90aa4}",
+    "path": "FS-054/public",
+    "hint": "The binary compares bytes transformed with a constant XOR key."
+  },
+  {
+    "id": "FS-055",
+    "name": "FS-055 — ELF Checkpoint 05",
+    "category": "Reverse Engineering",
+    "value": 840,
+    "description": "Reverse engineer an actual x86-64 ELF executable and recover its required passphrase. Static analysis recommended.",
+    "flag": "FORTIFY{FS055_14e54437efe0c3fc10}",
+    "path": "FS-055/public",
+    "hint": "The binary compares bytes transformed with a constant XOR key."
+  },
+  {
+    "id": "FS-056",
+    "name": "FS-056 — ELF Checkpoint 06",
+    "category": "Reverse Engineering",
+    "value": 875,
+    "description": "Reverse engineer an actual x86-64 ELF executable and recover its required passphrase. Static analysis recommended.",
+    "flag": "FORTIFY{FS056_a26a744501ef20de8d}",
+    "path": "FS-056/public",
+    "hint": "The binary compares bytes transformed with a constant XOR key."
+  },
+  {
+    "id": "FS-057",
+    "name": "FS-057 — Client Artifact 01",
+    "category": "Web",
+    "value": 650,
+    "description": "Perform offline JavaScript source analysis and reconstruct a hidden client-side token.",
+    "flag": "FORTIFY{FS057_b88320663475cd1bb8}",
+    "path": "FS-057/public",
+    "hint": "Follow the reconstruct function and sessionSalt."
+  },
+  {
+    "id": "FS-058",
+    "name": "FS-058 — Client Artifact 02",
+    "category": "Web",
+    "value": 685,
+    "description": "Perform offline JavaScript source analysis and reconstruct a hidden client-side token.",
+    "flag": "FORTIFY{FS058_2d30293a643189df7f}",
+    "path": "FS-058/public",
+    "hint": "Follow the reconstruct function and sessionSalt."
+  },
+  {
+    "id": "FS-059",
+    "name": "FS-059 — Client Artifact 03",
+    "category": "Web",
+    "value": 720,
+    "description": "Perform offline JavaScript source analysis and reconstruct a hidden client-side token.",
+    "flag": "FORTIFY{FS059_e9a8ad67ee58e5091c}",
+    "path": "FS-059/public",
+    "hint": "Follow the reconstruct function and sessionSalt."
+  },
+  {
+    "id": "FS-060",
+    "name": "FS-060 — Client Artifact 04",
+    "category": "Web",
+    "value": 755,
+    "description": "Perform offline JavaScript source analysis and reconstruct a hidden client-side token.",
+    "flag": "FORTIFY{FS060_694437eb56677862d3}",
+    "path": "FS-060/public",
+    "hint": "Follow the reconstruct function and sessionSalt."
+  },
+  {
+    "id": "FS-061",
+    "name": "FS-061 — Orion Case 01",
+    "category": "OSINT",
+    "value": 550,
+    "description": "Correlate fictional investigation records and decode the evidence for the target alias.",
+    "flag": "FORTIFY{FS061_3b4bb6dd66d5ff3967}",
+    "path": "FS-061/public",
+    "hint": "This is offline simulated OSINT; no real-person data."
+  },
+  {
+    "id": "FS-062",
+    "name": "FS-062 — Orion Case 02",
+    "category": "OSINT",
+    "value": 600,
+    "description": "Correlate fictional investigation records and decode the evidence for the target alias.",
+    "flag": "FORTIFY{FS062_af21b6524703935218}",
+    "path": "FS-062/public",
+    "hint": "This is offline simulated OSINT; no real-person data."
+  }
+]

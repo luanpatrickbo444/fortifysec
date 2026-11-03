@@ -1,0 +1,1 @@
+Hex nibbles were exchanged within each byte.

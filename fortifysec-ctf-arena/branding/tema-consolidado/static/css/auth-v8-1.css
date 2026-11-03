@@ -1,0 +1,125 @@
+/* FORTIFYSEC CTF ARENA 2027 — AUTH V8.1 */
+
+/* Aplicar somente nas páginas de autenticação */
+body.fs-auth-v81 {
+  background: #080c13 !important;
+  color: #f8fafc !important;
+}
+
+/* Remover o cabeçalho padrão duplicado */
+body.fs-auth-v81 main .jumbotron {
+  display: none !important;
+}
+
+/* Área de conteúdo */
+body.fs-auth-v81 main {
+  min-height: calc(100vh - 76px) !important;
+}
+
+body.fs-auth-v81 main > .container {
+  max-width: 520px !important;
+  margin: 0 auto !important;
+  padding: 28px 20px 80px !important;
+}
+
+/* Bloco de apresentação */
+body.fs-auth-v81 .fs-auth-hero,
+body.fs-auth-v81 .fortify-auth-hero {
+  text-align: center !important;
+  margin: 0 auto 28px !important;
+  padding: 34px 16px 12px !important;
+}
+
+body.fs-auth-v81 .fs-auth-hero h1,
+body.fs-auth-v81 .fortify-auth-hero h1 {
+  font-size: clamp(2rem, 4vw, 2.8rem) !important;
+  font-weight: 850 !important;
+  line-height: 1.15 !important;
+  margin: 12px 0 !important;
+}
+
+/* Cartão do formulário */
+body.fs-auth-v81 main form {
+  background: linear-gradient(145deg, #182235, #101723) !important;
+  border: 1px solid #354156 !important;
+  border-top: 3px solid #f43f5e !important;
+  border-radius: 18px !important;
+  padding: 32px !important;
+  box-shadow: 0 20px 55px rgba(0,0,0,.28) !important;
+}
+
+/* Labels */
+body.fs-auth-v81 main form label {
+  color: #cbd5e1 !important;
+  font-weight: 650 !important;
+  font-size: .88rem !important;
+  margin-bottom: 8px !important;
+}
+
+/* Campos */
+body.fs-auth-v81 main form input:not([type="checkbox"]):not([type="hidden"]),
+body.fs-auth-v81 main form select {
+  background: #0b1220 !important;
+  border: 1px solid #344258 !important;
+  border-radius: 10px !important;
+  color: #f8fafc !important;
+  min-height: 46px !important;
+  padding: 11px 14px !important;
+  box-shadow: none !important;
+}
+
+body.fs-auth-v81 main form input:focus,
+body.fs-auth-v81 main form select:focus {
+  border-color: #fb7185 !important;
+  outline: 2px solid rgba(251,113,133,.16) !important;
+}
+
+/* Corrigir autofill amarelo do navegador */
+body.fs-auth-v81 input:-webkit-autofill,
+body.fs-auth-v81 input:-webkit-autofill:hover,
+body.fs-auth-v81 input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f8fafc !important;
+  -webkit-box-shadow: 0 0 0 1000px #0b1220 inset !important;
+  box-shadow: 0 0 0 1000px #0b1220 inset !important;
+  caret-color: #f8fafc !important;
+}
+
+/* Botão principal */
+body.fs-auth-v81 main form button[type="submit"],
+body.fs-auth-v81 main form input[type="submit"] {
+  width: 100% !important;
+  min-height: 48px !important;
+  margin-top: 18px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: linear-gradient(100deg,#e11d48,#be123c) !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+  letter-spacing: .035em !important;
+  cursor: pointer !important;
+}
+
+body.fs-auth-v81 main form button[type="submit"]:hover,
+body.fs-auth-v81 main form input[type="submit"]:hover {
+  background: linear-gradient(100deg,#fb4165,#e11d48) !important;
+}
+
+/* Links */
+body.fs-auth-v81 main a {
+  color: #fda4af !important;
+}
+
+body.fs-auth-v81 main a:hover {
+  color: #fff !important;
+}
+
+/* Responsividade */
+@media (max-width: 600px) {
+  body.fs-auth-v81 main > .container {
+    padding: 16px 14px 50px !important;
+  }
+
+  body.fs-auth-v81 main form {
+    padding: 22px 18px !important;
+  }
+}

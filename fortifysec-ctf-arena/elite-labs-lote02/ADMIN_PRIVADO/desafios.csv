@@ -1,0 +1,7 @@
+id,name,category,value,description,flag,archive,state,type
+FS-007,Tenant Boundary II,Web,500,Execute `python3 server.py` e investigue o controle de acesso da API local. Seu objetivo e recuperar a informacao pertencente a outro tenant.,FSCTF{TENANT_BOUNDARY_14C8FE49DF},FS-007.zip,hidden,standard
+FS-008,Keystream Collision,Criptografia,550,Dois fluxos foram cifrados com a mesma chave XOR. Voce conhece o texto claro do primeiro. Recupere a mensagem confidencial do segundo.,FSCTF{STREAM_COLLISION_B97E892105},FS-008.zip,hidden,standard
+FS-009,Audit Trail Recovery,Forensics,500,Analise o banco SQLite de um sistema de auditoria. Identifique a evidencia de recuperacao registrada logo apos uma exclusao suspeita.,FSCTF{AUDIT_TRAIL_7A74DC1A49},FS-009.zip,hidden,standard
+FS-010,DNS Exfil Fragments,Redes,600,Examine o PCAP no Wireshark ou tshark. Um agente fragmentou um segredo em consultas DNS. Reconstrua os fragmentos pela ordem indicada.,FSCTF{DNS_EXFIL_BEB0AE6DBA},FS-010.zip,hidden,standard
+FS-011,ELF Checkpoint,Reverse,650,"Analise um binario ELF Linux x86-64 e recupere o token de validacao. Ferramentas sugeridas: file, strings, objdump, Ghidra e GDB.",FSCTF{ELF_CHECKPOINT_B165226730},FS-011.zip,hidden,standard
+FS-012,Operacao Aurora,OSINT,450,"Investigue um conjunto de documentos ficticios offline. Correlacione identificadores, ordem de montagem e fragmentos para reconstruir a flag.",FSCTF{CORRELATION_CASE_B39A17E410},FS-012.zip,hidden,standard

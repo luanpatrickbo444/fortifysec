@@ -1,0 +1,21 @@
+{"ts": "2027-02-01T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-3070"}
+{"ts": "2027-02-02T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-296"}
+{"ts": "2027-02-03T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-1194"}
+{"ts": "2027-02-04T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-2119"}
+{"ts": "2027-02-05T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-3986"}
+{"ts": "2027-02-06T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-3471"}
+{"ts": "2027-02-07T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-6032"}
+{"ts": "2027-02-01T10:03:01Z", "service": "backup", "level": "WARN", "codec": "zlib+base64", "payload": "eJxzC642SDIyMzG1ME5KSzEzNzBPS0xJSTU2SDKuBQB0rAhM"}
+{"ts": "2027-02-08T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-5188"}
+{"ts": "2027-02-09T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-1161"}
+{"ts": "2027-02-010T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-479"}
+{"ts": "2027-02-011T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-6849"}
+{"ts": "2027-02-012T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-2427"}
+{"ts": "2027-02-013T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-551"}
+{"ts": "2027-02-014T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-1064"}
+{"ts": "2027-02-015T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-1744"}
+{"ts": "2027-02-016T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-6808"}
+{"ts": "2027-02-017T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-2539"}
+{"ts": "2027-02-018T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-3322"}
+{"ts": "2027-02-019T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-408"}
+{"ts": "2027-02-020T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-1069"}

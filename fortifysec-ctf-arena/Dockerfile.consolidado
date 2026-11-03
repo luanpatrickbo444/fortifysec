@@ -1,0 +1,7 @@
+FROM fortifysec-ctf-ctfd:backup-20261103
+
+USER root
+
+COPY branding/tema-consolidado/ /opt/CTFd/CTFd/themes/fortifysec/
+
+USER ctfd

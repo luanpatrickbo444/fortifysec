@@ -1,0 +1,4 @@
+Cipher: repeating-key XOR
+Key length: 12
+Recovered key (hex): 3b5d19ed724e3099099d1c4d
+Known plaintext prefix: FS{

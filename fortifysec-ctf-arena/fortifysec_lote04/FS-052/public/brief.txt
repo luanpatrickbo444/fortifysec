@@ -1,0 +1,1 @@
+Recover the accepted passphrase by analyzing the ELF executable. Do not brute force.

@@ -1,0 +1,266 @@
+[
+  {
+    "seq": 2,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 34,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 87,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 14,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 52,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 31,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 23,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 40,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 0,
+    "source": "collector",
+    "part": "FS{fefc",
+    "integrity": "e55bacbd"
+  },
+  {
+    "seq": 36,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 46,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 40,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 43,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 47,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 41,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 2,
+    "source": "collector",
+    "part": "c30bc12",
+    "integrity": "163199c8"
+  },
+  {
+    "seq": 84,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 54,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 54,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 84,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 1,
+    "source": "collector",
+    "part": "11bc443",
+    "integrity": "cb09732b"
+  },
+  {
+    "seq": 5,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 26,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 2,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 90,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 80,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 79,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 84,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 95,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 53,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 13,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 80,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 69,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 18,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 96,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 61,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 33,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 19,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 33,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 76,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 24,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 68,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  },
+  {
+    "seq": 3,
+    "source": "collector",
+    "part": "d39e55}",
+    "integrity": "6d8f045f"
+  },
+  {
+    "seq": 25,
+    "source": "decoy",
+    "part": "BAD",
+    "integrity": "00000000"
+  }
+]

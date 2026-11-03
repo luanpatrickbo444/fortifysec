@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="/themes/fortifysec/static/css/auth-v9.css?v=9">
+
+<section class="fs9-auth">
+  <header class="fs9-header">
+    <div class="fs9-symbol">◆</div>
+    <div class="fs9-eyebrow">FORTIFYSEC // CTF ARENA 2027</div>
+    <h1>Entre na competição</h1>
+    <p>Crie sua conta e prepare-se para enfrentar os desafios da FortifySec.</p>
+  </header>
+
+  <div class="fs9-card">
+    {% include "components/errors.html" %}
+
+    {% if integrations.mlc() %}
+      <a class="fs9-oauth" href="{{ url_for('auth.oauth_login') }}">
+        Cadastrar com Major League Cyber
+      </a>
+      <div class="fs9-divider">OU</div>
+    {% endif %}
+
+    {% with form = Forms.auth.RegistrationForm() %}
+    {% from "macros/forms.html" import render_extra_fields %}
+
+    <form method="post" accept-charset="utf-8" role="form">
+      <div class="fs9-field">
+        {{ form.name.label(class="form-label") }}
+        {{ form.name(class="form-control", value=name, autocomplete="username") }}
+        <div class="fs9-help">Seu nome de usuário na competição.</div>
+      </div>
+
+      <div class="fs9-field">
+        {{ form.email.label(class="form-label") }}
+        {{ form.email(class="form-control", value=email, autocomplete="email") }}
+        <div class="fs9-help">Seu e-mail não será exibido publicamente.</div>
+      </div>
+
+      <div class="fs9-field">
+        {{ form.password.label(class="form-label") }}
+        {{ form.password(class="form-control", value=password, autocomplete="new-password") }}
+      </div>
+
+      {{ form.nonce() }}
+      {{ render_extra_fields(form.extra) }}
+
+      <div class="fs9-actions">
+        {{ form.submit(class="fs9-submit") }}
+      </div>
+
+      {% if Configs.tos_or_privacy %}
+        <div class="fs9-help" style="margin-top:20px;text-align:center">
+          {% trans trimmed privacy_link=Configs.privacy_link, tos_link=Configs.tos_link %}
+          By registering, you agree to the
+          <a href="{{ privacy_link }}" target="_blank">privacy policy</a>
+          and <a href="{{ tos_link }}" target="_blank">terms of service</a>
+          {% endtrans %}
+        </div>
+      {% endif %}
+    </form>
+    {% endwith %}
+
+    <div class="fs9-links">
+      Já possui uma conta?
+      <a href="{{ url_for('auth.login') }}">Fazer login</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

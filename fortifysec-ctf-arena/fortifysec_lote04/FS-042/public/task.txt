@@ -1,0 +1,1 @@
+Inspect PNG ancillary text chunks.

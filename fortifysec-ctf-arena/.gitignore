@@ -1,0 +1,21 @@
+.env
+.env.*
+!.env.example
+*.sql
+*.sql.gz
+*.tar.gz
+__pycache__/
+.DS_Store
+
+# Backups privados da FortifySec
+/backups/
+/.env
+/.env.*
+!/.env.example
+*.sql
+*.sql.gz
+*.dump
+*.pem
+*.key
+*.p12
+*.pfx

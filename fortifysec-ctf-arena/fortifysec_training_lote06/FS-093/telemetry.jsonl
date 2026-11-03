@@ -1,0 +1,13 @@
+{"ts": "2027-02-01T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-2614"}
+{"ts": "2027-02-02T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-2836"}
+{"ts": "2027-02-03T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-3477"}
+{"ts": "2027-02-01T10:03:01Z", "service": "backup", "level": "WARN", "codec": "zlib+base64", "payload": "eJxzC65OMUlLNTWwMEtMNjMxSTNMTTRNtkg1N0ytBQB7bQiJ"}
+{"ts": "2027-02-04T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-8662"}
+{"ts": "2027-02-05T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-1327"}
+{"ts": "2027-02-06T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-3749"}
+{"ts": "2027-02-07T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-9758"}
+{"ts": "2027-02-08T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-9728"}
+{"ts": "2027-02-09T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-9248"}
+{"ts": "2027-02-010T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-5469"}
+{"ts": "2027-02-011T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-4650"}
+{"ts": "2027-02-012T10:00:00Z", "service": "gateway", "level": "INFO", "message": "heartbeat-4910"}

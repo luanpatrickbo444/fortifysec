@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="fs-board" x-data="{ search: '', selectedCategory: 'Todas' }">
+
+  <section class="fs-hero">
+    <div class="fs-hero-grid"></div>
+    <div class="container fs-hero-content">
+      <div class="fs-eyebrow">FORTIFYSEC / CTF ARENA 2027</div>
+      <h1>DESAFIOS<span class="fs-dot">.</span></h1>
+      <p>EXPLORE <span>•</span> RESOLVA <span>•</span> CONQUISTE</p>
+      <div class="fs-hero-decoration">SECURITY RESEARCH / CAPTURE THE FLAG</div>
+    </div>
+  </section>
+
+  <div class="container fs-board-container">
+
+    {% include "components/errors.html" %}
+
+    <div
+      x-data="ChallengeBoard"
+      @load-challenges.window="loadChallenges()"
+      @load-challenge.window="loadChallenge($event.detail)"
+    >
+
+      <div
+        x-ref="challengeWindow"
+        id="challenge-window"
+        class="modal fade"
+        tabindex="-1"
+        role="dialog"
+        x-data=""
+        x-html="$store.challenge.data.view"
+      ></div>
+
+      <div x-show="!loaded" class="fs-loading">
+        <i class="fas fa-circle-notch fa-spin fa-3x"></i>
+        <p>Carregando desafios...</p>
+      </div>
+
+      <div x-show="loaded" x-cloak>
+
+        <div class="fs-stats">
+          <div class="fs-stat">
+            <i class="fas fa-flag"></i>
+            <div>
+              <strong x-text="getCategories().reduce((total, cat) => total + getChallenges(cat).length, 0)"></strong>
+              <span>Desafios disponíveis</span>
+            </div>
+          </div>
+          <div class="fs-stat">
+            <i class="fas fa-layer-group"></i>
+            <div>
+              <strong x-text="getCategories().length"></strong>
+              <span>Categorias</span>
+            </div>
+          </div>
+          <div class="fs-stat">
+            <i class="fas fa-trophy"></i>
+            <div>
+              <strong x-text="getCategories().reduce((total, cat) => total + getChallenges(cat).filter(c => c.solved_by_me).length, 0)"></strong>
+              <span>Resolvidos por você</span>
+            </div>
+          </div>
+          <div class="fs-stat">
+            <i class="fas fa-bolt"></i>
+            <div>
+              <strong x-text="getCategories().reduce((total, cat) => total + getChallenges(cat).reduce((sum, c) => sum + Number(c.value || 0), 0), 0).toLocaleString('pt-BR')"></strong>
+              <span>Pontos disponíveis</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="fs-toolbar">
+          <label class="fs-search">
+            <i class="fas fa-search"></i>
+            <input
+              type="search"
+              placeholder="Buscar desafio..."
+              x-model.debounce.150ms="search"
+              aria-label="Buscar desafio"
+            >
+          </label>
+
+          <label class="fs-category-select">
+            <i class="fas fa-filter"></i>
+            <select x-model="selectedCategory" aria-label="Filtrar categoria">
+              <option value="Todas">Todas as categorias</option>
+              <template x-for="cat in getCategories()" :key="cat">
+                <option :value="cat" x-text="cat"></option>
+              </template>
+            </select>
+          </label>
+
+          <div class="fs-toolbar-label">
+            <i class="fas fa-shield-alt"></i>
+            ELITE CHALLENGES
+          </div>
+        </div>
+
+        <template x-for="(category, idx) in getCategories()" :key="category">
+          <section
+            class="fs-category"
+            x-show="(selectedCategory === 'Todas' || selectedCategory === category) && getChallenges(category).some(c => c.name.toLowerCase().includes(search.toLowerCase()))"
+          >
+            <div class="fs-category-header">
+              <div class="fs-category-title">
+                <div class="fs-category-icon">
+                  <i class="fas"
+                    :class="{
+                      'fa-lock': /crypt|cifra/i.test(category),
+                      'fa-globe': /web/i.test(category),
+                      'fa-network-wired': /network|rede/i.test(category),
+                      'fa-search': /osint/i.test(category),
+                      'fa-microscope': /foren/i.test(category),
+                      'fa-microchip': /reverse|revers/i.test(category),
+                      'fa-terminal': /pwn|binary|exploit/i.test(category),
+                      'fa-flag': !/crypt|cifra|web|network|rede|osint|foren|reverse|revers|pwn|binary|exploit/i.test(category)
+                    }"
+                  ></i>
+                </div>
+                <div>
+                  <h2 x-text="category"></h2>
+                  <p>INVESTIGUE • EXPLORE • CONQUISTE</p>
+                </div>
+              </div>
+              <span class="fs-category-count">
+                <span x-text="getChallenges(category).length"></span> DESAFIOS
+              </span>
+            </div>
+
+            <div class="fs-card-grid">
+              <template x-for="c in getChallenges(category)" :key="c.id">
+                <button
+                  type="button"
+                  class="fs-challenge-card challenge-button"
+                  :class="c.solved_by_me ? 'challenge-solved fs-solved' : ''"
+                  x-show="c.name.toLowerCase().includes(search.toLowerCase())"
+                  :value="c.id"
+                  @click="loadChallenge(c.id)"
+                >
+                  <div class="fs-card-top">
+                    <span class="fs-card-id" x-text="'FS-' + String(c.id).padStart(3, '0')"></span>
+                    <span class="fs-card-status" x-text="c.solved_by_me ? 'CONCLUÍDO' : 'DISPONÍVEL'"></span>
+                  </div>
+
+                  <div class="fs-card-icon">
+                    <i class="fas"
+                      :class="{
+                        'fa-lock': /crypt|cifra/i.test(category),
+                        'fa-globe': /web/i.test(category),
+                        'fa-network-wired': /network|rede/i.test(category),
+                        'fa-search': /osint/i.test(category),
+                        'fa-microscope': /foren/i.test(category),
+                        'fa-microchip': /reverse|revers/i.test(category),
+                        'fa-terminal': /pwn|binary|exploit/i.test(category),
+                        'fa-flag': !/crypt|cifra|web|network|rede|osint|foren|reverse|revers|pwn|binary|exploit/i.test(category)
+                      }"
+                    ></i>
+                  </div>
+
+                  <h3 x-text="c.name"></h3>
+
+                  <div class="fs-card-footer">
+                    <span class="fs-points">
+                      <i class="fas fa-layer-group"></i>
+                      <strong x-text="c.value"></strong> PTS
+                    </span>
+                    <span class="fs-open">
+                      ABRIR <i class="fas fa-arrow-right"></i>
+                    </span>
+                  </div>
+                </button>
+              </template>
+            </div>
+          </section>
+        </template>
+
+        <div
+          class="fs-empty"
+          x-show="!getCategories().some(cat => (selectedCategory === 'Todas' || selectedCategory === cat) && getChallenges(cat).some(c => c.name.toLowerCase().includes(search.toLowerCase())))"
+        >
+          <i class="fas fa-search"></i>
+          <p>Nenhum desafio encontrado.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ Assets.js("assets/js/challenges.js") }}
+{% endblock %}

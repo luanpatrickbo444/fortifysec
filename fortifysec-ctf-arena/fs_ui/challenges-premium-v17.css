@@ -1,0 +1,37 @@
+/* FortifySec CTF Arena — Challenges Premium V17 */
+body.fs-challenges-v17 { --fs-red:#ff3157; --fs-bg:#070a11; --fs-panel:#111723; --fs-border:#2b3545; background:var(--fs-bg); }
+body.fs-challenges-v17 .fs17-shell {max-width:1370px;margin:0 auto;padding:0 24px 65px;color:#f5f6fa}
+body.fs-challenges-v17 .fs17-hero {position:relative;overflow:hidden;min-height:218px;border:1px solid #5d2235;border-radius:20px;margin:26px 0 16px;padding:38px 42px;background:radial-gradient(ellipse at 84% 34%,#7c173c80,transparent 36%),linear-gradient(115deg,#111724 5%,#10131f 48%,#270d20 100%);box-shadow:0 15px 48px #0006}
+body.fs-challenges-v17 .fs17-hero:before {content:"";position:absolute;inset:0;opacity:.25;background:repeating-linear-gradient(120deg,transparent 0 48px,#ff31571a 49px 50px);pointer-events:none}
+body.fs-challenges-v17 .fs17-hero:after {content:"</>  { }  0101";position:absolute;right:30px;top:37px;font:800 clamp(38px,5vw,83px)/1 monospace;letter-spacing:-5px;color:#ff31571c;transform:rotate(-7deg);pointer-events:none}
+body.fs-challenges-v17 .fs17-kicker {position:relative;color:#ff5271;font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase}
+body.fs-challenges-v17 .fs17-hero h1 {position:relative;font-size:clamp(37px,5vw,66px);line-height:1.08;letter-spacing:-2px;font-weight:900;margin:14px 0 8px;color:#fff}
+body.fs-challenges-v17 .fs17-hero p {position:relative;color:#c5cad7;letter-spacing:2px;font-size:12px;margin:0}
+body.fs-challenges-v17 .fs17-stats {display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+body.fs-challenges-v17 .fs17-stat {border:1px solid #303646;background:linear-gradient(130deg,#171e2b,#10151e);border-radius:14px;padding:17px 20px;display:flex;gap:14px;align-items:center}
+body.fs-challenges-v17 .fs17-stat-icon {font-size:25px;color:#ff3157}
+body.fs-challenges-v17 .fs17-stat strong {display:block;color:#fff;font-size:25px;line-height:1.1}
+body.fs-challenges-v17 .fs17-stat small {display:block;color:#a9b2c3;font-size:12px;margin-top:4px}
+body.fs-challenges-v17 .fs17-toolbar {display:grid;grid-template-columns:minmax(170px,2fr) minmax(150px,1fr) minmax(150px,1fr);gap:12px;margin:18px 0 30px}
+body.fs-challenges-v17 .fs17-toolbar input,body.fs-challenges-v17 .fs17-toolbar select {width:100%;height:46px;border-radius:11px;background:#111824;color:#f5f6fa;border:1px solid #384254;padding:0 14px;outline:none}
+body.fs-challenges-v17 .fs17-toolbar input:focus,body.fs-challenges-v17 .fs17-toolbar select:focus {border-color:#ff3157;box-shadow:0 0 0 3px #ff315722}
+body.fs-challenges-v17 .fs17-toolbar input::placeholder {color:#8490a3}
+body.fs-challenges-v17 .fs17-empty {padding:20px;color:#aab3c2;text-align:center}
+/* Native CTFd category and challenge components: preserve their handlers */
+body.fs-challenges-v17 #challenges-board {max-width:1370px;margin:auto;padding:0 24px 70px}
+body.fs-challenges-v17 #challenges-board .category-header {color:#f4f6fa!important;font-size:25px!important;font-weight:750!important;letter-spacing:-.4px;margin:26px 0 18px!important;padding:0 0 12px;border-bottom:1px solid #26303f}
+body.fs-challenges-v17 #challenges-board .category-header:before {content:"◆";font-size:21px;color:#ff3157;margin-right:12px}
+body.fs-challenges-v17 #challenges-board .challenge-button {position:relative!important;min-width:0!important;width:100%!important;min-height:168px!important;margin:0!important;padding:22px 20px!important;text-align:left!important;border:1px solid #303b4d!important;border-top:2px solid #ff3157!important;border-radius:15px!important;background:linear-gradient(145deg,#1b2434,#111722)!important;color:#f4f6fa!important;box-shadow:0 8px 24px #0004!important;transition:transform .18s,border-color .18s,box-shadow .18s!important;white-space:normal!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important;align-items:stretch!important}
+body.fs-challenges-v17 #challenges-board .challenge-button:hover {transform:translateY(-4px)!important;border-color:#ff4164!important;box-shadow:0 10px 32px #ff31571f!important}
+body.fs-challenges-v17 #challenges-board .challenge-button.solved-challenge,body.fs-challenges-v17 #challenges-board .challenge-button.btn-success {border-top-color:#2fd6a0!important;background:linear-gradient(145deg,#14302e,#101a21)!important}
+body.fs-challenges-v17 #challenges-board .challenge-name {font-size:15px!important;font-weight:750!important;color:#f6f7fb!important;line-height:1.4!important;overflow-wrap:anywhere}
+body.fs-challenges-v17 #challenges-board .challenge-value {font-size:16px!important;font-weight:800!important;color:#ff5675!important;margin-top:14px!important}
+body.fs-challenges-v17 #challenges-board .challenge-button:before {content:attr(data-fs-icon);font-size:29px;display:block;line-height:1;margin-bottom:14px}
+body.fs-challenges-v17 #challenges-board .challenge-button:after {content:"FORTIFYSEC  /  CTF";font-size:9px;font-weight:800;letter-spacing:1.2px;color:#77869b;position:absolute;right:15px;top:15px}
+body.fs-challenges-v17 #challenges-board .fs17-card-hidden {display:none!important}
+body.fs-challenges-v17 #challenges-board .row {row-gap:16px}
+body.fs-challenges-v17 #challenges-board [class*="col-"] {margin-bottom:0!important}
+body.fs-challenges-v17 #challenges-board .challenge-button .badge {max-width:100%;white-space:normal}
+/* Avoid affecting challenge modal and admin controls */
+@media (max-width:800px) {body.fs-challenges-v17 .fs17-hero{padding:28px 22px;min-height:180px}body.fs-challenges-v17 .fs17-hero:after{display:none}body.fs-challenges-v17 .fs17-stats{grid-template-columns:1fr 1fr}body.fs-challenges-v17 .fs17-toolbar{grid-template-columns:1fr}body.fs-challenges-v17 .fs17-shell,body.fs-challenges-v17 #challenges-board{padding-left:14px;padding-right:14px}}
+@media (max-width:520px) {body.fs-challenges-v17 .fs17-stats{grid-template-columns:1fr}body.fs-challenges-v17 .fs17-hero h1{font-size:37px}}

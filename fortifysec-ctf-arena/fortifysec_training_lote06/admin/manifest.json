@@ -1,0 +1,302 @@
+[
+  {
+    "id": "FS-093",
+    "title": "Telemetry Recovery 1",
+    "category": "Forensics",
+    "difficulty": "Medium",
+    "value": 350,
+    "flag": "FS{d4fe5086ac644f1ea5c8e71e}",
+    "solution": "Localize o evento backup com codec zlib+base64; decodifique Base64 e descomprima zlib.",
+    "file": "FS-093.zip"
+  },
+  {
+    "id": "FS-094",
+    "title": "Cipher Relay 1",
+    "category": "Crypto",
+    "difficulty": "Medium",
+    "value": 350,
+    "flag": "FS{619a4f086cc05b73db87b3ae}",
+    "solution": "Aplique XOR com a chave periódica em hexadecimal indicada nas notas.",
+    "file": "FS-094.zip"
+  },
+  {
+    "id": "FS-095",
+    "title": "SQLite Incident 1",
+    "category": "Forensics",
+    "difficulty": "Medium",
+    "value": 350,
+    "flag": "FS{b79d7e800f833945721bf1ef}",
+    "solution": "Consulte a tabela audit e filtre event=recovery e status=quarantined.",
+    "file": "FS-095.zip"
+  },
+  {
+    "id": "FS-096",
+    "title": "Packet Reconstruction 1",
+    "category": "Network",
+    "difficulty": "Medium",
+    "value": 350,
+    "flag": "FS{f58a4e50bcc47e18694c5be8}",
+    "solution": "Abra capture.pcap no Wireshark, extraia payloads UDP, ordene FS-SEQ e concatene DATA.",
+    "file": "FS-096.zip"
+  },
+  {
+    "id": "FS-097",
+    "title": "Firmware Carving 1",
+    "category": "Forensics",
+    "difficulty": "Medium",
+    "value": 350,
+    "flag": "FS{38dd72f98eb66641ef7be17f}",
+    "solution": "Procure o marcador FSRECOVERY\\x00; leia 2 bytes little-endian de tamanho e depois a flag.",
+    "file": "FS-097.zip"
+  },
+  {
+    "id": "FS-098",
+    "title": "Source Audit 1",
+    "category": "Web",
+    "difficulty": "Medium",
+    "value": 350,
+    "flag": "FS{d3efad02c9c6c941db7e26d2}",
+    "solution": "Inspecione app.js, identifique diagnostic e decodifique Base64 (atob).",
+    "file": "FS-098.zip"
+  },
+  {
+    "id": "FS-099",
+    "title": "Log Timeline 1",
+    "category": "Forensics",
+    "difficulty": "Medium",
+    "value": 350,
+    "flag": "FS{ac88d83cbee6cb7ac670f196}",
+    "solution": "Filtre source=collector, confira integrity SHA-256 prefixo de 8 caracteres, ordene seq e concatene part.",
+    "file": "FS-099.zip"
+  },
+  {
+    "id": "FS-100",
+    "title": "Archive Forensics 1",
+    "category": "Forensics",
+    "difficulty": "Medium",
+    "value": 350,
+    "flag": "FS{651915d6af430044e4007180}",
+    "solution": "Liste os arquivos ocultos do TAR e extraia archive/.recovery/session.token.",
+    "file": "FS-100.zip"
+  },
+  {
+    "id": "FS-101",
+    "title": "Binary Endianness 1",
+    "category": "Reverse",
+    "difficulty": "Medium",
+    "value": 350,
+    "flag": "FS{105534bd98af70e83caa0a60}",
+    "solution": "Converta cada palavra hexadecimal em quatro bytes little-endian; remova NUL finais.",
+    "file": "FS-101.zip"
+  },
+  {
+    "id": "FS-102",
+    "title": "Multi-Stage Encoding 1",
+    "category": "Crypto",
+    "difficulty": "Medium",
+    "value": 350,
+    "flag": "FS{98dc2fd0a0536ff15843aa0a}",
+    "solution": "Base64 decode, zlib decompress, reverse bytes.",
+    "file": "FS-102.zip"
+  },
+  {
+    "id": "FS-103",
+    "title": "Telemetry Recovery 2",
+    "category": "Forensics",
+    "difficulty": "Hard",
+    "value": 550,
+    "flag": "FS{0b264583bfd6707fadde30b3}",
+    "solution": "Localize o evento backup com codec zlib+base64; decodifique Base64 e descomprima zlib.",
+    "file": "FS-103.zip"
+  },
+  {
+    "id": "FS-104",
+    "title": "Cipher Relay 2",
+    "category": "Crypto",
+    "difficulty": "Hard",
+    "value": 550,
+    "flag": "FS{1d055969b4dd81da1b6b3419}",
+    "solution": "Aplique XOR com a chave periódica em hexadecimal indicada nas notas.",
+    "file": "FS-104.zip"
+  },
+  {
+    "id": "FS-105",
+    "title": "SQLite Incident 2",
+    "category": "Forensics",
+    "difficulty": "Hard",
+    "value": 550,
+    "flag": "FS{f06ea40ea4cedcf6dce81634}",
+    "solution": "Consulte a tabela audit e filtre event=recovery e status=quarantined.",
+    "file": "FS-105.zip"
+  },
+  {
+    "id": "FS-106",
+    "title": "Packet Reconstruction 2",
+    "category": "Network",
+    "difficulty": "Hard",
+    "value": 550,
+    "flag": "FS{32eb63245f30da30bb52438d}",
+    "solution": "Abra capture.pcap no Wireshark, extraia payloads UDP, ordene FS-SEQ e concatene DATA.",
+    "file": "FS-106.zip"
+  },
+  {
+    "id": "FS-107",
+    "title": "Firmware Carving 2",
+    "category": "Forensics",
+    "difficulty": "Hard",
+    "value": 550,
+    "flag": "FS{60ce864f5a82ae0f9cd6f3a6}",
+    "solution": "Procure o marcador FSRECOVERY\\x00; leia 2 bytes little-endian de tamanho e depois a flag.",
+    "file": "FS-107.zip"
+  },
+  {
+    "id": "FS-108",
+    "title": "Source Audit 2",
+    "category": "Web",
+    "difficulty": "Hard",
+    "value": 550,
+    "flag": "FS{2367e7764637f36d72f45695}",
+    "solution": "Inspecione app.js, identifique diagnostic e decodifique Base64 (atob).",
+    "file": "FS-108.zip"
+  },
+  {
+    "id": "FS-109",
+    "title": "Log Timeline 2",
+    "category": "Forensics",
+    "difficulty": "Hard",
+    "value": 550,
+    "flag": "FS{fefc11bc443c30bc12d39e55}",
+    "solution": "Filtre source=collector, confira integrity SHA-256 prefixo de 8 caracteres, ordene seq e concatene part.",
+    "file": "FS-109.zip"
+  },
+  {
+    "id": "FS-110",
+    "title": "Archive Forensics 2",
+    "category": "Forensics",
+    "difficulty": "Hard",
+    "value": 550,
+    "flag": "FS{16121774ba1b3616edf92647}",
+    "solution": "Liste os arquivos ocultos do TAR e extraia archive/.recovery/session.token.",
+    "file": "FS-110.zip"
+  },
+  {
+    "id": "FS-111",
+    "title": "Binary Endianness 2",
+    "category": "Reverse",
+    "difficulty": "Hard",
+    "value": 550,
+    "flag": "FS{8efc8fb8de0f9df81db9a4d4}",
+    "solution": "Converta cada palavra hexadecimal em quatro bytes little-endian; remova NUL finais.",
+    "file": "FS-111.zip"
+  },
+  {
+    "id": "FS-112",
+    "title": "Multi-Stage Encoding 2",
+    "category": "Crypto",
+    "difficulty": "Hard",
+    "value": 550,
+    "flag": "FS{dca6cbaf5639ebcadfd3c31e}",
+    "solution": "Base64 decode, zlib decompress, reverse bytes.",
+    "file": "FS-112.zip"
+  },
+  {
+    "id": "FS-113",
+    "title": "Telemetry Recovery 3",
+    "category": "Forensics",
+    "difficulty": "Expert",
+    "value": 750,
+    "flag": "FS{67a81f1f3474682441c7f325}",
+    "solution": "Localize o evento backup com codec zlib+base64; decodifique Base64 e descomprima zlib.",
+    "file": "FS-113.zip"
+  },
+  {
+    "id": "FS-114",
+    "title": "Cipher Relay 3",
+    "category": "Crypto",
+    "difficulty": "Expert",
+    "value": 750,
+    "flag": "FS{21d147c352c44087350ca529}",
+    "solution": "Aplique XOR com a chave periódica em hexadecimal indicada nas notas.",
+    "file": "FS-114.zip"
+  },
+  {
+    "id": "FS-115",
+    "title": "SQLite Incident 3",
+    "category": "Forensics",
+    "difficulty": "Expert",
+    "value": 750,
+    "flag": "FS{ff00a0979e34dde9f2473cee}",
+    "solution": "Consulte a tabela audit e filtre event=recovery e status=quarantined.",
+    "file": "FS-115.zip"
+  },
+  {
+    "id": "FS-116",
+    "title": "Packet Reconstruction 3",
+    "category": "Network",
+    "difficulty": "Expert",
+    "value": 750,
+    "flag": "FS{65ed0d0697923e5b152f130e}",
+    "solution": "Abra capture.pcap no Wireshark, extraia payloads UDP, ordene FS-SEQ e concatene DATA.",
+    "file": "FS-116.zip"
+  },
+  {
+    "id": "FS-117",
+    "title": "Firmware Carving 3",
+    "category": "Forensics",
+    "difficulty": "Expert",
+    "value": 750,
+    "flag": "FS{96d9cdf971a828d04170b63e}",
+    "solution": "Procure o marcador FSRECOVERY\\x00; leia 2 bytes little-endian de tamanho e depois a flag.",
+    "file": "FS-117.zip"
+  },
+  {
+    "id": "FS-118",
+    "title": "Source Audit 3",
+    "category": "Web",
+    "difficulty": "Expert",
+    "value": 750,
+    "flag": "FS{3219c802ce0be2aa78737fae}",
+    "solution": "Inspecione app.js, identifique diagnostic e decodifique Base64 (atob).",
+    "file": "FS-118.zip"
+  },
+  {
+    "id": "FS-119",
+    "title": "Log Timeline 3",
+    "category": "Forensics",
+    "difficulty": "Expert",
+    "value": 750,
+    "flag": "FS{ecddf1a3e36a30e5adae4d95}",
+    "solution": "Filtre source=collector, confira integrity SHA-256 prefixo de 8 caracteres, ordene seq e concatene part.",
+    "file": "FS-119.zip"
+  },
+  {
+    "id": "FS-120",
+    "title": "Archive Forensics 3",
+    "category": "Forensics",
+    "difficulty": "Expert",
+    "value": 750,
+    "flag": "FS{f27d6034f17c9b860a7b2430}",
+    "solution": "Liste os arquivos ocultos do TAR e extraia archive/.recovery/session.token.",
+    "file": "FS-120.zip"
+  },
+  {
+    "id": "FS-121",
+    "title": "Binary Endianness 3",
+    "category": "Reverse",
+    "difficulty": "Expert",
+    "value": 750,
+    "flag": "FS{026052fdb85f1beaeb4c9939}",
+    "solution": "Converta cada palavra hexadecimal em quatro bytes little-endian; remova NUL finais.",
+    "file": "FS-121.zip"
+  },
+  {
+    "id": "FS-122",
+    "title": "Multi-Stage Encoding 3",
+    "category": "Crypto",
+    "difficulty": "Expert",
+    "value": 750,
+    "flag": "FS{ad0df7e9b7dfa811d10d1e20}",
+    "solution": "Base64 decode, zlib decompress, reverse bytes.",
+    "file": "FS-122.zip"
+  }
+]

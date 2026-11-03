@@ -1,0 +1,242 @@
+[
+  {
+    "id": "FS-063",
+    "name": "FS-063 \u2014 Merkle Breach",
+    "category": "Crypto",
+    "value": 900,
+    "flag": "FORTIFY{fs_063_230dcbe284f933fe226df2f1}",
+    "file": "FS-063.zip"
+  },
+  {
+    "id": "FS-064",
+    "name": "FS-064 \u2014 CTR Nonce Collision",
+    "category": "Crypto",
+    "value": 900,
+    "flag": "FORTIFY{fs_064_e4acb13fc356ed2409783fb7}",
+    "file": "FS-064.zip"
+  },
+  {
+    "id": "FS-065",
+    "name": "FS-065 \u2014 Shamir Recovery",
+    "category": "Crypto",
+    "value": 900,
+    "flag": "FORTIFY{fs_065_bf5b863d0b7c2968d4743004}",
+    "file": "FS-065.zip"
+  },
+  {
+    "id": "FS-066",
+    "name": "FS-066 \u2014 RSA Broadcast Incident",
+    "category": "Crypto",
+    "value": 900,
+    "flag": "FORTIFY{fs_066_f6205efb8ff1e684ce7cc500}",
+    "file": "FS-066.zip"
+  },
+  {
+    "id": "FS-067",
+    "name": "FS-067 \u2014 Padding Oracle Trace",
+    "category": "Crypto",
+    "value": 900,
+    "flag": "FORTIFY{fs_067_cc644f13ea6da05d7ca8604c}",
+    "file": "FS-067.zip"
+  },
+  {
+    "id": "FS-068",
+    "name": "FS-068 \u2014 KDF Parameter Hunt",
+    "category": "Crypto",
+    "value": 1000,
+    "flag": "FORTIFY{fs_068_ea5f19bc3bb7d9d74ad3b943}",
+    "file": "FS-068.zip"
+  },
+  {
+    "id": "FS-069",
+    "name": "FS-069 \u2014 SQLite WAL Reconstruction",
+    "category": "Forensics",
+    "value": 1000,
+    "flag": "FORTIFY{fs_069_3d1b649900ed5abc2ccb3763}",
+    "file": "FS-069.zip"
+  },
+  {
+    "id": "FS-070",
+    "name": "FS-070 \u2014 Timeline Correlation",
+    "category": "Forensics",
+    "value": 1000,
+    "flag": "FORTIFY{fs_070_ddb8c76c4ebf6127807c7dbf}",
+    "file": "FS-070.zip"
+  },
+  {
+    "id": "FS-071",
+    "name": "FS-071 \u2014 Nested Evidence",
+    "category": "Forensics",
+    "value": 1000,
+    "flag": "FORTIFY{fs_071_4458ce676bce899ef59d62a4}",
+    "file": "FS-071.zip"
+  },
+  {
+    "id": "FS-072",
+    "name": "FS-072 \u2014 Log Chain Integrity",
+    "category": "Forensics",
+    "value": 1000,
+    "flag": "FORTIFY{fs_072_01fcafab005b7782899d9621}",
+    "file": "FS-072.zip"
+  },
+  {
+    "id": "FS-073",
+    "name": "FS-073 \u2014 Image Chunk Carving",
+    "category": "Forensics",
+    "value": 1100,
+    "flag": "FORTIFY{fs_073_a743d7393ae7f0484484f317}",
+    "file": "FS-073.zip"
+  },
+  {
+    "id": "FS-074",
+    "name": "FS-074 \u2014 Registry-like Artifact",
+    "category": "Forensics",
+    "value": 1100,
+    "flag": "FORTIFY{fs_074_da4255d7135546eccc2321de}",
+    "file": "FS-074.zip"
+  },
+  {
+    "id": "FS-075",
+    "name": "FS-075 \u2014 DNS Fragment Recovery",
+    "category": "Network",
+    "value": 1100,
+    "flag": "FORTIFY{fs_075_7bfc92568de9ea85859fec5f}",
+    "file": "FS-075.zip"
+  },
+  {
+    "id": "FS-076",
+    "name": "FS-076 \u2014 TCP Stream Reassembly",
+    "category": "Network",
+    "value": 1100,
+    "flag": "FORTIFY{fs_076_f1b285db7d15a7e67d47776e}",
+    "file": "FS-076.zip"
+  },
+  {
+    "id": "FS-077",
+    "name": "FS-077 \u2014 Covert Timing Channel",
+    "category": "Network",
+    "value": 1100,
+    "flag": "FORTIFY{fs_077_14930756d39b831cccb259fb}",
+    "file": "FS-077.zip"
+  },
+  {
+    "id": "FS-078",
+    "name": "FS-078 \u2014 HTTP Header Exfil",
+    "category": "Network",
+    "value": 1200,
+    "flag": "FORTIFY{fs_078_3781d091ef3c423d8eefd0d9}",
+    "file": "FS-078.zip"
+  },
+  {
+    "id": "FS-079",
+    "name": "FS-079 \u2014 Protocol State Puzzle",
+    "category": "Network",
+    "value": 1200,
+    "flag": "FORTIFY{fs_079_bde3e2c59a531327030b79cb}",
+    "file": "FS-079.zip"
+  },
+  {
+    "id": "FS-080",
+    "name": "FS-080 \u2014 Packet Ordering Trap",
+    "category": "Network",
+    "value": 1200,
+    "flag": "FORTIFY{fs_080_f4683edfc75ed039f390a5b7}",
+    "file": "FS-080.zip"
+  },
+  {
+    "id": "FS-081",
+    "name": "FS-081 \u2014 Virtual Machine Bytecode",
+    "category": "Reverse",
+    "value": 1200,
+    "flag": "FORTIFY{fs_081_f576435ce9edb8b38407840c}",
+    "file": "FS-081.zip"
+  },
+  {
+    "id": "FS-082",
+    "name": "FS-082 \u2014 Obfuscated State Machine",
+    "category": "Reverse",
+    "value": 1200,
+    "flag": "FORTIFY{fs_082_bb4f83179b57e53fb9f908ed}",
+    "file": "FS-082.zip"
+  },
+  {
+    "id": "FS-083",
+    "name": "FS-083 \u2014 Custom Executable Format",
+    "category": "Reverse",
+    "value": 1300,
+    "flag": "FORTIFY{fs_083_205fb1d8c276f3197415bedd}",
+    "file": "FS-083.zip"
+  },
+  {
+    "id": "FS-084",
+    "name": "FS-084 \u2014 Control Flow Graph",
+    "category": "Reverse",
+    "value": 1300,
+    "flag": "FORTIFY{fs_084_cbde9fd44d9d9aae7e368ad3}",
+    "file": "FS-084.zip"
+  },
+  {
+    "id": "FS-085",
+    "name": "FS-085 \u2014 Symbolic Constraint Hunt",
+    "category": "Reverse",
+    "value": 1300,
+    "flag": "FORTIFY{fs_085_638641a42e5ffce6f609b754}",
+    "file": "FS-085.zip"
+  },
+  {
+    "id": "FS-086",
+    "name": "FS-086 \u2014 Endian Permutation",
+    "category": "Reverse",
+    "value": 1300,
+    "flag": "FORTIFY{fs_086_1abbfe4cea839d5da43a869e}",
+    "file": "FS-086.zip"
+  },
+  {
+    "id": "FS-087",
+    "name": "FS-087 \u2014 JWT Trust Boundary",
+    "category": "Web",
+    "value": 1300,
+    "flag": "FORTIFY{fs_087_fb918ad0f016becf11f87329}",
+    "file": "FS-087.zip"
+  },
+  {
+    "id": "FS-088",
+    "name": "FS-088 \u2014 GraphQL Authorization",
+    "category": "Web",
+    "value": 1400,
+    "flag": "FORTIFY{fs_088_3b26aa1f6365a9ed7bc5ea1a}",
+    "file": "FS-088.zip"
+  },
+  {
+    "id": "FS-089",
+    "name": "FS-089 \u2014 Race Condition Ledger",
+    "category": "Web",
+    "value": 1400,
+    "flag": "FORTIFY{fs_089_de288de77db4cf7bf4ba7d67}",
+    "file": "FS-089.zip"
+  },
+  {
+    "id": "FS-090",
+    "name": "FS-090 \u2014 Template Sandbox Escape",
+    "category": "Web",
+    "value": 1400,
+    "flag": "FORTIFY{fs_090_642f4545b4fe893201ce9d1c}",
+    "file": "FS-090.zip"
+  },
+  {
+    "id": "FS-091",
+    "name": "FS-091 \u2014 IAM Policy Escalation",
+    "category": "Cloud",
+    "value": 1400,
+    "flag": "FORTIFY{fs_091_7cee063b479f8fc23ea657ef}",
+    "file": "FS-091.zip"
+  },
+  {
+    "id": "FS-092",
+    "name": "FS-092 \u2014 Kubernetes RBAC Audit",
+    "category": "Cloud",
+    "value": 1400,
+    "flag": "FORTIFY{fs_092_7fe838cc0ff0063b1e4bf456}",
+    "file": "FS-092.zip"
+  }
+]

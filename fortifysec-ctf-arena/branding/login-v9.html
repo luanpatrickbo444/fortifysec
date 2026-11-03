@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="/themes/fortifysec/static/css/auth-v9.css?v=9">
+
+<section class="fs9-auth">
+  <header class="fs9-header">
+    <div class="fs9-symbol">◆</div>
+    <div class="fs9-eyebrow">FORTIFYSEC // CTF ARENA 2027</div>
+    <h1>Acesse a arena</h1>
+    <p>Entre na sua conta para resolver desafios, acumular pontos e conquistar o topo do ranking.</p>
+  </header>
+
+  <div class="fs9-card">
+    {% include "components/errors.html" %}
+
+    {% if integrations.mlc() %}
+      <a class="fs9-oauth" href="{{ url_for('auth.oauth_login') }}">
+        Entrar com Major League Cyber
+      </a>
+      <div class="fs9-divider">OU</div>
+    {% endif %}
+
+    {% with form = Forms.auth.LoginForm() %}
+    <form method="post" accept-charset="utf-8">
+      <div class="fs9-field">
+        {{ form.name.label(class="form-label") }}
+        {{ form.name(class="form-control", value=name, autocomplete="username email") }}
+      </div>
+
+      <div class="fs9-field">
+        {{ form.password.label(class="form-label") }}
+        {{ form.password(class="form-control", value=password, autocomplete="current-password") }}
+      </div>
+
+      {{ form.nonce() }}
+
+      <div class="fs9-actions">
+        {{ form.submit(class="fs9-submit") }}
+      </div>
+    </form>
+    {% endwith %}
+
+    <div class="fs9-links">
+      <a href="{{ url_for('auth.reset_password') }}">Esqueceu sua senha?</a>
+      <span>·</span>
+      <a href="{{ url_for('auth.register') }}">Criar conta</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

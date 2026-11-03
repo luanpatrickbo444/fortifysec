@@ -1,0 +1,4 @@
+ZIPs: 20/20 OK
+Flags unicas: 20/20
+Estrutura ELF/PCAP/SQLite: OK
+Aviso: testes estruturais; sem homologacao humana independente.

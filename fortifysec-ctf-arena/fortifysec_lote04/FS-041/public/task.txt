@@ -1,0 +1,1 @@
+A hidden cache file in the ZIP contains Base64 evidence.

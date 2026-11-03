@@ -1,0 +1,1 @@
+Fictional investigation: locate alias node-62-orion in the registry, then decode its evidence field.

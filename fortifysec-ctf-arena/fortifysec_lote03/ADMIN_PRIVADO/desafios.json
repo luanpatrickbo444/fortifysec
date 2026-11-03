@@ -1,0 +1,222 @@
+[
+  {
+    "id": "FS-013",
+    "name": "FS-013 — XOR Beacon",
+    "category": "Criptografia",
+    "value": 350,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Recupere o conteúdo original de uma transmissão interceptada. Documente a transformação usada.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_013_24E67F0BAA93}",
+    "file": "FS-013.zip"
+  },
+  {
+    "id": "FS-014",
+    "name": "FS-014 — Vigenere Field Report",
+    "category": "Criptografia",
+    "value": 390,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Recupere o conteúdo original de uma transmissão interceptada. Documente a transformação usada.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_014_7503E739B034}",
+    "file": "FS-014.zip"
+  },
+  {
+    "id": "FS-015",
+    "name": "FS-015 — RSA Byte Blocks",
+    "category": "Criptografia",
+    "value": 430,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Recupere o conteúdo original de uma transmissão interceptada. Documente a transformação usada.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_015_BCAE52067225}",
+    "file": "FS-015.zip"
+  },
+  {
+    "id": "FS-016",
+    "name": "FS-016 — Endian Trap",
+    "category": "Criptografia",
+    "value": 470,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Recupere o conteúdo original de uma transmissão interceptada. Documente a transformação usada.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_016_BE133F747D48}",
+    "file": "FS-016.zip"
+  },
+  {
+    "id": "FS-017",
+    "name": "FS-017 — Compressed Signal",
+    "category": "Criptografia",
+    "value": 510,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Recupere o conteúdo original de uma transmissão interceptada. Documente a transformação usada.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_017_8A49FA79FF6C}",
+    "file": "FS-017.zip"
+  },
+  {
+    "id": "FS-018",
+    "name": "FS-018 — SQLite Incident",
+    "category": "Forense Digital",
+    "value": 400,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Analise as evidencias locais e reconstrua o indicador de comprometimento solicitado.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_018_0D05ED7BD8D6}",
+    "file": "FS-018.zip"
+  },
+  {
+    "id": "FS-019",
+    "name": "FS-019 — Gateway Fragments",
+    "category": "Forense Digital",
+    "value": 435,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Analise as evidencias locais e reconstrua o indicador de comprometimento solicitado.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_019_D56AB5EA19F0}",
+    "file": "FS-019.zip"
+  },
+  {
+    "id": "FS-020",
+    "name": "FS-020 — PNG Trailer",
+    "category": "Forense Digital",
+    "value": 470,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Analise as evidencias locais e reconstrua o indicador de comprometimento solicitado.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_020_30F30D5EF603}",
+    "file": "FS-020.zip"
+  },
+  {
+    "id": "FS-021",
+    "name": "FS-021 — Hidden Archive",
+    "category": "Forense Digital",
+    "value": 505,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Analise as evidencias locais e reconstrua o indicador de comprometimento solicitado.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_021_EC640367CC4E}",
+    "file": "FS-021.zip"
+  },
+  {
+    "id": "FS-022",
+    "name": "FS-022 — Journal Rotation",
+    "category": "Forense Digital",
+    "value": 540,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Analise as evidencias locais e reconstrua o indicador de comprometimento solicitado.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_022_B59EF7A70EB9}",
+    "file": "FS-022.zip"
+  },
+  {
+    "id": "FS-023",
+    "name": "FS-023 — UDP Beacon",
+    "category": "Redes",
+    "value": 450,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Inspecione a captura de rede usando Wireshark, tshark ou Python; recupere a evidência transmitida.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_023_7428718CEE18}",
+    "file": "FS-023.zip"
+  },
+  {
+    "id": "FS-024",
+    "name": "FS-024 — Out-of-Order Datagram",
+    "category": "Redes",
+    "value": 490,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Inspecione a captura de rede usando Wireshark, tshark ou Python; recupere a evidência transmitida.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_024_C4919113FFC4}",
+    "file": "FS-024.zip"
+  },
+  {
+    "id": "FS-025",
+    "name": "FS-025 — Hex Payload",
+    "category": "Redes",
+    "value": 530,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Inspecione a captura de rede usando Wireshark, tshark ou Python; recupere a evidência transmitida.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_025_2441EB50878A}",
+    "file": "FS-025.zip"
+  },
+  {
+    "id": "FS-026",
+    "name": "FS-026 — Rotated Traffic",
+    "category": "Redes",
+    "value": 570,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Inspecione a captura de rede usando Wireshark, tshark ou Python; recupere a evidência transmitida.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_026_83FB57CFAEEE}",
+    "file": "FS-026.zip"
+  },
+  {
+    "id": "FS-027",
+    "name": "FS-027 — XOR Keycheck",
+    "category": "Engenharia Reversa",
+    "value": 550,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Analise um executavel ELF x86-64 compilado para recuperar uma string transformada sem codigo-fonte.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_027_57D279869C87}",
+    "file": "FS-027.zip"
+  },
+  {
+    "id": "FS-028",
+    "name": "FS-028 — Additive Validator",
+    "category": "Engenharia Reversa",
+    "value": 600,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Analise um executavel ELF x86-64 compilado para recuperar uma string transformada sem codigo-fonte.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_028_CD01375AB46E}",
+    "file": "FS-028.zip"
+  },
+  {
+    "id": "FS-029",
+    "name": "FS-029 — Reverse Lookup",
+    "category": "Engenharia Reversa",
+    "value": 650,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Analise um executavel ELF x86-64 compilado para recuperar uma string transformada sem codigo-fonte.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_029_2FDCC53CE885}",
+    "file": "FS-029.zip"
+  },
+  {
+    "id": "FS-030",
+    "name": "FS-030 — Bit Rotation",
+    "category": "Engenharia Reversa",
+    "value": 700,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Analise um executavel ELF x86-64 compilado para recuperar uma string transformada sem codigo-fonte.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_030_86507C6DC3BD}",
+    "file": "FS-030.zip"
+  },
+  {
+    "id": "FS-031",
+    "name": "FS-031 — Operation Glasshouse",
+    "category": "OSINT",
+    "value": 450,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Analise o dossie ficticio offline, correlacione os documentos e reconstrua a evidência em ordem cronologica.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_031_DA4E93262EA2}",
+    "file": "FS-031.zip"
+  },
+  {
+    "id": "FS-033",
+    "name": "FS-033 — Client-Side Trust",
+    "category": "Web",
+    "value": 400,
+    "type": "standard",
+    "state": "hidden",
+    "description": "Execute a aplicacao HTML localmente, investigue a logica de validacao no navegador e recupere o token.\n\nBaixe o anexo, analise em um ambiente local e envie a flag no formato FSCTF{...}.",
+    "flag": "FSCTF{ELITE_033_255CBB576BE5}",
+    "file": "FS-033.zip"
+  }
+]

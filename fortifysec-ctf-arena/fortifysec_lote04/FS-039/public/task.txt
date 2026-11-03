@@ -1,0 +1,1 @@
+Inspect the CRITICAL event. Its payload is Base64.
