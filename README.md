@@ -1,51 +1,43 @@
-# Fortify One — Landing Page (Next.js)
+# FortifySec CTF — Site Next.js
 
-Versão redesenhada e premium da landing page da Fortify One.
+Landing page responsiva com visual cyberpunk vermelho/preto, baseada na arte fornecida.
 
-## 🚀 Como rodar
+## Requisitos
+- Node.js 20.9+ (recomendado Node 22)
+- npm
 
+## Executar
 ```bash
-# Instalar dependências
 npm install
-
-# Desenvolvimento
 npm run dev
+```
+Abra http://localhost:3000
 
-# Build de produção
+## Testar build de produção
+```bash
 npm run build
 npm start
 ```
 
-Abra [http://localhost:3000](http://localhost:3000).
+## Estrutura
+- `app/page.tsx`: página completa e interações.
+- `app/globals.css`: identidade visual responsiva.
+- `app/layout.tsx`: metadados e layout.
+- `public/images/fortifysec-ctf-poster.png`: arte gerada para o evento.
 
-## ✨ O que foi melhorado
+## Funcionalidades
+- Header responsivo e menu mobile.
+- Hero, informações do evento, categorias filtráveis, premiação, ranking, regras, FAQ e formulário.
+- Formulário de **demonstração**, salvo em `localStorage` no próprio navegador.
+- Ranking **fictício**, usado apenas para testar o design.
+- Sem dependência de serviços externos para renderização (Google Fonts é opcional; fontes fallback funcionam offline).
 
-- **Design system** com cores neon/purple consistentes
-- **Glassmorphism** e efeitos de glow
-- **Animações** suaves com Framer Motion (scroll reveal, float, hover)
-- **Header** sticky com blur e menu mobile animado
-- **Hero** com card stack do CTF e grid de features
-- **Trilhas** interativas com hover
-- **Certificações** com cards e jornada em 8 passos
-- **CTF** com destaque visual do prêmio
-- **Depoimentos** com estrelas
-- **Pricing** com destaque no plano popular
-- **FAQ** accordion animado
-- **CTA final** com garantia de 7 dias
-- **Tipografia** Space Grotesk + Inter
-- **Totalmente responsivo**
-- **SEO** metadata completo
+## Importante antes de publicar
+1. Confirmar com a organização datas, regras, premiação e se as inscrições estão oficialmente abertas.
+2. Substituir pré-inscrição local por backend real com validação, antispam, banco de dados, proteção de dados e política de privacidade.
+3. Conectar a plataforma de desafios (ex.: CTFd) e o placar real via API autenticada.
+4. Confirmar domínio, canal de contato e identidade visual oficial.
+5. Não utilizar o ranking de exemplo como resultado de competição real.
 
-## Stack
-
-- Next.js 14 (App Router)
-- TypeScript
-- Tailwind CSS
-- Framer Motion
-- Lucide React
-
-## Links de pagamento
-
-Os botões apontam para os mesmos links Mercado Pago do site original.
-EOF
-echo README_ok
+## Publicação na Vercel
+Faça push do projeto para um repositório Git e importe-o em https://vercel.com/new. O framework Next.js será detectado automaticamente.
