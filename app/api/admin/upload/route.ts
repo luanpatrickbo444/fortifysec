@@ -1,2 +1,62 @@
-import {NextResponse} from 'next/server';import {isAdmin} from '@/lib/auth';import fs from 'node:fs/promises';import path from 'node:path';import {randomUUID} from 'node:crypto';export const runtime='nodejs';
-export async function POST(req:Request){if(!await isAdmin())return NextResponse.json({error:'Não autorizado'},{status:401});const form=await req.formData();const file=form.get('video');if(!(file instanceof File))return NextResponse.json({error:'Selecione um vídeo'},{status:400});const allowed=new Map([['video/mp4','.mp4'],['video/webm','.webm']]);const ext=allowed.get(file.type);if(!ext)return NextResponse.json({error:'Use MP4 ou WebM'},{status:400});const max=Number(process.env.ACADEMY_MAX_VIDEO_MB||200)*1024*1024;if(file.size>max)return NextResponse.json({error:'Vídeo excede o limite'},{status:413});const dir=path.join(process.env.ACADEMY_DATA_DIR||path.join(process.cwd(),'academy-data'),'videos');await fs.mkdir(dir,{recursive:true});const name=randomUUID()+ext;await fs.writeFile(path.join(dir,name),Buffer.from(await file.arrayBuffer()),{flag:'wx'});return NextResponse.json({url:'/api/videos/'+name})}
+import { NextResponse } from 'next/server';
+import { randomUUID } from 'node:crypto';
+import { isAdmin } from '@/lib/auth';
+import { supabaseAdmin } from '@/lib/supabase-admin';
+
+export const runtime = 'nodejs';
+
+export async function POST(req: Request) {
+  if (!(await isAdmin())) {
+    return NextResponse.json(
+      { error: 'Não autorizado' },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const body = await req.json();
+    const type = String(body.type || '');
+    const size = Number(body.size);
+
+    const extensions: Record<string, string> = {
+      'video/mp4': 'mp4',
+      'video/webm': 'webm'
+    };
+
+    if (!extensions[type]) {
+      return NextResponse.json(
+        { error: 'Use vídeos MP4 ou WebM' },
+        { status: 400 }
+      );
+    }
+
+    if (!Number.isFinite(size) || size <= 0 || size > 50 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: 'O vídeo deve ter no máximo 50 MB' },
+        { status: 413 }
+      );
+    }
+
+    const path = `${randomUUID()}.${extensions[type]}`;
+
+    const { data, error } = await supabaseAdmin()
+      .storage
+      .from('academy-videos')
+      .createSignedUploadUrl(path);
+
+    if (error) throw error;
+
+    return NextResponse.json({
+      path: data.path,
+      token: data.token,
+      video: `storage:${data.path}`
+    });
+  } catch (error) {
+    console.error('Erro ao autorizar upload:', error);
+
+    return NextResponse.json(
+      { error: 'Não foi possível autorizar o upload' },
+      { status: 500 }
+    );
+  }
+}

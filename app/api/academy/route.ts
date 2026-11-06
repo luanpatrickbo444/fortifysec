@@ -1,2 +1,58 @@
-import {NextResponse} from 'next/server';import db from '@/lib/db';export const runtime='nodejs';export const dynamic='force-dynamic';
-export async function GET(){const courses=db.prepare('SELECT * FROM courses WHERE published=1 ORDER BY id DESC').all();const lessons=db.prepare('SELECT l.* FROM lessons l JOIN courses c ON c.id=l.course_id WHERE c.published=1 AND l.published=1 ORDER BY l.course_id,l.position,l.id').all();return NextResponse.json({courses,lessons})}
+import { NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase-admin';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  try {
+    const supabase = supabaseAdmin();
+
+    const { data: courses, error: coursesError } = await supabase
+      .from('academy_courses')
+      .select('*')
+      .eq('published', 1)
+      .order('id', { ascending: false });
+
+    if (coursesError) {
+      throw coursesError;
+    }
+
+    const { data: lessons, error: lessonsError } = await supabase
+      .from('academy_lessons')
+      .select('*, academy_courses!inner(published)')
+      .eq('published', 1)
+      .eq('academy_courses.published', 1)
+      .order('course_id', { ascending: true })
+      .order('position', { ascending: true })
+      .order('id', { ascending: true });
+
+    if (lessonsError) {
+      throw lessonsError;
+    }
+
+    const publicLessons = (lessons ?? []).map(
+      ({ courses: _courses, ...lesson }) => {
+        void _courses;
+        return {
+          ...lesson,
+          video: lesson.video
+            ? `/api/academy/video/${lesson.id}`
+            : '',
+        };
+      }
+    );
+
+    return NextResponse.json({
+      courses: courses ?? [],
+      lessons: publicLessons,
+    });
+  } catch (error) {
+    console.error('Erro na Academy:', error);
+
+    return NextResponse.json(
+      { error: 'Erro ao carregar treinamentos' },
+      { status: 500 }
+    );
+  }
+}
