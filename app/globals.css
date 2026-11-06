@@ -37,3 +37,71 @@
 .info-section p,.info-section li{color:#c4c4c9;line-height:1.8}
 .info-section ul{padding-left:20px}
 @media(max-width:800px){.model-grid,.info-grid{grid-template-columns:1fr}.model-card{min-height:0}.info-page{padding-top:45px}}
+
+
+/* FORTIFYSEC_MOBILE_FIX_V1 */
+
+html, body {
+  max-width: 100%;
+}
+
+body {
+  overflow-x: clip;
+}
+
+img, video {
+  max-width: 100%;
+}
+
+button, a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 767px) {
+
+  a[class*="btn"],
+  button[class*="btn"],
+  a[class*="button"],
+  button[class*="button"],
+  .hero a,
+  .hero button,
+  .cta a,
+  .cta button {
+    max-width: 100%;
+    min-height: 44px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  [class*="hero-actions"],
+  [class*="hero-buttons"],
+  [class*="cta-actions"],
+  [class*="cta-buttons"],
+  [class*="button-group"],
+  [class*="btn-group"] {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  [class*="hero-actions"] > a,
+  [class*="hero-actions"] > button,
+  [class*="hero-buttons"] > a,
+  [class*="hero-buttons"] > button,
+  [class*="cta-actions"] > a,
+  [class*="cta-actions"] > button,
+  [class*="cta-buttons"] > a,
+  [class*="cta-buttons"] > button {
+    width: 100%;
+  }
+
+  main, section, article,
+  [class*="card"], [class*="hero"] {
+    min-width: 0;
+  }
+}
