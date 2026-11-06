@@ -1,0 +1,2 @@
+import {NextResponse} from 'next/server';import db from '@/lib/db';export const runtime='nodejs';export const dynamic='force-dynamic';
+export async function GET(){const courses=db.prepare('SELECT * FROM courses WHERE published=1 ORDER BY id DESC').all();const lessons=db.prepare('SELECT l.* FROM lessons l JOIN courses c ON c.id=l.course_id WHERE c.published=1 AND l.published=1 ORDER BY l.course_id,l.position,l.id').all();return NextResponse.json({courses,lessons})}
