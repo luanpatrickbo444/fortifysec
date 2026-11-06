@@ -1,5 +1,5 @@
 'use client';
-import {useEffect,useState} from 'react';import Link from 'next/link';import {BookOpen,Plus,LogOut,Upload,Trash2,Save,Video,Shield,ExternalLink} from 'lucide-react';
+import {useEffect,useState} from 'react';import Link from 'next/link';import {BookOpen,LogOut,Upload,Trash2,Save,Video,Shield,ExternalLink} from 'lucide-react';
 type Course={id:number;title:string;description:string;category:string;cover:string;published:number};type Lesson={id:number;course_id:number;module:string;title:string;description:string;video:string;duration:string;position:number;published:number};
 const blankCourse={title:'',description:'',category:'Cybersegurança',cover:'',published:0};const blankLesson={course_id:0,module:'Módulo 1',title:'',description:'',video:'',duration:'',position:0,published:0};
 export default function Admin(){const [auth,setAuth]=useState(false),[password,setPassword]=useState(''),[courses,setCourses]=useState<Course[]>([]),[lessons,setLessons]=useState<Lesson[]>([]),[course,setCourse]=useState({...blankCourse,id:0}),[lesson,setLesson]=useState({...blankLesson,id:0}),[tab,setTab]=useState<'courses'|'lessons'>('courses'),[busy,setBusy]=useState(false),[msg,setMsg]=useState('');
