@@ -1,0 +1,8 @@
+services:
+  ctfd:
+    image: fortifysec-ctf-ctfd:labs-v3-prod-candidate
+    volumes:
+      - /run/fortifysec-labs/manager.sock:/run/fortifysec-labs/manager.sock
+      - /etc/fortifysec-labs/manager.key:/run/fortifysec-labs/manager.key:ro
+      - /etc/fortifysec-labs/ctfd-gateway.key:/run/fortifysec-labs/ctfd-gateway.key:ro
+      - /run/fortifysec-labs/homolog-proxy.sock:/run/fortifysec-labs/homolog-proxy.sock

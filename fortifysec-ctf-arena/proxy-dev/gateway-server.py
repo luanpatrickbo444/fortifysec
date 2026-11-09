@@ -1,0 +1,293 @@
+#!/usr/bin/env python3
+"""FortifySec Lab Gateway — homologação."""
+
+import hashlib
+import hmac
+import json
+import secrets
+import socket
+import time
+from pathlib import Path
+
+from flask import Flask, jsonify, request, Response
+
+try:
+    from .config import (
+        GATEWAY_HOST,
+        GATEWAY_PORT,
+        MANAGER_SOCKET,
+        GATEWAY_KEY_FILE,
+        REQUEST_TIMEOUT,
+    )
+except ImportError:
+    from config import (
+        GATEWAY_HOST,
+        GATEWAY_PORT,
+        MANAGER_SOCKET,
+        GATEWAY_KEY_FILE,
+        REQUEST_TIMEOUT,
+    )
+
+app = Flask(__name__)
+app.config["DEBUG"] = False
+
+
+def manager_request(student, action="endpoint"):
+    """Consulta autenticada ao gerenciador de laboratórios."""
+
+    if action != "endpoint":
+        raise ValueError("Operação não autorizada pelo gateway")
+
+    import re
+
+    if not re.fullmatch(r"ctfd-[1-9][0-9]{0,9}", student):
+        raise ValueError("Identificador de aluno inválido")
+
+    payload = {
+        "student": student,
+        "action": action,
+        "ts": int(time.time()),
+        "nonce": secrets.token_hex(16),
+    }
+
+    key = Path(GATEWAY_KEY_FILE).read_bytes().strip()
+
+    if len(key) < 32:
+        raise RuntimeError("Chave do gateway inválida")
+
+    canonical = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+
+    signature = hmac.new(
+        key,
+        canonical,
+        hashlib.sha256,
+    ).hexdigest()
+
+    envelope = json.dumps(
+        {"payload": payload, "sig": signature},
+        separators=(",", ":"),
+    ).encode() + b"\n"
+
+    with socket.socket(socket.AF_UNIX) as connection:
+        connection.settimeout(REQUEST_TIMEOUT)
+        connection.connect(MANAGER_SOCKET)
+        connection.sendall(envelope)
+
+        response = b""
+
+        while not response.endswith(b"\n"):
+            chunk = connection.recv(4096)
+
+            if not chunk:
+                raise RuntimeError("Resposta incompleta do gerenciador")
+
+            response += chunk
+
+            if len(response) > 8192:
+                raise RuntimeError("Resposta excede o limite permitido")
+
+    result = json.loads(response)
+
+    if not result.get("ok"):
+        raise RuntimeError("Consulta ao gerenciador recusada")
+
+    return result["result"]
+
+
+
+CTFD_GATEWAY_KEY_FILE = "/etc/fortifysec-labs/ctfd-gateway.key"
+
+# Cache de nonces para rejeitar requisições repetidas.
+# Em produção, usar armazenamento compartilhado entre workers.
+_seen_nonces = {}
+
+
+def verify_ctfd_request():
+    """Valida requisições assinadas pelo plugin CTFd."""
+    import re
+
+    payload = request.get_json(silent=True)
+
+    if not isinstance(payload, dict):
+        raise ValueError("Payload inválido")
+
+    student = payload.get("student")
+    timestamp = payload.get("ts")
+    nonce = payload.get("nonce")
+    signature = request.headers.get("X-FortifySec-Signature", "")
+
+    if not isinstance(student, str) or not re.fullmatch(
+        r"ctfd-[1-9][0-9]{0,9}", student
+    ):
+        raise ValueError("Aluno inválido")
+
+    if type(timestamp) is not int or abs(time.time() - timestamp) > 30:
+        raise ValueError("Requisição expirada")
+
+    if not isinstance(nonce, str) or not re.fullmatch(
+        r"[0-9a-f]{32}", nonce
+    ):
+        raise ValueError("Nonce inválido")
+
+    if not re.fullmatch(r"[0-9a-f]{64}", signature):
+        raise ValueError("Assinatura inválida")
+
+    key = Path(CTFD_GATEWAY_KEY_FILE).read_bytes().strip()
+
+    canonical = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+
+    expected = hmac.new(
+        key, canonical, hashlib.sha256
+    ).hexdigest()
+
+    if not hmac.compare_digest(expected, signature):
+        raise ValueError("Assinatura não autorizada")
+
+    now = time.time()
+
+    expired = [
+        n for n, created in _seen_nonces.items()
+        if now - created > 90
+    ]
+
+    for n in expired:
+        del _seen_nonces[n]
+
+    if nonce in _seen_nonces:
+        raise ValueError("Requisição repetida")
+
+    _seen_nonces[nonce] = now
+
+    return student
+
+
+@app.post("/internal/authorize")
+def authorize():
+    try:
+        student = verify_ctfd_request()
+        result = manager_request(student)
+
+        if not result.get("running"):
+            return jsonify({
+                "ok": False,
+                "error": "Laboratório não está ativo"
+            }), 404
+
+        return jsonify({
+            "ok": True,
+            "authorized": True,
+            "lab_expires_at": result.get("expires_at")
+        })
+
+    except ValueError:
+        return jsonify({
+            "ok": False,
+            "error": "Requisição não autorizada"
+        }), 403
+
+    except Exception:
+        app.logger.exception("Gateway authorization failed")
+        return jsonify({
+            "ok": False,
+            "error": "Gateway indisponível"
+        }), 503
+
+
+
+@app.route("/internal/proxy/", defaults={"path": ""}, methods=["GET", "POST"])
+@app.route("/internal/proxy/<path:path>", methods=["GET", "POST"])
+def proxy_lab(path):
+    """Proxy HTTP para o laboratório autorizado."""
+
+    try:
+        student = verify_ctfd_request()
+        endpoint = manager_request(student)
+
+        if not endpoint.get("running"):
+            return jsonify({
+                "ok": False,
+                "error": "Laboratório não está ativo"
+            }), 404
+
+        port = endpoint.get("port")
+
+        if type(port) is not int or not 1 <= port <= 65535:
+            raise RuntimeError("Porta inválida")
+
+        import requests
+
+        target = f"http://127.0.0.1:{port}/{path}"
+
+        headers = {
+            "Content-Type": request.headers.get(
+                "X-FortifySec-Content-Type", ""
+            )
+        }
+
+        upstream = requests.request(
+            method=request.headers.get(
+                "X-FortifySec-Method", "GET"
+            ),
+            url=target,
+            params=request.args,
+            data=request.get_data(),
+            headers=headers,
+            timeout=10,
+            allow_redirects=False,
+        )
+
+        response = Response(
+            upstream.content,
+            status=upstream.status_code,
+        )
+
+        content_type = upstream.headers.get("Content-Type")
+        if content_type:
+            response.headers["Content-Type"] = content_type
+
+        return response
+
+    except ValueError:
+        return jsonify({
+            "ok": False,
+            "error": "Acesso não autorizado"
+        }), 403
+
+    except Exception:
+        app.logger.exception("Proxy failed")
+        return jsonify({
+            "ok": False,
+            "error": "Falha no gateway"
+        }), 503
+
+
+@app.get("/health")
+def health():
+    return jsonify({
+        "service": "fortifysec-lab-gateway",
+        "status": "online",
+        "environment": "homologacao",
+    })
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({
+        "error": "Rota não encontrada",
+    }), 404
+
+
+if __name__ == "__main__":
+    app.run(
+        host=GATEWAY_HOST,
+        port=GATEWAY_PORT,
+        debug=False,
+    )

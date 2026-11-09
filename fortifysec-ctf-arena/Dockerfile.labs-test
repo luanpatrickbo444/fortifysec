@@ -1,0 +1,7 @@
+ARG BASE_IMAGE=fortifysec-ctfd-base:3.8.9
+FROM ${BASE_IMAGE}
+
+USER root
+COPY plugins/fortifysec_labs /opt/CTFd/CTFd/plugins/fortifysec_labs
+RUN chown -R ctfd:ctfd /opt/CTFd/CTFd/plugins/fortifysec_labs
+USER ctfd

@@ -1,0 +1,58 @@
+name: fortifysec-labs-homolog
+
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_ROOT_PASSWORD: ${TEST_DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ctfd_test
+      MARIADB_USER: ctfd_test
+      MARIADB_PASSWORD: ${TEST_DB_PASSWORD}
+    volumes:
+      - db_test:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    networks: [test_internal]
+
+  redis:
+    image: redis:7.4-alpine
+    networks: [test_internal]
+
+  ctfd:
+    ports:
+      - "127.0.0.1:18080:8000"
+    build:
+      context: ..
+      dockerfile: Dockerfile.labs-test
+      args:
+        BASE_IMAGE: fortifysec-ctfd-base:3.8.9
+    environment:
+      SECRET_KEY: ${TEST_SECRET}
+      DATABASE_URL: mysql+pymysql://ctfd_test:${TEST_DB_PASSWORD}@db:3306/ctfd_test
+      REDIS_URL: redis://redis:6379/0
+      UPLOAD_FOLDER: /var/uploads
+      LOG_FOLDER: /var/log/CTFd
+      WORKERS: "1"
+    volumes:
+      - uploads_test:/var/uploads
+      - logs_test:/var/log/CTFd
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks: [test_internal]
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  test_internal:
+    internal: true
+
+volumes:
+  db_test:
+  uploads_test:
+  logs_test:

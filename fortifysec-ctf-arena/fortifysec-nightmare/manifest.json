@@ -1,0 +1,72 @@
+[
+  {
+    "id": "fs-016",
+    "name": "OAuth Identity Maze",
+    "question": "Find the overprivileged claim in OAuth evidence.",
+    "evidence": "scope=read:own;resource_claim=read:all",
+    "answer": "read:all"
+  },
+  {
+    "id": "fs-017",
+    "name": "Shadow Permissions",
+    "question": "Find the wildcard Kubernetes RBAC privilege.",
+    "evidence": "role=viewer;verbs=get,list,*;resources=pods,secrets",
+    "answer": "*:secrets"
+  },
+  {
+    "id": "fs-018",
+    "name": "Memory Ghost",
+    "question": "Reassemble the memory marker.",
+    "evidence": "segA=ghost;segB=-memory;segC=-trace",
+    "answer": "ghost-memory-trace"
+  },
+  {
+    "id": "fs-019",
+    "name": "Binary Labyrinth",
+    "question": "Compute XOR opcode in decimal.",
+    "evidence": "lhs=0x2a;rhs=0x17;op=XOR",
+    "answer": "61"
+  },
+  {
+    "id": "fs-020",
+    "name": "Crypto Paradox",
+    "question": "Recover the second plaintext from reused XOR pad.",
+    "evidence": "plain1=ALPHA;cipher1=0a0e1b0304;cipher2=090d0f0304",
+    "answer": "BODHA"
+  },
+  {
+    "id": "fs-021",
+    "name": "Phantom Network",
+    "question": "Reassemble DNS fragments by sequence.",
+    "evidence": "seq3=net;seq1=phantom;seq2=-;seq4=work",
+    "answer": "phantom-network"
+  },
+  {
+    "id": "fs-022",
+    "name": "Supply Chain Collapse",
+    "question": "Find the dependency modified in lockfile.",
+    "evidence": "manifest=parser@2.3.1;lock=parser@2.3.9",
+    "answer": "parser@2.3.9"
+  },
+  {
+    "id": "fs-023",
+    "name": "Zero-Day Mirage",
+    "question": "Find the request ID shared by two services.",
+    "evidence": "edge=req-8f29;internal=req-8f29;noise=req-0001",
+    "answer": "req-8f29"
+  },
+  {
+    "id": "fs-024",
+    "name": "Blackout Protocol",
+    "question": "Identify the telemetry frame out of order.",
+    "evidence": "frames=400,401,403,402,404",
+    "answer": "402"
+  },
+  {
+    "id": "fs-025",
+    "name": "Project OMEGA",
+    "question": "Solve XOR, reverse string and SHA256 prefix.",
+    "evidence": "xor=0x1f^0x0a;reverse=AGEMO;sha256prefix8=omega",
+    "answer": "21:OMEGA:"
+  }
+]

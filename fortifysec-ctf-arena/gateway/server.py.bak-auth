@@ -1,0 +1,122 @@
+#!/usr/bin/env python3
+"""FortifySec Lab Gateway — homologação."""
+
+import hashlib
+import hmac
+import json
+import secrets
+import socket
+import time
+from pathlib import Path
+
+from flask import Flask, jsonify
+
+try:
+    from .config import (
+        GATEWAY_HOST,
+        GATEWAY_PORT,
+        MANAGER_SOCKET,
+        GATEWAY_KEY_FILE,
+        REQUEST_TIMEOUT,
+    )
+except ImportError:
+    from config import (
+        GATEWAY_HOST,
+        GATEWAY_PORT,
+        MANAGER_SOCKET,
+        GATEWAY_KEY_FILE,
+        REQUEST_TIMEOUT,
+    )
+
+app = Flask(__name__)
+app.config["DEBUG"] = False
+
+
+def manager_request(student, action="endpoint"):
+    """Consulta autenticada ao gerenciador de laboratórios."""
+
+    if action != "endpoint":
+        raise ValueError("Operação não autorizada pelo gateway")
+
+    import re
+
+    if not re.fullmatch(r"ctfd-[1-9][0-9]{0,9}", student):
+        raise ValueError("Identificador de aluno inválido")
+
+    payload = {
+        "student": student,
+        "action": action,
+        "ts": int(time.time()),
+        "nonce": secrets.token_hex(16),
+    }
+
+    key = Path(GATEWAY_KEY_FILE).read_bytes().strip()
+
+    if len(key) < 32:
+        raise RuntimeError("Chave do gateway inválida")
+
+    canonical = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+
+    signature = hmac.new(
+        key,
+        canonical,
+        hashlib.sha256,
+    ).hexdigest()
+
+    envelope = json.dumps(
+        {"payload": payload, "sig": signature},
+        separators=(",", ":"),
+    ).encode() + b"\n"
+
+    with socket.socket(socket.AF_UNIX) as connection:
+        connection.settimeout(REQUEST_TIMEOUT)
+        connection.connect(MANAGER_SOCKET)
+        connection.sendall(envelope)
+
+        response = b""
+
+        while not response.endswith(b"\n"):
+            chunk = connection.recv(4096)
+
+            if not chunk:
+                raise RuntimeError("Resposta incompleta do gerenciador")
+
+            response += chunk
+
+            if len(response) > 8192:
+                raise RuntimeError("Resposta excede o limite permitido")
+
+    result = json.loads(response)
+
+    if not result.get("ok"):
+        raise RuntimeError("Consulta ao gerenciador recusada")
+
+    return result["result"]
+
+
+@app.get("/health")
+def health():
+    return jsonify({
+        "service": "fortifysec-lab-gateway",
+        "status": "online",
+        "environment": "homologacao",
+    })
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({
+        "error": "Rota não encontrada",
+    }), 404
+
+
+if __name__ == "__main__":
+    app.run(
+        host=GATEWAY_HOST,
+        port=GATEWAY_PORT,
+        debug=False,
+    )

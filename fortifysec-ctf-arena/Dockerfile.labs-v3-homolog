@@ -1,0 +1,5 @@
+FROM fortifysec-ctf-ctfd:labs-v2
+USER root
+COPY plugins/fortifysec_labs /opt/CTFd/CTFd/plugins/fortifysec_labs
+RUN chown -R ctfd:ctfd /opt/CTFd/CTFd/plugins/fortifysec_labs
+USER ctfd

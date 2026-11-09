@@ -1,0 +1,125 @@
+"""FortifySec Labs v3: CTFd 3.8.9 plugin, per-user lab lifecycle."""
+import hashlib
+import hmac
+import json
+import os
+import secrets
+import socket
+import time
+from pathlib import Path
+from flask import Blueprint, abort, current_app, jsonify, render_template_string, request, session
+from CTFd.utils.user import get_current_user
+from CTFd.utils.security.csrf import generate_nonce
+
+bp = Blueprint('fortifysec_labs', __name__, url_prefix='/labs')
+SOCKET = '/run/fortifysec-labs/manager.sock'
+KEYFILE = '/run/fortifysec-labs/manager.key'
+LABS = {'web-auth': ('Web Auth', 'Autenticação e controle de acesso'), 'api-idor': ('API IDOR', 'Autorização de objetos em APIs'), 'log-forensics': ('Log Forensics', 'Investigação de registros')}
+
+PAGE = '''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FortifySec Labs</title><style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{background:#080d18;color:#edf3ff;font:16px system-ui,sans-serif;margin:0;padding:48px 20px}main{max-width:1050px;margin:auto}.eyebrow{color:#57e3cb;letter-spacing:.17em;font-size:.75rem;font-weight:700}h1{font-size:clamp(2rem,5vw,3.5rem);margin:.4rem 0}.muted{color:#a6b5cb}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:28px 0}.card,.panel{background:#121d30;border:1px solid #2d4059;border-radius:18px;padding:24px}.card h2{margin-top:0}.btn{border:0;border-radius:10px;padding:12px 18px;background:#55e3ca;color:#061b1b;font-weight:800;cursor:pointer}.btn:disabled{opacity:.4;cursor:not-allowed}.secondary{background:#2b3950;color:#e9f3ff}.status{margin:18px 0;color:#b9c8dd}a{color:#68e4d0}.pill{display:inline-block;border-radius:30px;background:#263d47;color:#8debdc;padding:6px 12px;font-size:.8rem}#message{min-height:24px;color:#ffcd9a}button{margin-top:10px}
+</style></head><body><main><div class="eyebrow">FORTIFYSEC ARENA / LABS</div><h1>Seu ambiente. Seu desafio.</h1><p class="muted">Olá, {{ username|e }}. Inicie uma máquina de treinamento individual por até 60 minutos.</p><section class="panel"><span class="pill">AMBIENTE DE HOMOLOGAÇÃO</span><div id="status" class="status">Consultando sua máquina...</div><button id="stop" class="btn secondary" hidden>Encerrar máquina</button><p id="message" role="status"></p></section><div class="grid">{% for key, name, desc in labs %}<section class="card"><h2>{{ name|e }}</h2><p class="muted">{{ desc|e }}</p><button class="btn start" data-lab="{{ key|e }}">Iniciar Máquina</button></section>{% endfor %}</div><a href="/challenges">← Voltar aos desafios</a></main><script>
+const CSRF={{ csrf|tojson }};const CTFD_CSRF={{ ctfd_csrf|tojson }};const statusEl=document.getElementById('status'),msg=document.getElementById('message'),stop=document.getElementById('stop');let busy=false;function update(r){let running=!!r.running;statusEl.textContent=running?`Máquina ${r.lab} ativa · ${Math.ceil(r.remaining_seconds/60)} min restantes · ID ${r.container}`:'Nenhuma máquina ativa';stop.hidden=!running;document.querySelectorAll('.start').forEach(b=>b.disabled=busy||running);stop.disabled=busy}async function call(action,lab){busy=true;msg.textContent='';document.querySelectorAll('button').forEach(b=>b.disabled=true);try{let opts=action==='status'?{}:{method:'POST',headers:{'Content-Type':'application/json','X-FS-CSRF':CSRF,'CSRF-Token':CTFD_CSRF},body:JSON.stringify({lab})};let res=await fetch('/labs/api/'+action,opts);let raw=await res.text();
+let data;
+try {
+  data=JSON.parse(raw);
+} catch(e) {
+  const html=raw.trim().startsWith('<');
+  throw Error(
+    'API retornou HTTP '+res.status+
+    (html?' com HTML em vez de JSON':' com resposta inválida')+
+    ' — '+res.url
+  );
+}if(!res.ok||!data.ok)throw Error(data.error||'Falha na operação');update(data.result)}catch(e){msg.textContent=e.message}finally{busy=false;document.querySelectorAll('.start').forEach(b=>b.disabled=false);stop.disabled=false;}}document.querySelectorAll('.start').forEach(b=>b.addEventListener('click',()=>call('start',b.dataset.lab)));stop.addEventListener('click',()=>call('stop'));call('status');setInterval(()=>{if(!busy)call('status')},15000);
+</script></body></html>'''
+
+
+def user_or_401():
+    user = get_current_user()
+    if user is None:
+        abort(401)
+    return user
+
+
+def csrf_token():
+    token = session.get('fortifysec_labs_csrf')
+    if not isinstance(token, str):
+        token = secrets.token_urlsafe(32)
+        session['fortifysec_labs_csrf'] = token
+    return token
+
+
+def check_csrf():
+    expected = session.get('fortifysec_labs_csrf', '')
+    supplied = request.headers.get('X-FS-CSRF', '')
+    if not expected or not supplied or not hmac.compare_digest(expected, supplied):
+        abort(403)
+    origin = request.headers.get('Origin')
+    if origin and origin.rstrip('/') != request.host_url.rstrip('/'):
+        abort(403)
+    if request.mimetype != 'application/json':
+        abort(415)
+
+
+def manager(action, user, lab=None):
+    key = Path(KEYFILE).read_bytes().strip()
+    payload = {'action': action, 'student': 'ctfd-' + str(user.id), 'ts': int(time.time()), 'nonce': secrets.token_hex(16)}
+    if lab is not None:
+        payload['lab'] = lab
+    canonical = json.dumps(payload, sort_keys=True, separators=(',', ':')).encode()
+    signature = hmac.new(key, canonical, hashlib.sha256).hexdigest()
+    message = json.dumps({'payload': payload, 'sig': signature}, separators=(',', ':')).encode() + b'\n'
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+        sock.settimeout(15)
+        sock.connect(SOCKET)
+        sock.sendall(message)
+        data = b''
+        while not data.endswith(b'\n'):
+            chunk = sock.recv(4096)
+            if not chunk or len(data) + len(chunk) > 16384:
+                raise RuntimeError('Invalid manager response')
+            data += chunk
+    return json.loads(data)
+
+
+@bp.get('/')
+def index():
+    user = user_or_401()
+    return render_template_string(PAGE, username=user.name, csrf=csrf_token(), ctfd_csrf=generate_nonce(), labs=[(k, *v) for k, v in LABS.items()])
+
+
+@bp.get('/api/status')
+def status():
+    user = user_or_401()
+    return dispatch('status', user)
+
+
+@bp.post('/api/start')
+def start():
+    user = user_or_401()
+    check_csrf()
+    body = request.get_json(silent=True) or {}
+    lab = body.get('lab')
+    if not isinstance(lab, str) or lab not in LABS:
+        return jsonify({'ok': False, 'error': 'Laboratório inválido'}), 400
+    return dispatch('start', user, lab)
+
+
+@bp.post('/api/stop')
+def stop():
+    user = user_or_401()
+    check_csrf()
+    return dispatch('stop', user)
+
+
+def dispatch(action, user, lab=None):
+    try:
+        result = manager(action, user, lab)
+        return jsonify(result), 200 if result.get('ok') else 409
+    except (OSError, RuntimeError, ValueError, json.JSONDecodeError):
+        current_app.logger.exception('FortifySec manager unavailable')
+        return jsonify({'ok': False, 'error': 'Gerenciador temporariamente indisponível'}), 503
+
+
+def load(app):
+    app.register_blueprint(bp)

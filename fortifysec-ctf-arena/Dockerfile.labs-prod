@@ -1,0 +1,8 @@
+FROM fortifysec-ctf-ctfd:consolidado-v1
+
+USER root
+
+COPY --chown=ctfd:ctfd plugins/fortifysec_labs \
+    /opt/CTFd/CTFd/plugins/fortifysec_labs
+
+USER ctfd

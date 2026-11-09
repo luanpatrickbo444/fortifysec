@@ -1,0 +1,3 @@
+services:
+  ctfd:
+    image: fortifysec-ctf-ctfd:labs-v2

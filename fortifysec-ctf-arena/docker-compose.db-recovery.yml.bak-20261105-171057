@@ -1,0 +1,4 @@
+services:
+  ctfd:
+    environment:
+      DATABASE_URL: "mysql+pymysql://ctfd:847b77e30070809eca5f605993f233b78cb3c998391180c071e10008eb7c6d10@db:3306/ctfd"

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "fs-010",
+    "lab_id": "10",
+    "local_url": "http://127.0.0.1:19110",
+    "container_port": 8080,
+    "host_port": 19110
+  },
+  {
+    "id": "fs-011",
+    "lab_id": "11",
+    "local_url": "http://127.0.0.1:19111",
+    "container_port": 8080,
+    "host_port": 19111
+  },
+  {
+    "id": "fs-012",
+    "lab_id": "12",
+    "local_url": "http://127.0.0.1:19112",
+    "container_port": 8080,
+    "host_port": 19112
+  },
+  {
+    "id": "fs-013",
+    "lab_id": "13",
+    "local_url": "http://127.0.0.1:19113",
+    "container_port": 8080,
+    "host_port": 19113
+  },
+  {
+    "id": "fs-014",
+    "lab_id": "14",
+    "local_url": "http://127.0.0.1:19114",
+    "container_port": 8080,
+    "host_port": 19114
+  },
+  {
+    "id": "fs-015",
+    "lab_id": "15",
+    "local_url": "http://127.0.0.1:19115",
+    "container_port": 8080,
+    "host_port": 19115
+  }
+]

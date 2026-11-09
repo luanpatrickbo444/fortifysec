@@ -1,0 +1,6 @@
+services:
+  ctfd:
+    image: fortifysec-ctfd:homolog-pack01
+    build:
+      context: ..
+      dockerfile: Dockerfile.labs-homolog-pack01

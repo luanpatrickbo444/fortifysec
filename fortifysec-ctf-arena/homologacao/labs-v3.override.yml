@@ -1,0 +1,6 @@
+services:
+  ctfd:
+    volumes:
+      - /run/fortifysec-labs:/run/fortifysec-labs
+      - /etc/fortifysec-labs/manager.key:/run/fortifysec-labs/manager.key:ro
+      - /etc/fortifysec-labs/ctfd-gateway.key:/run/fortifysec-labs/ctfd-gateway.key:ro

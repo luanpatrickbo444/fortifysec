@@ -1,0 +1,109 @@
+services:
+  fs-010:
+    build: ./app
+    environment:
+      LAB_ID: '10'
+      LAB_FLAG: ${FS_10_FLAG:?Configure FS_10_FLAG in .env}
+    ports:
+    - 127.0.0.1:19110:8080
+    read_only: true
+    tmpfs:
+    - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.5
+    restart: unless-stopped
+  fs-011:
+    build: ./app
+    environment:
+      LAB_ID: '11'
+      LAB_FLAG: ${FS_11_FLAG:?Configure FS_11_FLAG in .env}
+    ports:
+    - 127.0.0.1:19111:8080
+    read_only: true
+    tmpfs:
+    - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.5
+    restart: unless-stopped
+  fs-012:
+    build: ./app
+    environment:
+      LAB_ID: '12'
+      LAB_FLAG: ${FS_12_FLAG:?Configure FS_12_FLAG in .env}
+    ports:
+    - 127.0.0.1:19112:8080
+    read_only: true
+    tmpfs:
+    - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.5
+    restart: unless-stopped
+  fs-013:
+    build: ./app
+    environment:
+      LAB_ID: '13'
+      LAB_FLAG: ${FS_13_FLAG:?Configure FS_13_FLAG in .env}
+    ports:
+    - 127.0.0.1:19113:8080
+    read_only: true
+    tmpfs:
+    - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.5
+    restart: unless-stopped
+  fs-014:
+    build: ./app
+    environment:
+      LAB_ID: '14'
+      LAB_FLAG: ${FS_14_FLAG:?Configure FS_14_FLAG in .env}
+    ports:
+    - 127.0.0.1:19114:8080
+    read_only: true
+    tmpfs:
+    - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.5
+    restart: unless-stopped
+  fs-015:
+    build: ./app
+    environment:
+      LAB_ID: '15'
+      LAB_FLAG: ${FS_15_FLAG:?Configure FS_15_FLAG in .env}
+    ports:
+    - 127.0.0.1:19115:8080
+    read_only: true
+    tmpfs:
+    - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.5
+    restart: unless-stopped

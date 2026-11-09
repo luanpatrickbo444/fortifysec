@@ -1,0 +1,9 @@
+{$CTF_DOMAIN} {
+  encode zstd gzip
+  header {
+    X-Content-Type-Options nosniff
+    Referrer-Policy strict-origin-when-cross-origin
+    -Server
+  }
+  reverse_proxy ctfd:8000
+}

@@ -1,0 +1,49 @@
+# Standalone training stack; intentionally no public ports or host volumes.
+name: fortifysec-training-pack1
+x-lab-defaults: &lab-defaults
+  build: .
+  restart: unless-stopped
+  user: "10001:10001"
+  read_only: true
+  tmpfs:
+    - /tmp:size=16m,mode=1777
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  pids_limit: 64
+  mem_limit: 192m
+  cpus: 0.5
+  networks: [training]
+services:
+  lab01:
+    <<: *lab-defaults
+    environment:
+      LAB_ID: "sql-injection"
+      LAB_FLAG: "${LAB01_FLAG:?Configure no arquivo .env}"
+  lab02:
+    <<: *lab-defaults
+    environment:
+      LAB_ID: "stored-xss"
+      LAB_FLAG: "${LAB02_FLAG:?Configure no arquivo .env}"
+  lab03:
+    <<: *lab-defaults
+    environment:
+      LAB_ID: "api-access"
+      LAB_FLAG: "${LAB03_FLAG:?Configure no arquivo .env}"
+  lab04:
+    <<: *lab-defaults
+    environment:
+      LAB_ID: "jwt-security"
+      LAB_FLAG: "${LAB04_FLAG:?Configure no arquivo .env}"
+  lab05:
+    <<: *lab-defaults
+    environment:
+      LAB_ID: "linux-audit"
+      LAB_FLAG: "${LAB05_FLAG:?Configure no arquivo .env}"
+  lab06:
+    <<: *lab-defaults
+    environment:
+      LAB_ID: "network-forensics"
+      LAB_FLAG: "${LAB06_FLAG:?Configure no arquivo .env}"
+networks:
+  training:
+    internal: true

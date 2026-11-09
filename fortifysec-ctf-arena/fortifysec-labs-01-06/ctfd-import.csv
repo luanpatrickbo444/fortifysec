@@ -1,0 +1,7 @@
+name,category,value,type,state,description
+"sql-injection","FortifySec Labs",300,standard,hidden,"Laboratório 01: sql-injection; configure flag e acesso autenticado."
+"stored-xss","FortifySec Labs",300,standard,hidden,"Laboratório 02: stored-xss; configure flag e acesso autenticado."
+"api-access","FortifySec Labs",350,standard,hidden,"Laboratório 03: api-access; configure flag e acesso autenticado."
+"jwt-security","FortifySec Labs",350,standard,hidden,"Laboratório 04: jwt-security; configure flag e acesso autenticado."
+"linux-audit","FortifySec Labs",400,standard,hidden,"Laboratório 05: linux-audit; configure flag e acesso autenticado."
+"network-forensics","FortifySec Labs",350,standard,hidden,"Laboratório 06: network-forensics; configure flag e acesso autenticado."

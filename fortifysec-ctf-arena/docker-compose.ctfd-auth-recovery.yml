@@ -1,0 +1,4 @@
+services:
+  ctfd:
+    environment:
+      DATABASE_URL: 'mysql+pymysql://ctfd:CHANGE_ME_DB_PASSWORD@db:3306/ctfd'
