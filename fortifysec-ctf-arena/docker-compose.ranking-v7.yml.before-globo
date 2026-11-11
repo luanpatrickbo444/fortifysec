@@ -1,0 +1,8 @@
+services:
+  ctfd:
+    image: fortifysec-ctf-ctfd:ranking-v9
+    build: !reset null
+    environment:
+      FS_LABS_SOLVES_DB: /var/lib/fortifysec-ranking/solves.sqlite3
+    volumes:
+      - /var/lib/fortifysec-ranking:/var/lib/fortifysec-ranking:ro

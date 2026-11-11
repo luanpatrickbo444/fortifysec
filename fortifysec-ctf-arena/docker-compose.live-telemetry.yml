@@ -1,0 +1,11 @@
+services:
+  ctfd:
+    environment:
+      FS_LIVE_DB: /var/lib/fortifysec-live/events.sqlite3
+    volumes:
+      - type: bind
+        source: /var/lib/fortifysec-live
+        target: /var/lib/fortifysec-live
+        read_only: true
+        bind:
+          create_host_path: false

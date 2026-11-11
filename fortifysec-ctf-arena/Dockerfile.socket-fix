@@ -1,0 +1,11 @@
+FROM fortifysec-ctf-ctfd:labs-v3-prod-candidate
+
+USER root
+
+COPY backups/socket-fix-20261109/plugin-live-fixed.py \
+  /opt/CTFd/CTFd/plugins/fortifysec_labs/__init__.py
+
+RUN chown ctfd:ctfd \
+  /opt/CTFd/CTFd/plugins/fortifysec_labs/__init__.py
+
+USER ctfd

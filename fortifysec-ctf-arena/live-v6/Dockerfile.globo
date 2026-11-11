@@ -1,0 +1,11 @@
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+USER root
+
+COPY plugin/fortifysec_labs_v5/__init__.py /opt/CTFd/CTFd/plugins/fortifysec_labs_v5/__init__.py
+
+RUN python -m py_compile /opt/CTFd/CTFd/plugins/fortifysec_labs_v5/__init__.py \
+    && chown ctfd:ctfd /opt/CTFd/CTFd/plugins/fortifysec_labs_v5/__init__.py
+
+USER ctfd

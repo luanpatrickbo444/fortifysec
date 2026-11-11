@@ -1,0 +1,480 @@
+"""FortifySec Labs v3: CTFd 3.8.9 plugin, per-user lab lifecycle."""
+import hashlib
+import hmac
+import json
+import os
+import secrets
+import socket
+import time
+from pathlib import Path
+from flask import Blueprint, abort, current_app, jsonify, render_template_string, request, session
+from CTFd.utils.user import get_current_user
+from CTFd.utils.security.csrf import generate_nonce
+
+bp = Blueprint('fortifysec_labs', __name__, url_prefix='/labs')
+SOCKET = '/run/fortifysec-labs/manager.sock'
+KEYFILE = '/run/fortifysec-labs/manager.key'
+LABS = {'web-auth': ('Web Auth', 'Autenticação e controle de acesso'), 'api-idor': ('API IDOR', 'Autorização de objetos em APIs'), 'log-forensics': ('Log Forensics', 'Investigação de registros'), 'sql-injection': ('SQL Injection — Data Breach', 'Exploração SQL em base fictícia'), 'stored-xss': ('Stored XSS — Browser Injection', 'Injeção de conteúdo no navegador'), 'api-access': ('API Broken Access Control', 'Autorização em endpoints REST'), 'jwt-security': ('JWT Authentication Flaws', 'Validação de tokens e permissões'), 'linux-audit': ('Linux Privilege Audit', 'Auditoria de permissões simuladas'), 'network-forensics': ('Network Packet Investigation', 'Investigação de captura PCAP')}
+
+PAGE = '''<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FortifySec Arena | Cyber Range</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#09090d;--panel:#16161e;--panel2:#1d1d27;
+  --red:#e11d36;--bright:#ff3447;--text:#f5f5f7;
+  --muted:#9999a9;--border:#30303b
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.6 system-ui,-apple-system,Segoe UI,sans-serif}
+body:before{content:"";position:fixed;top:-300px;right:-200px;
+  width:700px;height:700px;pointer-events:none;
+  background:radial-gradient(circle,#b5122420,transparent 70%)}
+a{color:inherit;text-decoration:none}
+.container{max-width:1200px;margin:auto;padding:36px 24px 90px}
+header{display:flex;justify-content:space-between;align-items:center;
+  gap:20px;padding-bottom:28px;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{display:grid;place-items:center;width:48px;height:48px;
+  border:1px solid #8f2435;border-radius:14px;background:#361116;
+  color:var(--bright);font-size:26px}
+.brand strong{font-size:20px;letter-spacing:1px}
+.brand strong span{color:var(--bright)}
+.small{font-size:11px;color:var(--muted);letter-spacing:2px}
+.online{border:1px solid #73303c;border-radius:30px;
+  padding:8px 14px;color:#ff8996;background:#32151c;font-size:12px}
+.hero{padding:65px 0 38px}
+.eyebrow{color:var(--bright);font-size:12px;
+  font-weight:800;letter-spacing:3px}
+h1{font-size:clamp(34px,5vw,60px);line-height:1.1;
+  letter-spacing:-2px;margin:14px 0}
+h1 span{color:var(--bright)}
+.muted{color:var(--muted)}
+.hero p{max-width:670px;font-size:16px}
+.panel,.card{background:linear-gradient(145deg,#1b1b25,#121218);
+  border:1px solid var(--border);border-radius:20px}
+.panel{padding:28px;margin:18px 0 44px;border-color:#54232e}
+.panel-head{display:flex;align-items:center;justify-content:space-between;
+  gap:15px;flex-wrap:wrap}
+.panel h2{font-size:24px;margin:8px 0}
+.status-label{color:var(--bright);font-size:12px;
+  font-weight:800;letter-spacing:2px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);
+  gap:12px;margin-top:20px}
+.stat{background:#23232e;border:1px solid #33333f;
+  border-radius:13px;padding:17px}
+.stat small{display:block;color:var(--muted);font-size:11px;
+  letter-spacing:1px;text-transform:uppercase}
+.stat strong{display:block;font-size:19px;margin-top:5px;
+  overflow-wrap:anywhere}
+#remaining{color:var(--bright);font-variant-numeric:tabular-nums}
+.btn{background:var(--red);color:white;border:1px solid #f34458;
+  border-radius:11px;padding:13px 19px;font:inherit;font-weight:750;
+  cursor:pointer;transition:.2s}
+.btn:hover:not(:disabled){background:#fa3048;transform:translateY(-2px)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-secondary{background:#35212a;border-color:#70313d;color:#ffc4cc}
+.btn-secondary:hover:not(:disabled){background:#542632}
+#stop[hidden]{display:none}
+#message{min-height:24px;color:#ff9ba6;margin:15px 0 0}
+.section-head{display:flex;justify-content:space-between;
+  align-items:end;gap:12px;margin:36px 0 22px}
+.section-head h2{font-size:27px;margin:0}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.card{overflow:hidden;transition:.25s}
+.card:hover{transform:translateY(-4px);border-color:#9a3042}
+.art{height:155px;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 120%,#a82038 0%,#401522 35%,#11111a 80%)}
+.art:before{content:"";position:absolute;inset:0;opacity:.2;
+  background:repeating-linear-gradient(90deg,transparent 0 25px,#fa4a5c 26px,transparent 27px)}
+.art svg{position:relative;width:82px;height:82px;fill:none;
+  stroke:#ff5265;stroke-width:1.5;filter:drop-shadow(0 0 17px #ed243c88)}
+.card-body{padding:23px}
+.tag{font-size:11px;color:var(--bright);letter-spacing:2px;font-weight:800}
+.card h3{font-size:23px;margin:10px 0 5px}
+.card p{min-height:56px;color:var(--muted);margin:0 0 18px}
+.meta{display:flex;gap:12px;color:#bdbdc9;font-size:11px;
+  letter-spacing:1px;margin-bottom:20px}
+.card .btn{width:100%}
+footer{margin-top:60px;padding-top:24px;border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;gap:12px;
+  flex-wrap:wrap;color:var(--muted);font-size:13px}
+footer a{color:#ff6b7b}
+@media(max-width:900px){.grid{grid-template-columns:1fr 1fr}}
+@media(max-width:650px){
+  .container{padding:20px 16px 60px}
+  .hero{padding:45px 0 25px}
+  .grid,.stats{grid-template-columns:1fr}
+  .panel{padding:20px}
+  .brand strong{font-size:16px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <div class="brand">
+    <div class="logo">⬡</div>
+    <div>
+      <strong>FORTIFYSEC <span>ARENA</span></strong>
+      <div class="small">CYBER RANGE / LABORATÓRIOS</div>
+    </div>
+  </div>
+  <div class="online">● SISTEMA ONLINE</div>
+</header>
+
+<section class="hero">
+  <div class="eyebrow">OFFENSIVE SECURITY / TRAINING ENVIRONMENT</div>
+  <h1>Seu ambiente.<br><span>Seu desafio.</span></h1>
+  <p class="muted">Bem-vindo, <strong>{{ username|e }}</strong>.
+  Inicie um laboratório individual, desenvolva suas habilidades
+  e pratique segurança ofensiva em um ambiente controlado.</p>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <div>
+      <div class="status-label">● CONTROLE DE SESSÃO</div>
+      <h2>Minha máquina virtual</h2>
+      <div class="muted" id="status">Consultando ambiente...</div>
+    </div>
+    
+<button id="access-lab" type="button"
+style="background:#dc2626;color:#fff;border:1px solid #ef4444;
+padding:12px 22px;border-radius:10px;font-weight:800;
+cursor:pointer;letter-spacing:.3px" hidden>
+ACESSAR LABORATÓRIO
+</button>
+<button id="stop" class="btn btn-secondary" hidden>Encerrar máquina</button>
+  </div>
+  <div class="stats">
+    <div class="stat"><small>Estado</small><strong id="state">Verificando</strong></div>
+    <div class="stat"><small>Tempo restante</small><strong id="remaining">--:--</strong></div>
+    <div class="stat"><small>Identificador</small><strong id="machine-id">---</strong></div>
+  </div>
+  <p id="message" role="status" aria-live="polite"></p>
+</section>
+
+<div class="section-head">
+  <div>
+    <div class="eyebrow">EXPLORE / LEARN / HACK</div>
+    <h2>Laboratórios disponíveis</h2>
+  </div>
+  <div class="muted">03 ambientes</div>
+</div>
+
+<div class="grid">
+{% for key, name, desc in labs %}
+<article class="card">
+  <div class="art">
+    {% if key == 'web-auth' %}
+    <svg viewBox="0 0 100 100"><rect x="17" y="36" width="66" height="49" rx="8"/><path d="M31 36V26a19 19 0 0 1 38 0v10"/><circle cx="50" cy="59" r="6"/><path d="M50 65v9"/></svg>
+    {% elif key == 'api-idor' %}
+    <svg viewBox="0 0 100 100"><rect x="8" y="36" width="28" height="28" rx="5"/><rect x="64" y="8" width="28" height="28" rx="5"/><rect x="64" y="64" width="28" height="28" rx="5"/><path d="M36 50h15V22h13M51 50v28h13"/></svg>
+    {% else %}
+    <svg viewBox="0 0 100 100"><path d="M25 10h38l13 13v57a8 8 0 0 1-8 8H25a8 8 0 0 1-8-8V18a8 8 0 0 1 8-8Z"/><path d="M62 10v18h14M29 43h35M29 55h26M29 67h18"/><circle cx="68" cy="69" r="13"/><path d="m78 79 12 12"/></svg>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    <div class="tag">
+      {% if key == 'web-auth' %}WEB SECURITY
+      {% elif key == 'api-idor' %}API SECURITY
+      {% else %}DIGITAL FORENSICS{% endif %}
+    </div>
+    <h3>{{ name|e }}</h3>
+    <p>{{ desc|e }}</p>
+    <div class="meta"><span>◷ 60 MINUTOS</span><span>◆ AMBIENTE ISOLADO</span></div>
+    <button class="btn start" data-lab="{{ key|e }}">Iniciar Máquina</button>
+  </div>
+</article>
+{% endfor %}
+</div>
+
+<footer>
+  <span>© FortifySec Arena · Cyber Range</span>
+  <a href="/challenges">← Voltar aos desafios</a>
+</footer>
+</div>
+
+<script>
+const CSRF={{ csrf|tojson }};
+const CTFD_CSRF={{ ctfd_csrf|tojson }};
+const statusEl=document.getElementById('status');
+const msg=document.getElementById('message');
+const stop=document.getElementById('stop');
+const access=document.getElementById('access-lab');
+const stateEl=document.getElementById('state');
+const remainingEl=document.getElementById('remaining');
+const idEl=document.getElementById('machine-id');
+let busy=false;
+let machine=null;
+let lastSync=Date.now();
+
+function render(){
+  const running=!!(machine&&machine.running);
+  const remaining=running?
+    Math.max(0,(machine.remaining_seconds||0)-Math.floor((Date.now()-lastSync)/1000)):0;
+  statusEl.textContent=running?
+    'Laboratório '+machine.lab+' em execução':
+    'Nenhuma máquina ativa. Selecione um laboratório abaixo.';
+  stateEl.textContent=running?'EM EXECUÇÃO':'DISPONÍVEL';
+  remainingEl.textContent=running?
+    String(Math.floor(remaining/60)).padStart(2,'0')+':'+
+    String(remaining%60).padStart(2,'0'):'--:--';
+  idEl.textContent=running?(machine.container||'---'):'---';
+  stop.hidden=!running;
+  access.hidden=!running;
+  access.disabled=busy;
+  stop.disabled=busy;
+  document.querySelectorAll('.start').forEach(b=>{
+    b.disabled=busy||running;
+    b.textContent=running?'Sessão em andamento':'Iniciar Máquina';
+  });
+}
+
+async function call(action,lab){
+  if(busy)return;
+  busy=true;
+  render();
+  if(action!=='status')msg.textContent='Processando solicitação...';
+  try{
+    const opts=action==='status'?{}:{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'X-FS-CSRF':CSRF,
+        'CSRF-Token':CTFD_CSRF
+      },
+      body:JSON.stringify({lab})
+    };
+    const res=await fetch('/labs/api/'+action,opts);
+    const raw=await res.text();
+    let data;
+    try{data=JSON.parse(raw)}
+    catch(e){throw Error('Servidor retornou HTTP '+res.status+' em vez de JSON')}
+    if(!res.ok||!data.ok)throw Error(data.error||'Falha na operação');
+    machine=data.result;
+    lastSync=Date.now();
+    if(action==='start')msg.textContent='Máquina iniciada com sucesso.';
+    if(action==='stop')msg.textContent='Máquina encerrada.';
+  }catch(e){
+    msg.textContent=e.message;
+  }finally{
+    busy=false;
+    render();
+  }
+}
+
+document.querySelectorAll('.start').forEach(b=>
+  b.addEventListener('click',()=>call('start',b.dataset.lab))
+);
+stop.addEventListener('click',()=>call('stop'));
+access.addEventListener('click',()=>{
+  window.open('/labs/access/','_blank','noopener,noreferrer');
+});
+call('status');
+setInterval(render,1000);
+setInterval(()=>{if(!busy)call('status')},15000);
+</script>
+</body>
+</html>'''
+
+def user_or_401():
+    user = get_current_user()
+    if user is None:
+        abort(401)
+    return user
+
+
+def csrf_token():
+    token = session.get('fortifysec_labs_csrf')
+    if not isinstance(token, str):
+        token = secrets.token_urlsafe(32)
+        session['fortifysec_labs_csrf'] = token
+    return token
+
+
+def check_csrf():
+    expected = session.get('fortifysec_labs_csrf', '')
+    supplied = request.headers.get('X-FS-CSRF', '')
+    if not expected or not supplied or not hmac.compare_digest(expected, supplied):
+        abort(403)
+    origin = request.headers.get('Origin')
+    if origin and origin.rstrip('/') != request.host_url.rstrip('/'):
+        abort(403)
+    if request.mimetype != 'application/json':
+        abort(415)
+
+
+def manager(action, user, lab=None):
+    key = Path(KEYFILE).read_bytes().strip()
+    payload = {'action': action, 'student': 'ctfd-' + str(user.id), 'ts': int(time.time()), 'nonce': secrets.token_hex(16)}
+    if lab is not None:
+        payload['lab'] = lab
+    canonical = json.dumps(payload, sort_keys=True, separators=(',', ':')).encode()
+    signature = hmac.new(key, canonical, hashlib.sha256).hexdigest()
+    message = json.dumps({'payload': payload, 'sig': signature}, separators=(',', ':')).encode() + b'\n'
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+        sock.settimeout(15)
+        sock.connect(SOCKET)
+        sock.sendall(message)
+        data = b''
+        while not data.endswith(b'\n'):
+            chunk = sock.recv(4096)
+            if not chunk or len(data) + len(chunk) > 16384:
+                raise RuntimeError('Invalid manager response')
+            data += chunk
+    return json.loads(data)
+
+
+@bp.get('/')
+def index():
+    user = user_or_401()
+    return render_template_string(PAGE, username=user.name, csrf=csrf_token(), ctfd_csrf=session.get('nonce'), labs=[(k, *v) for k, v in LABS.items()])
+
+
+@bp.get('/api/status')
+def status():
+    user = user_or_401()
+    return dispatch('status', user)
+
+
+@bp.post('/api/start')
+def start():
+    user = user_or_401()
+    check_csrf()
+    body = request.get_json(silent=True) or {}
+    lab = body.get('lab')
+    if not isinstance(lab, str) or lab not in LABS:
+        return jsonify({'ok': False, 'error': 'Laboratório inválido'}), 400
+    return dispatch('start', user, lab)
+
+
+@bp.post('/api/stop')
+def stop():
+    user = user_or_401()
+    check_csrf()
+    return dispatch('stop', user)
+
+
+
+
+def gateway_authorize(user):
+    """Autoriza o aluno pelo socket interno do gateway."""
+    key = Path(
+        '/run/fortifysec-labs/ctfd-gateway.key'
+    ).read_bytes().strip()
+
+    payload = {
+        'student': 'ctfd-' + str(user.id),
+        'ts': int(time.time()),
+        'nonce': secrets.token_hex(16),
+    }
+
+    canonical = json.dumps(
+        payload, sort_keys=True, separators=(',', ':')
+    ).encode()
+
+    signature = hmac.new(
+        key, canonical, hashlib.sha256
+    ).hexdigest()
+
+    body = json.dumps(
+        payload, separators=(',', ':')
+    ).encode()
+
+    http_request = (
+        b'POST /internal/authorize HTTP/1.1\r\n'
+        b'Host: localhost\r\n'
+        b'Content-Type: application/json\r\n'
+        + b'X-FortifySec-Signature: '
+        + signature.encode()
+        + b'\r\n'
+        + b'Content-Length: '
+        + str(len(body)).encode()
+        + b'\r\n'
+        + b'Connection: close\r\n\r\n'
+        + body
+    )
+
+    with socket.socket(socket.AF_UNIX) as sock:
+        sock.settimeout(10)
+        sock.connect('/run/fortifysec-labs/gateway.sock')
+        sock.sendall(http_request)
+
+        response = bytearray()
+        while True:
+            chunk = sock.recv(4096)
+            if not chunk:
+                break
+            response.extend(chunk)
+            if len(response) > 65536:
+                raise RuntimeError('Gateway response too large')
+
+    headers, separator, response_body = bytes(response).partition(
+        b'\r\n\r\n'
+    )
+
+    if not separator:
+        raise RuntimeError('Invalid gateway HTTP response')
+
+    status_line = headers.split(b'\r\n', 1)[0]
+    status_parts = status_line.split()
+
+    if len(status_parts) < 2:
+        raise RuntimeError('Invalid gateway HTTP status')
+
+    status_code = int(status_parts[1])
+    result = json.loads(response_body)
+
+    return status_code, result
+
+
+@bp.get('/access/')
+def access_lab():
+    user = user_or_401()
+
+    try:
+        status_code, result = gateway_authorize(user)
+
+        if status_code != 200 or not result.get('ok'):
+            return jsonify({
+                'ok': False,
+                'error': result.get(
+                    'error', 'Acesso não autorizado'
+                )
+            }), status_code
+
+        return jsonify({
+            'ok': True,
+            'authorized': True,
+            'message': 'Gateway autenticado com sucesso.',
+            'lab_expires_at': result.get('lab_expires_at'),
+            'proxy': 'pending'
+        })
+
+    except (OSError, RuntimeError, ValueError, json.JSONDecodeError):
+        current_app.logger.exception('Gateway unavailable')
+        return jsonify({
+            'ok': False,
+            'error': 'Gateway temporariamente indisponível'
+        }), 503
+
+
+def dispatch(action, user, lab=None):
+    try:
+        result = manager(action, user, lab)
+        return jsonify(result), 200 if result.get('ok') else 409
+    except (OSError, RuntimeError, ValueError, json.JSONDecodeError):
+        current_app.logger.exception('FortifySec manager unavailable')
+        return jsonify({'ok': False, 'error': 'Gerenciador temporariamente indisponível'}), 503
+
+
+def load(app):
+    app.register_blueprint(bp)

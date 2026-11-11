@@ -1,0 +1,4 @@
+services:
+  ctfd:
+    image: fortifysec-ctf-ctfd:ranking-frontfix-v2
+    build: !reset null

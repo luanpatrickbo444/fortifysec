@@ -1,0 +1,5 @@
+FROM fortifysec-ctf-ctfd:ranking-v7-fixed
+USER root
+COPY plugin/fortifysec_labs_v5 /opt/CTFd/CTFd/plugins/fortifysec_labs_v5
+RUN python -m py_compile /opt/CTFd/CTFd/plugins/fortifysec_labs_v5/__init__.py && chown -R ctfd:ctfd /opt/CTFd/CTFd/plugins/fortifysec_labs_v5
+USER ctfd

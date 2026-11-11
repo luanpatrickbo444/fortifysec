@@ -1,0 +1,6 @@
+FROM fortifysec-ctf-ctfd:socket-fix-20261109
+USER root
+COPY plugin/fortifysec_labs_v5 /opt/CTFd/CTFd/plugins/fortifysec_labs_v5
+COPY patch_labs.py /tmp/patch_labs.py
+RUN python /tmp/patch_labs.py && python -m py_compile /opt/CTFd/CTFd/plugins/fortifysec_labs_v5/__init__.py /opt/CTFd/CTFd/plugins/fortifysec_labs/__init__.py && chown -R ctfd:ctfd /opt/CTFd/CTFd/plugins/fortifysec_labs_v5 /opt/CTFd/CTFd/plugins/fortifysec_labs/__init__.py && rm /tmp/patch_labs.py
+USER ctfd

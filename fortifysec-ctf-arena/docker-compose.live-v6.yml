@@ -1,0 +1,4 @@
+services:
+  ctfd:
+    image: fortifysec-ctf-ctfd:live-v6
+    build: !reset null

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Estatísticas · FortifySec Progress{% endblock %}
+{% block content %}
+<div class="eyebrow">▥ &nbsp; ANALYTICS / FORTIFYSEC PROGRESS</div>
+<div class="heading"><div><h1>Painel de <em>Estatísticas</em></h1><p>Indicadores da evolução prática dos alunos, sem misturar o ranking CTF.</p></div><span class="pill">DADOS DO ÚLTIMO SNAPSHOT</span></div>
+<section class="dash-metrics">
+{% for label,value,detail in [('ALUNOS ELEGÍVEIS',data.summary.users,'Contas públicas sincronizadas'),('ALUNOS ATIVOS',data.summary.active,'Com pelo menos um laboratório'),('LABS CONCLUÍDOS',data.summary.solves,'Soluções únicas verificadas'),('XP DISTRIBUÍDO',data.summary.xp,'Experiência acumulada'),('MÉDIA DE XP',data.summary.average,'Por aluno elegível'),('LABS NO CATÁLOGO',data.summary.catalog,'Com pontuação configurada')] %}
+<article class="dash-metric"><div class="metriclabel">{{ label }}</div><strong>{{ '{:,}'.format(value).replace(',','.') }}</strong><span>{{ detail }}</span></article>{% endfor %}
+</section>
+<div class="dash-grid">
+<section class="panel"><div class="panelhead"><div><h2>Laboratórios mais concluídos</h2><p>Quantidade de alunos que concluíram cada laboratório</p></div></div><div class="dash-body">
+{% for lab in data.labs %}<div class="bar-row"><div class="bar-top"><b>{{ lab.name }}</b><span>{{ lab.count }}</span></div><div class="bar-track"><div class="bar-fill" style="width:{{ (lab.count * 100 / data.labs[0].count)|round|int }}%"></div></div></div>{% else %}<p class="muted">Ainda não há conclusões sincronizadas.</p>{% endfor %}
+</div></section>
+<section class="panel"><div class="panelhead"><div><h2>Distribuição por nível</h2><p>Alunos por faixa de experiência</p></div></div><div class="dash-body">
+{% for level in data.levels %}<div class="bar-row"><div class="bar-top"><b>{{ level.name }}</b><span>{{ level.count }}</span></div><div class="bar-track"><div class="bar-fill level-fill" style="width:{{ (level.count * 100 / data.summary.users)|round|int if data.summary.users else 0 }}%"></div></div></div>{% endfor %}
+</div></section>
+<section class="panel"><div class="panelhead"><div><h2>Atividade por mês</h2><p>Conclusões agrupadas pelo mês em UTC</p></div></div><div class="dash-body">
+{% for month in data.months %}<div class="bar-row"><div class="bar-top"><b>{{ month.name }}</b><span>{{ month.count }}</span></div><div class="bar-track"><div class="bar-fill" style="width:{{ (month.count * 100 / (data.months | map(attribute='count') | max))|round|int }}%"></div></div></div>{% else %}<p class="muted">Sem atividade registrada.</p>{% endfor %}
+</div></section>
+<section class="panel"><div class="panelhead"><div><h2>Top 5 operadores</h2><p>Classificação exclusiva do FortifySec Progress</p></div></div><div class="dash-body">
+{% for user in data.top %}<a class="top-operator" href="/labs/perfil/{{ user.id }}"><span class="top-number">{{ '%02d' % loop.index }}</span><span class="top-name">{{ user.name }}<small>{{ user.level }} · {{ user.labs|length }} labs</small></span><b>{{ '{:,}'.format(user.xp).replace(',','.') }} XP</b></a>{% else %}<p class="muted">Nenhum aluno sincronizado.</p>{% endfor %}
+</div></section>
+</div>
+<p class="dash-note">Estatísticas calculadas a partir das cópias locais de usuários e conclusões. Atualize com <code>./sync.sh</code>. O sistema não modifica a Arena nem o CTFd.</p>
+{% endblock %}

@@ -169,6 +169,8 @@ def redeem(ticket):
 @app.route('/<path:path>', methods=ALLOWED_METHODS)
 def proxy(path):
     student, session_expiry = authenticate()
+    from flask import g as _fs_g
+    _fs_g.live_student = student
     try:
         endpoint = manager_endpoint(student)
     except Exception:
@@ -212,6 +214,107 @@ def proxy(path):
     response.headers['Content-Security-Policy'] = "frame-ancestors 'none'"
     return response
 
+
+
+# FORTIFYSEC_LIVE_THREATS_V1
+import json as _fs_json
+import socket as _fs_socket
+import time as _fs_time
+from collections import defaultdict as _fs_defaultdict, deque as _fs_deque
+from flask import g as _fs_g, request as _fs_request
+
+# Contadores efêmeros por aluno; nenhum caminho, IP ou segredo é persistido.
+_fs_recent_paths = _fs_defaultdict(_fs_deque)
+_fs_last_cleanup = 0
+
+
+def _fs_route_class(path):
+    segments = [s.lower() for s in path.split('/') if s]
+    first = segments[0] if segments else ''
+    if first in ('login', 'signin', 'sign-in', 'auth', 'register', 'logout', 'session') or any(s in ('login', 'signin', 'sign-in') for s in segments):
+        return 'auth'
+    if first in ('admin', 'administrator', 'wp-admin'):
+        return 'admin'
+    if first in ('api', 'graphql', 'rest'):
+        return 'api'
+    if first in ('static', 'assets', 'css', 'js', 'images', 'img', 'favicon.ico'):
+        return 'static'
+    if first in ('lab', 'labs', 'challenge', 'challenges'):
+        return 'lab'
+    return 'other'
+
+
+@app.before_request
+def _fs_live_start():
+    _fs_g.live_started = _fs_time.monotonic()
+
+
+@app.after_request
+def _fs_live_emit(response):
+    global _fs_last_cleanup
+    try:
+        student = getattr(_fs_g, 'live_student', None)
+        if not isinstance(student, str) or not student.startswith('ctfd-') or not student[5:].isdigit():
+            return response
+        if _fs_request.endpoint != 'proxy':
+            return response
+        code = int(response.status_code)
+        status = code // 100
+        if status not in (2, 3, 4, 5):
+            return response
+        method = _fs_request.method.upper()
+        if method not in ('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'):
+            return response
+        path = _fs_request.path  # somente memória; nunca enviado ao coletor
+        route_class = _fs_route_class(path)
+        category = 'http_error' if status in (4, 5) else 'http'
+        rule = 'http_4xx' if status == 4 else 'http_5xx' if status == 5 else 'http_normal'
+        if route_class == 'auth' and code in (401, 403):
+            category, rule = 'auth', 'auth_failed'
+        elif route_class == 'auth' and method == 'POST' and status in (4, 5):
+            category, rule = 'auth', 'auth_rejected'
+
+        # Heurística: 8 caminhos distintos com resposta 4xx em 60 s.
+        # Não classifica um 404 isolado como ataque.
+        now = _fs_time.monotonic()
+        if now - _fs_last_cleanup > 120:
+            for key in list(_fs_recent_paths):
+                queue = _fs_recent_paths[key]
+                while queue and queue[0][0] < now - 60:
+                    queue.popleft()
+                if not queue:
+                    del _fs_recent_paths[key]
+            _fs_last_cleanup = now
+        if status == 4 and route_class != 'auth':
+            queue = _fs_recent_paths[student]
+            while queue and queue[0][0] < now - 60:
+                queue.popleft()
+            queue.append((now, path))
+            while len(queue) > 64:
+                queue.popleft()
+            if len({p for _, p in queue}) >= 8:
+                category, rule = 'recon', 'recon_enumeration'
+
+        elapsed = now - getattr(_fs_g, 'live_started', now)
+        payload = {
+            'student': student,
+            'lab': 'active-instance',
+            'ts': int(_fs_time.time()),
+            'status_class': f'{status}xx',
+            'latency_bucket': 'fast' if elapsed < .25 else 'normal' if elapsed < 2 else 'slow',
+            'method': method,
+            'route_class': route_class,
+            'event_category': category,
+            'http_status': code,
+            'rule_id': rule,
+        }
+        with _fs_socket.socket(_fs_socket.AF_UNIX, _fs_socket.SOCK_DGRAM) as sock:
+            sock.setblocking(False)
+            sock.sendto(_fs_json.dumps(payload, separators=(',', ':')).encode(),
+                        '/run/fortifysec-live/collector.sock')
+    except Exception:
+        pass  # A telemetria jamais altera a resposta do laboratório.
+    return response
 
 if __name__ == '__main__':
     raise SystemExit('Use gunicorn; do not use Flask development server')

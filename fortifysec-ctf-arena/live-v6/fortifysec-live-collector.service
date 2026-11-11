@@ -1,0 +1,20 @@
+[Unit]
+Description=FortifySec Live Attacks local telemetry collector
+After=network.target
+[Service]
+Type=simple
+User=root
+Group=root
+Environment=FS_LIVE_SOCKET=/run/fortifysec-live/collector.sock
+Environment=FS_LIVE_DB=/var/lib/fortifysec-live/events.sqlite3
+ExecStart=/usr/bin/python3 /opt/fortifysec-live/collector.py
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+ProtectSystem=strict
+RuntimeDirectory=fortifysec-live
+StateDirectory=fortifysec-live
+ReadWritePaths=/run/fortifysec-live /var/lib/fortifysec-live
+PrivateTmp=true
+[Install]
+WantedBy=multi-user.target

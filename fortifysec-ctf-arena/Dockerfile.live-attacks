@@ -1,0 +1,25 @@
+FROM fortifysec-ctf-ctfd:socket-fix-20261109
+
+USER root
+
+COPY live-attacks-prod/fortifysec_live_attacks \
+  /opt/CTFd/CTFd/plugins/fortifysec_live_attacks
+
+COPY live-attacks-prod/navbar.html \
+  /opt/CTFd/CTFd/themes/fortifysec/templates/components/navbar.html
+
+RUN chown -R ctfd:ctfd \
+  /opt/CTFd/CTFd/plugins/fortifysec_live_attacks \
+  /opt/CTFd/CTFd/themes/fortifysec/templates/components/navbar.html
+
+USER ctfd
+
+USER root
+
+COPY live-attacks-prod/labs/__init__.py \
+  /opt/CTFd/CTFd/plugins/fortifysec_labs/__init__.py
+
+RUN chown ctfd:ctfd \
+  /opt/CTFd/CTFd/plugins/fortifysec_labs/__init__.py
+
+USER ctfd

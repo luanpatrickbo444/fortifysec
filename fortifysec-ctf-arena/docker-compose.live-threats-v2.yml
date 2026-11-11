@@ -1,0 +1,4 @@
+services:
+  ctfd:
+    image: fortifysec-ctf-ctfd:live-threats-v2
+    build: !reset null

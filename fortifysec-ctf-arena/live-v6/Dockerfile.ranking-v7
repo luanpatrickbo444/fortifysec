@@ -1,0 +1,12 @@
+FROM fortifysec-ctf-ctfd:ranking-v7
+
+USER root
+
+COPY fix_socket_v7.py /tmp/fix_socket_v7.py
+
+RUN python /tmp/fix_socket_v7.py \
+    && python -m py_compile /opt/CTFd/CTFd/plugins/fortifysec_labs/__init__.py \
+    && chown ctfd:ctfd /opt/CTFd/CTFd/plugins/fortifysec_labs/__init__.py \
+    && rm /tmp/fix_socket_v7.py
+
+USER ctfd

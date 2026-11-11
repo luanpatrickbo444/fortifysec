@@ -1,0 +1,238 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { Bot, Send, Square, Sparkles, User } from 'lucide-react';
+
+type Message = {
+  role: 'user' | 'assistant';
+  content: string;
+};
+
+export default function AITutor({
+  lessonId,
+  lessonTitle
+}: {
+  lessonId: number;
+  lessonTitle: string;
+}) {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [question, setQuestion] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const abortRef = useRef<AbortController | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setMessages([]);
+    setQuestion('');
+    setLoading(false);
+
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, [lessonId]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest'
+    });
+  }, [messages]);
+
+  async function ask() {
+    const text = question.trim();
+
+    if (!text || loading || text.length > 1500) return;
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    setQuestion('');
+    setLoading(true);
+
+    setMessages(previous => [
+      ...previous,
+      { role: 'user', content: text },
+      { role: 'assistant', content: '' }
+    ]);
+
+    try {
+      const response = await fetch('/api/academy/ai/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          lessonId,
+          question: text
+        }),
+        signal: controller.signal
+      });
+
+      if (!response.ok || !response.body) {
+        const error = await response.json().catch(() => null);
+        throw new Error(
+          error?.error || 'Não foi possível consultar o Tutor IA.'
+        );
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+
+        setMessages(previous => {
+          const updated = [...previous];
+          const last = updated[updated.length - 1];
+
+          if (last?.role === 'assistant') {
+            updated[updated.length - 1] = {
+              ...last,
+              content: last.content + chunk
+            };
+          }
+
+          return updated;
+        });
+      }
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        const message = error instanceof Error
+          ? error.message
+          : 'Erro inesperado.';
+
+        setMessages(previous => {
+          const updated = [...previous];
+          const last = updated[updated.length - 1];
+
+          if (last?.role === 'assistant') {
+            updated[updated.length - 1] = {
+              ...last,
+              content: last.content || message
+            };
+          }
+
+          return updated;
+        });
+      }
+    } finally {
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+        setLoading(false);
+      }
+    }
+  }
+
+  function stop() {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setLoading(false);
+  }
+
+  return (
+    <section className="fs-tutor">
+      <header className="fs-tutor-header">
+        <div className="fs-tutor-avatar">
+          <Bot size={24} />
+        </div>
+
+        <div>
+          <h3>FortifySec AI Tutor</h3>
+          <p>
+            <Sparkles size={13} />
+            Qwen3 · IA local
+          </p>
+        </div>
+      </header>
+
+      <div className="fs-tutor-lesson">
+        <strong>Aula atual</strong>
+        <span>{lessonTitle}</span>
+      </div>
+
+      <div className="fs-tutor-messages" aria-live="polite">
+        {messages.length === 0 && (
+          <div className="fs-tutor-welcome">
+            <Bot size={34} />
+            <h4>Como posso ajudar?</h4>
+            <p>
+              Pergunte sobre os conceitos desta aula,
+              peça exemplos ou tire suas dúvidas.
+            </p>
+          </div>
+        )}
+
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`fs-tutor-message ${message.role}`}
+          >
+            <div className="fs-tutor-message-icon">
+              {message.role === 'user'
+                ? <User size={16} />
+                : <Bot size={16} />}
+            </div>
+
+            <div className="fs-tutor-bubble">
+              {message.content || 'Gerando resposta...'}
+            </div>
+          </div>
+        ))}
+
+        <div ref={bottomRef} />
+      </div>
+
+      <form
+        className="fs-tutor-form"
+        onSubmit={event => {
+          event.preventDefault();
+          void ask();
+        }}
+      >
+        <textarea
+          value={question}
+          onChange={event => setQuestion(event.target.value)}
+          placeholder="Pergunte sobre esta aula..."
+          maxLength={1500}
+          rows={2}
+          disabled={loading}
+          onKeyDown={event => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+              event.preventDefault();
+              void ask();
+            }
+          }}
+        />
+
+        {loading ? (
+          <button
+            type="button"
+            onClick={stop}
+            aria-label="Parar resposta"
+          >
+            <Square size={18} />
+          </button>
+        ) : (
+          <button
+            type="submit"
+            disabled={!question.trim()}
+            aria-label="Enviar pergunta"
+          >
+            <Send size={18} />
+          </button>
+        )}
+      </form>
+
+      <div className="fs-tutor-footer">
+        A IA pode cometer erros. Verifique informações técnicas.
+      </div>
+    </section>
+  );
+}

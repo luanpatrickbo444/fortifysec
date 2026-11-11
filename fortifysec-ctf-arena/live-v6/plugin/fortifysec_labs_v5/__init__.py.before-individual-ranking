@@ -1,0 +1,94 @@
+"""FortifySec Labs V5: authenticated dashboards for CTFd 3.x."""
+import json
+import os
+import sqlite3
+import time
+from flask import Blueprint, jsonify, render_template_string, request
+from CTFd.utils.decorators import authed_only
+from CTFd.utils.user import get_current_user, is_admin
+
+bp = Blueprint('fortifysec_labs_v5', __name__)
+DB = os.environ.get('FS_LIVE_DB', '/var/lib/fortifysec-live/events.sqlite3')
+
+PAGE = r'''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ title }} — FortifySec Labs</title><style>
+:root{color-scheme:dark;--bg:#09070b;--card:#170d13;--border:#51202c;--red:#ff3155;--text:#f6edf0;--muted:#b29ca5}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0%,#420e20 0,transparent 35%),var(--bg);font:15px/1.5 system-ui,sans-serif;color:var(--text)}
+a{color:inherit;text-decoration:none}header{border-bottom:1px solid var(--border);background:#11090ef5;position:sticky;top:0;z-index:10}header .wrap{max-width:1320px;margin:auto;padding:14px 20px;display:flex;gap:22px;align-items:center;flex-wrap:wrap}.brand{font-weight:900;letter-spacing:1px;font-size:19px}.brand b{color:var(--red)}nav{display:flex;gap:7px;flex-wrap:wrap}nav a{padding:9px 13px;border-radius:9px;color:#d5c5ca;font-size:13px;font-weight:700}nav a:hover,nav a.active{background:#8c1631;color:#fff}
+main{max-width:1320px;margin:auto;padding:44px 20px 80px}.eyebrow{color:var(--red);font-size:12px;letter-spacing:3px;font-weight:900}h1{font-size:clamp(34px,5vw,64px);line-height:1.05;margin:10px 0}h1 em{font-style:normal;color:var(--red)}.subtitle{color:var(--muted);max-width:780px}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:28px 0}.stat,.panel{border:1px solid var(--border);background:linear-gradient(145deg,#201019,#100b10);border-radius:15px;padding:22px}.stat strong{display:block;font-size:30px;color:#fff}.stat span{font-size:12px;color:var(--muted)}.panel{margin:18px 0;overflow:hidden}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}input,select{background:#1c1017;color:white;border:1px solid #673044;padding:12px;border-radius:9px;min-width:180px}.list{display:grid;gap:9px}.item{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #44202d;background:#1b1017;border-radius:10px;padding:14px;flex-wrap:wrap}.item strong{font-size:15px}.item small{color:var(--muted)}.pill{background:#451523;color:#ff9cac;border-radius:99px;padding:5px 10px;font-size:12px}.btn{background:#b61c3d;padding:9px 13px;border-radius:9px;font-weight:700;font-size:13px}.error{color:#ff879c}.muted{color:var(--muted)}.pulse{display:inline-block;width:9px;height:9px;background:var(--red);border-radius:50%;box-shadow:0 0 14px var(--red);animation:pulse 1.4s infinite}@keyframes pulse{50%{opacity:.3;transform:scale(.7)}}
+#map{width:100%;height:330px;display:block;background:radial-gradient(ellipse at center,#2a0e1c,#09070b 70%);border:1px solid #4d1c2b;border-radius:14px}#map .gridline{stroke:#672337;stroke-width:.5;fill:none}#map .arc{stroke:#ff3155;stroke-width:1.7;fill:none;stroke-dasharray:6 7;animation:dash 2s linear infinite;filter:drop-shadow(0 0 5px #f34)}@keyframes dash{to{stroke-dashoffset:-26}}.item{transition:border-color .2s,transform .2s}.item:hover{border-color:#b72b4d;transform:translateY(-1px)}.item .pill{font-variant-numeric:tabular-nums}.stat{position:relative;overflow:hidden}.stat:before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#ff3155}.panel h2{font-size:22px;letter-spacing:.2px}.footer{margin-top:30px;color:var(--muted);font-size:12px}
+@media(max-width:650px){.stats{grid-template-columns:1fr}main{padding-top:28px}header .wrap{gap:8px}nav a{padding:8px 9px}#map{height:240px}}
+</style></head><body><header><div class="wrap"><a class="brand" href="/labs/">FORTIFY<b>SEC</b> LABS</a><nav aria-label="Navegação FortifySec"><a href="/labs/">Laboratórios</a><a href="/labs/desafios" class="{{ 'active' if page=='desafios' else '' }}">Desafios</a><a href="/labs/ranking" class="{{ 'active' if page=='ranking' else '' }}">Ranking</a><a href="/labs/live-attacks" class="{{ 'active' if page=='live' else '' }}">Live Attacks</a><a href="/labs/perfil">Meu perfil</a><a href="/logout">Sair</a></nav></div></header>
+<main><div class="eyebrow">FORTIFYSEC // CYBER RANGE</div><h1>{{ title|safe }}</h1><p class="subtitle">{{ description }}</p><div class="stats"><div class="stat"><strong id="stat1">—</strong><span id="label1">Carregando</span></div><div class="stat"><strong id="stat2">—</strong><span id="label2">Carregando</span></div><div class="stat"><strong id="stat3">—</strong><span id="label3">Carregando</span></div></div>
+{% if page=='live' %}<svg id="map" viewBox="0 0 1000 400" preserveAspectRatio="xMidYMid meet" aria-label="Visualização abstrata de atividade dos laboratórios"><defs><radialGradient id="glow"><stop stop-color="#ff3155" stop-opacity=".45"/><stop offset="1" stop-color="#ff3155" stop-opacity="0"/></radialGradient></defs><g id="lines"></g><g id="arcs"></g><circle cx="500" cy="200" r="135" fill="url(#glow)"/><circle cx="500" cy="200" r="116" stroke="#92223c" fill="none"/><ellipse cx="500" cy="200" rx="116" ry="43" stroke="#6e2237" fill="none"/><ellipse cx="500" cy="200" rx="48" ry="116" stroke="#6e2237" fill="none"/><text x="500" y="204" text-anchor="middle" font-size="15" fill="#ff879e" letter-spacing="3">FORTIFYSEC</text></svg><p class="muted">Visualização abstrata dos eventos recebidos; não representa a localização geográfica de IPs.</p>{% endif %}
+<div class="panel"><h2 id="heading">{{ section }}</h2><div class="toolbar">{% if page=='desafios' %}<input id="search" placeholder="Buscar desafio ou categoria"><select id="category"><option value="">Todas as categorias</option></select>{% elif page=='ranking' %}<input id="search" placeholder="Buscar competidor ou equipe">{% endif %}</div><div id="content" class="list" aria-live="polite"><p class="muted">Consultando dados reais...</p></div></div><p class="footer">Dados reais do CTFd e dos laboratórios. Nenhuma pontuação ou requisição é simulada.</p></main>
+<script>
+const PAGE={{ page|tojson }};let records=[];
+const $=id=>document.getElementById(id);
+function node(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=String(txt);return e}
+function stat(a,b,c,l1,l2,l3){['stat1','stat2','stat3'].forEach((k,i)=>$(k).textContent=[a,b,c][i]);['label1','label2','label3'].forEach((k,i)=>$(k).textContent=[l1,l2,l3][i])}
+function message(s,err=false){$('content').replaceChildren(node('p',err?'error':'muted',s))}
+async function api(url){const r=await fetch(url,{credentials:'same-origin',headers:{Accept:'application/json'},cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const j=await r.json();if(j.success===false)throw Error('API recusou a consulta');return j.data??j}
+function drawRows(){const term=($('search')?.value||'').toLowerCase();const cat=$('category')?.value||'';const filtered=records.filter(x=>JSON.stringify([x.name,x.category]).toLowerCase().includes(term)&&(!cat||x.category===cat));const box=$('content');box.replaceChildren();if(!filtered.length){message('Nenhum resultado encontrado.');return}for(const x of filtered.slice(0,250)){const row=node('div','item');const left=node('div');left.append(node('strong','',PAGE==='ranking'?'#'+String(x.pos??'—')+'  '+(x.name||'Sem nome'):(x.name||'Sem nome')),node('div','muted',PAGE==='ranking'?'Posição '+(x.pos??'—'):(x.category||'Sem categoria')));const right=node('div');right.append(node('span','pill',PAGE==='ranking'?String(x.score??0)+' pontos':String(x.value??0)+' pontos'));if(PAGE==='desafios'){const a=node('a','btn','Abrir desafio');a.href='/challenges';right.append(' ',a)}row.append(left,right);box.append(row)}}
+async function init(){try{if(PAGE==='ranking'){records=await api('/api/v1/scoreboard');if(!Array.isArray(records))throw Error('Formato de ranking inesperado');stat(records.length,records[0]?.score??0,records[0]?.name??'—','Competidores/equipes','Maior pontuação','Líder atual');drawRows()}else if(PAGE==='desafios'){records=await api('/api/v1/challenges');if(!Array.isArray(records))throw Error('Formato de desafios inesperado');const cats=[...new Set(records.map(x=>x.category).filter(Boolean))].sort();for(const c of cats){const o=node('option','',c);o.value=c;$('category').append(o)}stat(records.length,cats.length,records.filter(x=>x.solved_by_me).length,'Desafios disponíveis','Categorias','Resolvidos por você');drawRows()}else{await refreshLive()}}catch(e){message('Não foi possível carregar os dados: '+e.message,true)}}
+async function refreshLive(){try{const r=await api('/labs/live-attacks/api/events');stat(r.total,r.last_minute,r.active_students,'Eventos observados','Último minuto','Alunos ativos (5 min)');const box=$('content');box.replaceChildren();if(!r.events.length){message('Nenhum evento real registrado ainda. Inicie um laboratório e faça uma requisição para gerar atividade.');}for(const x of r.events.slice().reverse().slice(0,70)){const row=node('div','item');const left=node('div');left.append(node('strong','',x.lab),node('div','muted',new Date(x.ts*1000).toLocaleTimeString('pt-BR')+' · '+x.kind));row.append(left,node('span','pill',x.status_class+' · '+x.latency_bucket));box.append(row)}drawArcs(r.events)}catch(e){message('Telemetria indisponível: '+e.message,true)}}
+function drawArcs(events){const g=$('arcs');if(!g)return;g.replaceChildren();for(let i=0;i<Math.min(events.length,18);i++){const x=events[events.length-1-i];const a=(Number(x.id)%36)*Math.PI/18;const sx=500+116*Math.cos(a),sy=200+116*Math.sin(a);const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('class','arc');p.setAttribute('d',`M ${sx} ${sy} Q ${500+70*Math.sin(a)} ${60+50*Math.cos(a)} 500 200`);p.style.opacity=String(Math.max(.12,1-i/19));g.append(p)}}
+$('search')?.addEventListener('input',drawRows);$('category')?.addEventListener('change',drawRows);init();if(PAGE==='live')setInterval(refreshLive,3000);
+</script></body></html>'''
+
+@bp.get('/labs/desafios')
+@authed_only
+def challenges():
+    return render_template_string(PAGE, page='desafios', title='DESAFIOS <em>CTF</em>', description='Desafios publicados no CTFd, com categorias e pontuação oficial.', section='Desafios disponíveis')
+
+@bp.get('/labs/ranking')
+@authed_only
+def ranking():
+    return render_template_string(PAGE, page='ranking', title='RANKING <em>GLOBAL</em>', description='Classificação oficial do CTFd, sem misturar XP de outras plataformas.', section='Classificação atual')
+
+@bp.get('/labs/live-attacks')
+@authed_only
+def live():
+    return render_template_string(PAGE, page='live', title='LIVE <em>ATTACKS</em>', description='Atividade HTTP real dos laboratórios autorizados, sem IPs, URLs ou flags.', section='Feed de atividade')
+
+@bp.get('/labs/live-attacks/api/events')
+@authed_only
+def events():
+    user = get_current_user()
+    if not user:
+        return jsonify(success=False), 401
+    admin = is_admin()
+    since = max(0, int(time.time()) - 3600)
+    student = 'ctfd-' + str(user.id)
+    result = []
+    try:
+        con = sqlite3.connect('file:' + DB + '?mode=ro', uri=True, timeout=1)
+        try:
+            if admin:
+                rows = con.execute('SELECT id,ts,student,lab,status_class,latency_bucket FROM events WHERE ts>=? ORDER BY id DESC LIMIT 150', (since,)).fetchall()
+                total = con.execute('SELECT count(*) FROM events').fetchone()[0]
+                last = con.execute('SELECT count(*) FROM events WHERE ts>=?', (int(time.time())-60,)).fetchone()[0]
+                active = con.execute('SELECT count(DISTINCT student) FROM events WHERE ts>=?', (int(time.time())-300,)).fetchone()[0]
+            else:
+                rows = con.execute('SELECT id,ts,student,lab,status_class,latency_bucket FROM events WHERE student=? AND ts>=? ORDER BY id DESC LIMIT 150', (student,since)).fetchall()
+                total = con.execute('SELECT count(*) FROM events WHERE student=?', (student,)).fetchone()[0]
+                last = con.execute('SELECT count(*) FROM events WHERE student=? AND ts>=?', (student,int(time.time())-60)).fetchone()[0]
+                active = 1 if con.execute('SELECT 1 FROM events WHERE student=? AND ts>=? LIMIT 1', (student,int(time.time())-300)).fetchone() else 0
+            result = [dict(id=r[0],ts=r[1],kind='lab_request',lab=r[3],status_class=r[4],latency_bucket=r[5]) for r in reversed(rows)]
+        finally:
+            con.close()
+    except (OSError,sqlite3.Error):
+        return jsonify(success=False,error='collector_unavailable'), 503
+    response = jsonify(success=True,data=dict(events=result,total=total,last_minute=last,active_students=active))
+    response.headers['Cache-Control'] = 'no-store'
+    return response
+
+@bp.get('/labs/perfil')
+@authed_only
+def profile():
+    from flask import redirect
+    return redirect('/profile')
+
+
+def load(app):
+    app.register_blueprint(bp)

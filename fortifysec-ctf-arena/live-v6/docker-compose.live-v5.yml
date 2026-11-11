@@ -1,0 +1,8 @@
+services:
+  ctfd:
+    image: fortifysec-ctf-ctfd:live-v5
+    build: !reset null
+    environment:
+      FS_LIVE_DB: /run/fortifysec-live/events.sqlite3
+    volumes:
+      - /run/fortifysec-live:/run/fortifysec-live:ro

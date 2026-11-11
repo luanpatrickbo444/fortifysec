@@ -1,0 +1,4 @@
+services:
+  ctfd:
+    image: fortifysec-ctf-ctfd:globe3d-routes-v2
+    build: !reset null

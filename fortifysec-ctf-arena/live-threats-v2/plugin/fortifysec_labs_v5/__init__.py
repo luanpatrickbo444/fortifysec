@@ -1,0 +1,378 @@
+"""FortifySec Labs V5: authenticated dashboards for CTFd 3.x."""
+import json
+import os
+import sqlite3
+import time
+from flask import Blueprint, jsonify, render_template_string, request
+from CTFd.utils.decorators import authed_only
+from CTFd.utils.user import get_current_user, is_admin
+
+bp = Blueprint('fortifysec_labs_v5', __name__)
+DB = os.environ.get('FS_LIVE_DB', '/var/lib/fortifysec-live/events.sqlite3')
+
+PAGE = r'''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ title }} — FortifySec Labs</title><style>
+:root{color-scheme:dark;--bg:#09070b;--card:#170d13;--border:#51202c;--red:#ff3155;--text:#f6edf0;--muted:#b29ca5}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0%,#420e20 0,transparent 35%),var(--bg);font:15px/1.5 system-ui,sans-serif;color:var(--text)}
+a{color:inherit;text-decoration:none}header{border-bottom:1px solid var(--border);background:#11090ef5;position:sticky;top:0;z-index:10}header .wrap{max-width:1320px;margin:auto;padding:14px 20px;display:flex;gap:22px;align-items:center;flex-wrap:wrap}.brand{font-weight:900;letter-spacing:1px;font-size:19px}.brand b{color:var(--red)}nav{display:flex;gap:7px;flex-wrap:wrap}nav a{padding:9px 13px;border-radius:9px;color:#d5c5ca;font-size:13px;font-weight:700}nav a:hover,nav a.active{background:#8c1631;color:#fff}
+main{max-width:1320px;margin:auto;padding:44px 20px 80px}.eyebrow{color:var(--red);font-size:12px;letter-spacing:3px;font-weight:900}h1{font-size:clamp(34px,5vw,64px);line-height:1.05;margin:10px 0}h1 em{font-style:normal;color:var(--red)}.subtitle{color:var(--muted);max-width:780px}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:28px 0}.stat,.panel{border:1px solid var(--border);background:linear-gradient(145deg,#201019,#100b10);border-radius:15px;padding:22px}.stat strong{display:block;font-size:30px;color:#fff}.stat span{font-size:12px;color:var(--muted)}.panel{margin:18px 0;overflow:hidden}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}input,select{background:#1c1017;color:white;border:1px solid #673044;padding:12px;border-radius:9px;min-width:180px}.list{display:grid;gap:9px}.item{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #44202d;background:#1b1017;border-radius:10px;padding:14px;flex-wrap:wrap}.item strong{font-size:15px}.item small{color:var(--muted)}.pill{background:#451523;color:#ff9cac;border-radius:99px;padding:5px 10px;font-size:12px}.btn{background:#b61c3d;padding:9px 13px;border-radius:9px;font-weight:700;font-size:13px}.error{color:#ff879c}.muted{color:var(--muted)}.pulse{display:inline-block;width:9px;height:9px;background:var(--red);border-radius:50%;box-shadow:0 0 14px var(--red);animation:pulse 1.4s infinite}@keyframes pulse{50%{opacity:.3;transform:scale(.7)}}
+#map{width:100%;height:450px;display:block;background:radial-gradient(ellipse at center,#2a0e1c,#09070b 70%);border:1px solid #4d1c2b;border-radius:14px}#map .gridline{stroke:#672337;stroke-width:.5;fill:none}#map .arc{stroke:#ff3155;stroke-width:1.7;fill:none;stroke-dasharray:6 7;animation:dash 2s linear infinite;filter:drop-shadow(0 0 5px #f34)}@keyframes dash{to{stroke-dashoffset:-26}}.item{transition:border-color .2s,transform .2s}.item:hover{border-color:#b72b4d;transform:translateY(-1px)}.item .pill{font-variant-numeric:tabular-nums}.stat{position:relative;overflow:hidden}.stat:before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#ff3155}.panel h2{font-size:22px;letter-spacing:.2px}.footer{margin-top:30px;color:var(--muted);font-size:12px}
+@media(max-width:650px){.stats{grid-template-columns:1fr}main{padding-top:28px}header .wrap{gap:8px}nav a{padding:8px 9px}#map{height:300px}}
+
+/* FORTIFYSEC_GLOBE3D_V1 — camada visual isolada */
+.fs-globe-stage{position:relative;width:100%;height:clamp(360px,48vw,590px);overflow:hidden;border:1px solid #562133;border-radius:18px;background:radial-gradient(ellipse at 50% 48%,#3b1020 0%,#130910 38%,#07060b 76%)}
+.fs-globe-stage:before{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:repeating-linear-gradient(0deg,transparent 0px,transparent 5px,#ff315503 6px);opacity:.7}
+.fs-globe-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.fs-globe-caption{position:absolute;bottom:15px;left:18px;z-index:2;font:600 10px system-ui,sans-serif;letter-spacing:1.6px;color:#df8c9f;pointer-events:none}
+.fs-globe-stage #map{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0}
+.fs-globe-stage.fs-webgl-ready #map{visibility:hidden}
+@media(max-width:650px){.fs-globe-stage{height:360px}.fs-globe-caption{font-size:9px;left:12px;bottom:12px}}
+
+</style></head><body><header><div class="wrap"><a class="brand" href="/labs/">FORTIFY<b>SEC</b> LABS</a><nav aria-label="Navegação FortifySec"><a href="/labs/">Laboratórios</a><a href="/labs/desafios" class="{{ 'active' if page=='desafios' else '' }}">Desafios</a><a href="/labs/ranking" class="{{ 'active' if page=='ranking' else '' }}">Ranking</a><a href="/labs/live-attacks" class="{{ 'active' if page=='live' else '' }}">Live Attacks</a><a href="/labs/perfil">Meu perfil</a><a href="/logout">Sair</a></nav></div></header>
+<main><div class="eyebrow">FORTIFYSEC // CYBER RANGE</div><h1>{{ title|safe }}</h1><p class="subtitle">{{ description }}</p><div class="stats"><div class="stat"><strong id="stat1">—</strong><span id="label1">Carregando</span></div><div class="stat"><strong id="stat2">—</strong><span id="label2">Carregando</span></div><div class="stat"><strong id="stat3">—</strong><span id="label3">Carregando</span></div></div>
+{% if page=='live' %}<div class="fs-globe-stage" id="fs-globe-stage"><canvas class="fs-globe-canvas" id="fs-globe-canvas" aria-hidden="true"></canvas><div class="fs-globe-caption">LIVE TELEMETRY · VISUALIZAÇÃO ABSTRATA</div><svg id="map" viewBox="0 0 1000 400" preserveAspectRatio="xMidYMid meet" aria-label="Visualização abstrata de atividade dos laboratórios"><defs><radialGradient id="glow"><stop stop-color="#ff3155" stop-opacity=".45"/><stop offset="1" stop-color="#ff3155" stop-opacity="0"/></radialGradient></defs><g transform="translate(-350 -140) scale(1.7)"><g id="lines"></g><g id="arcs"></g><circle cx="500" cy="200" r="135" fill="url(#glow)"/><circle cx="500" cy="200" r="116" stroke="#92223c" fill="none"/><ellipse cx="500" cy="200" rx="116" ry="43" stroke="#6e2237" fill="none"/><ellipse cx="500" cy="200" rx="48" ry="116" stroke="#6e2237" fill="none"/><text x="500" y="204" text-anchor="middle" font-size="15" fill="#ff879e" letter-spacing="3">FORTIFYSEC</text></g></svg></div><p class="muted">Visualização abstrata dos eventos recebidos; não representa a localização geográfica de IPs.</p>{% endif %}
+<div class="panel"><h2 id="heading">{{ section }}</h2><div class="toolbar">{% if page=='desafios' %}<input id="search" placeholder="Buscar desafio ou categoria"><select id="category"><option value="">Todas as categorias</option></select>{% elif page=='ranking' %}<input id="search" placeholder="Buscar aluno">{% endif %}</div><div id="content" class="list" aria-live="polite"><p class="muted">Consultando dados reais...</p></div></div><p class="footer">Dados reais do CTFd e dos laboratórios. Nenhuma pontuação ou requisição é simulada.</p></main>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js" defer></script>
+<script>
+const PAGE={{ page|tojson }};let records=[];
+const $=id=>document.getElementById(id);
+function node(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=String(txt);return e}
+function stat(a,b,c,l1,l2,l3){['stat1','stat2','stat3'].forEach((k,i)=>$(k).textContent=[a,b,c][i]);['label1','label2','label3'].forEach((k,i)=>$(k).textContent=[l1,l2,l3][i])}
+function message(s,err=false){$('content').replaceChildren(node('p',err?'error':'muted',s))}
+async function api(url){const r=await fetch(url,{credentials:'same-origin',headers:{Accept:'application/json'},cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const j=await r.json();if(j.success===false)throw Error('API recusou a consulta');return j.data??j}
+function drawRows(){const term=($('search')?.value||'').toLowerCase();const cat=$('category')?.value||'';const filtered=records.filter(x=>JSON.stringify([x.name,x.category]).toLowerCase().includes(term)&&(!cat||x.category===cat));const box=$('content');box.replaceChildren();if(!filtered.length){message('Nenhum resultado encontrado.');return}for(const x of filtered.slice(0,250)){const row=node('div','item');const left=node('div');left.append(node('strong','',PAGE==='ranking'?'#'+String(x.pos??'—')+'  '+(x.name||'Sem nome'):(x.name||'Sem nome')),node('div','muted',PAGE==='ranking'?'Posição '+(x.pos??'—')+' · '+(x.labs_completed??0)+' labs concluídos':(x.category||'Sem categoria')));const right=node('div');right.append(node('span','pill',PAGE==='ranking'?String(x.labs_completed??0)+' labs':String(x.value??0)+' pontos'));if(PAGE==='desafios'){const a=node('a','btn','Abrir desafio');a.href='/challenges';right.append(' ',a)}row.append(left,right);box.append(row)}}
+async function init(){try{if(PAGE==='ranking'){records=await api('/labs/api/ranking-individual');if(!Array.isArray(records))throw Error('Formato de ranking inesperado');stat(records.length,records[0]?.labs_completed??0,records[0]?.name??'—','Alunos','Labs do líder','Líder atual');drawRows()}else if(PAGE==='desafios'){records=await api('/api/v1/challenges');if(!Array.isArray(records))throw Error('Formato de desafios inesperado');const cats=[...new Set(records.map(x=>x.category).filter(Boolean))].sort();for(const c of cats){const o=node('option','',c);o.value=c;$('category').append(o)}stat(records.length,cats.length,records.filter(x=>x.solved_by_me).length,'Desafios disponíveis','Categorias','Resolvidos por você');drawRows()}else{await refreshLive()}}catch(e){message('Não foi possível carregar os dados: '+e.message,true)}}
+async function refreshLive(){try{const r=await api('/labs/live-attacks/api/events');stat(r.total,r.last_minute,r.active_students,'Eventos observados','Último minuto','Alunos ativos (5 min)');const box=$('content');box.replaceChildren();if(!r.events.length){message('Nenhum evento real registrado ainda. Inicie um laboratório e faça uma requisição para gerar atividade.');}for(const x of r.events.slice().reverse().slice(0,70)){const row=node('div','item');const left=node('div');left.append(node('strong','',x.lab),node('div','muted',new Date(x.ts*1000).toLocaleTimeString('pt-BR')+' · '+fsEventType(x).label+(x.method?' · '+x.method:'')+(x.http_status!=null?' · HTTP '+x.http_status:'')+(x.rule_id?' · '+x.rule_id:'')));row.append(left,node('span','pill',x.status_class+' · '+x.latency_bucket));box.append(row)}drawArcs(r.events)}catch(e){message('Telemetria indisponível: '+e.message,true)}}
+const FS_EVENT_TYPES = {
+  http:       {label:'HTTP normal',color:'#38bdf8'},
+  http_error: {label:'Erro HTTP',color:'#ef4444'},
+  auth:       {label:'Falha de autenticação',color:'#f59e0b'},
+  recon:      {label:'Reconhecimento suspeito',color:'#a855f7'},
+  legacy:     {label:'Evento legado',color:'#94a3b8'}
+};
+
+function fsEventType(event){
+  return FS_EVENT_TYPES[event.event_category] || FS_EVENT_TYPES.legacy;
+}
+
+function fsRenderLegend(){
+  const stage=document.getElementById('fs-globe-stage');
+  if(!stage || document.getElementById('fs-threat-legend'))return;
+
+  const legend=document.createElement('div');
+  legend.id='fs-threat-legend';
+  legend.style.cssText='display:flex;gap:14px;flex-wrap:wrap;padding:12px 4px;font-size:12px;color:#cbd5e1';
+
+  for(const type of Object.values(FS_EVENT_TYPES)){
+    const item=document.createElement('span');
+    const dot=document.createElement('span');
+    dot.style.cssText='display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;background:'+type.color;
+    item.append(dot,document.createTextNode(type.label));
+    legend.append(item);
+  }
+
+  stage.insertAdjacentElement('afterend',legend);
+}
+
+function drawArcs(events){
+  fsRenderLegend();
+  if(window.fsGlobe3dEvents)window.fsGlobe3dEvents(events);
+  const g=$('arcs');
+  if(!g)return;
+  g.replaceChildren();
+
+  const cx=500,cy=200,r=108;
+  const count=Math.min(events.length,12);
+
+  for(let i=0;i<count;i++){
+    const event=events[events.length-1-i];
+    const seed=Number(event.id)||i+1;
+
+    const a=(seed*2.399963229728653)%(Math.PI*2);
+    const b=a+1.1+(seed%5)*0.18;
+
+    const sx=cx+r*Math.cos(a)*0.85;
+    const sy=cy+r*Math.sin(a)*0.85;
+    const ex=cx+r*Math.cos(b)*0.85;
+    const ey=cy+r*Math.sin(b)*0.85;
+
+    const mx=(sx+ex)/2;
+    const my=(sy+ey)/2-22;
+
+    const p=document.createElementNS(
+      'http://www.w3.org/2000/svg','path'
+    );
+
+    p.setAttribute('class','arc');
+    p.setAttribute(
+      'd',
+      `M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}`
+    );
+
+    p.style.stroke=fsEventType(event).color;
+    p.style.opacity=String(Math.max(.18,.7-i*.045));
+    g.append(p);
+  }
+}
+$('search')?.addEventListener('input',drawRows);$('category')?.addEventListener('change',drawRows);init();if(PAGE==='live')setInterval(refreshLive,3000);
+
+// FORTIFYSEC_GLOBE3D_V1: nenhum evento ou localizacao e fabricado.
+(function(){
+  const stage=document.getElementById('fs-globe-stage');
+  const canvas=document.getElementById('fs-globe-canvas');
+  if(!stage||!canvas)return;
+  let bursts=[],trails=[],sphere,scene,camera,renderer,clock,globeGroup; // FORTIFYSEC_GLOBE3D_ROUTES_V1
+  let latest=[];
+  const red=0xff3155;
+  function init(){
+    if(!window.THREE){console.info('Globo 3D indisponivel: SVG preservado');return;}
+    const T=window.THREE;
+    try{
+      renderer=new T.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'low-power'});
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+      renderer.setClearColor(0x000000,0);
+      scene=new T.Scene();
+      camera=new T.PerspectiveCamera(38,1,.1,100);
+      camera.position.set(0,0,7.3);
+      clock=new T.Clock();
+      globeGroup=new T.Group();scene.add(globeGroup);
+      const geo=new T.SphereGeometry(2,64,48);
+      const mat=new T.MeshPhongMaterial({color:0x240d1a,emissive:0x2a0612,shininess:24,transparent:true,opacity:.96});
+      sphere=new T.Mesh(geo,mat);globeGroup.add(sphere);
+      const wire=new T.Mesh(new T.SphereGeometry(2.015,36,24),new T.MeshBasicMaterial({color:0x9c2744,wireframe:true,transparent:true,opacity:.15}));globeGroup.add(wire);
+      const rim=new T.Mesh(new T.SphereGeometry(2.11,64,48),new T.MeshBasicMaterial({color:0xff3155,transparent:true,opacity:.055,side:T.BackSide}));globeGroup.add(rim);
+      const pointGeo=new T.BufferGeometry(), points=[];
+      for(let lat=-80;lat<=80;lat+=5){for(let lon=-180;lon<180;lon+=5){
+        const a=lat*Math.PI/180,b=lon*Math.PI/180,r=2.025;
+        points.push(r*Math.cos(a)*Math.sin(b),r*Math.sin(a),r*Math.cos(a)*Math.cos(b));
+      }}
+      pointGeo.setAttribute('position',new T.Float32BufferAttribute(points,3));
+      globeGroup.add(new T.Points(pointGeo,new T.PointsMaterial({color:0xf35470,size:.018,transparent:true,opacity:.5,sizeAttenuation:true})));
+      scene.add(new T.AmbientLight(0xe06b83,.5));
+      const light=new T.PointLight(0xff4565,90,30);light.position.set(3,2,6);scene.add(light);
+      const back=new T.PointLight(0x7c173d,45,30);back.position.set(-5,-1,-3);scene.add(back);
+      // Textura publica opcional: sem ela o globo continua funcional com grade luminosa.
+      new T.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg',tex=>{
+        tex.colorSpace=T.SRGBColorSpace;mat.map=tex;mat.color.setHex(0x903c51);mat.needsUpdate=true;
+      },undefined,()=>{});
+      function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+      resize();
+      if(window.ResizeObserver)new ResizeObserver(resize).observe(stage);
+      else window.addEventListener('resize',resize);
+      stage.classList.add('fs-webgl-ready');
+      let previous=0;
+      function frame(t){
+        requestAnimationFrame(frame);
+        if(document.hidden)return;
+        const dt=Math.min((t-previous)/1000||0,.05);previous=t;
+        globeGroup.rotation.y+=dt*.075;
+        globeGroup.rotation.x=.10;
+        for(let i=bursts.length-1;i>=0;i--){
+          const b=bursts[i];b.life-=dt;
+          b.mesh.material.opacity=Math.max(0,b.life/2)*.85;
+          b.mesh.scale.setScalar(1+(2-b.life)*.35);
+          if(b.life<=0){globeGroup.remove(b.mesh);b.mesh.geometry.dispose();b.mesh.material.dispose();bursts.splice(i,1);}
+        }
+        for(let i=trails.length-1;i>=0;i--){
+          const tr=trails[i];
+          tr.age+=dt;
+          const progress=Math.max(0,Math.min(tr.age/tr.duration,1));
+          tr.dot.position.copy(tr.curve.getPoint(progress));
+          tr.line.material.opacity=.60*Math.max(0,Math.min(1,tr.age/.25))*Math.max(0,Math.min(1,(tr.duration+1.2-tr.age)/.7));
+          tr.dot.material.opacity=Math.max(0,Math.min(1,tr.age/.2))*Math.max(0,Math.min(1,(tr.duration+.6-tr.age)/.3));
+          if(!tr.hit && progress>=1){
+            tr.hit=true;
+            const impact=new T.Mesh(new T.SphereGeometry(.055,12,10),new T.MeshBasicMaterial({color:tr.color,transparent:true,opacity:.9,depthWrite:false}));
+            impact.position.copy(tr.curve.getPoint(1));
+            globeGroup.add(impact);
+            bursts.push({mesh:impact,life:2});
+          }
+          if(tr.age>=tr.duration+1.2){
+            globeGroup.remove(tr.line,tr.dot);
+            tr.line.geometry.dispose();tr.line.material.dispose();
+            tr.dot.geometry.dispose();tr.dot.material.dispose();
+            trails.splice(i,1);
+          }
+        }
+        renderer.render(scene,camera);
+      }
+      requestAnimationFrame(frame);
+      // O globo exibe apenas pulsos abstratos de eventos efetivamente recebidos.
+      window.fsGlobe3dEvents=function(events){
+        if(!Array.isArray(events))return;
+        const seen=new Set(latest);
+        const ids=events.map(e=>String(e.id??'')).filter(Boolean);
+        const added=latest.length
+          ? ids.filter(id=>!seen.has(id))
+          : ids.slice(-6);
+        latest=ids.slice(-100);
+        // As coordenadas sao abstratas e deterministicas, nao geolocalizacao de IP.
+        added.slice(-6).forEach((id,index)=>{
+            const event=events.find(e=>String(e.id)===id);
+            const eventColor=fsEventType(event||{}).color;
+          const hash=(str)=>Array.from(str).reduce((a,c)=>Math.imul(a,31)+c.charCodeAt(0)|0,7)>>>0;
+          const n=hash(id),m=hash(id+':destino');
+          const point=(seed)=>{
+            const lon=((seed%10000)/10000)*Math.PI*2;
+            const lat=(((seed>>>12)%10000)/10000-.5)*Math.PI*.80;
+            return new T.Vector3(Math.cos(lat)*Math.sin(lon),Math.sin(lat),Math.cos(lat)*Math.cos(lon));
+          };
+          // Posiciona novos eventos no hemisferio visivel pela camera.
+          // Coordenadas abstratas: nao representam IPs ou geolocalizacao.
+          // Posicionamento calculado na rotacao atual do globo.
+          globeGroup.updateMatrixWorld(true);
+          camera.updateMatrixWorld(true);
+
+          const inverseRotation=new T.Quaternion();
+          globeGroup.getWorldQuaternion(inverseRotation);
+          inverseRotation.invert();
+
+          const cameraDirection=new T.Vector3();
+          camera.getWorldDirection(cameraDirection);
+          cameraDirection.negate().normalize();
+
+          const orientation=new T.Quaternion().setFromUnitVectors(
+            new T.Vector3(0,0,1),
+            cameraDirection
+          );
+
+          const frontPoint=(seed)=>{
+            const angle=((seed%10000)/10000-.5)*1.55;
+            const elevation=(((seed>>>12)%10000)/10000-.5)*1.10;
+
+            const worldPoint=new T.Vector3(
+              Math.cos(elevation)*Math.sin(angle),
+              Math.sin(elevation),
+              Math.cos(elevation)*Math.cos(angle)
+            );
+
+            worldPoint.applyQuaternion(orientation);
+            return worldPoint.applyQuaternion(inverseRotation);
+          };
+
+          const start=frontPoint(n);
+          const end=frontPoint(m+137);
+
+          const mid=start.clone().add(end).normalize();
+          if(mid.lengthSq()<.01)mid.copy(start).applyAxisAngle(new T.Vector3(0,1,0),.7);
+          const lift=2.55+Math.min(1.0,start.distanceTo(end)*.30);
+          const curve=new T.QuadraticBezierCurve3(start.clone().multiplyScalar(2.08),mid.multiplyScalar(lift),end.clone().multiplyScalar(2.08));
+          const geometry=new T.BufferGeometry().setFromPoints(curve.getPoints(64));
+          const line=new T.Line(geometry,new T.LineBasicMaterial({color:eventColor,transparent:true,opacity:0,depthWrite:false}));
+          const dot=new T.Mesh(new T.SphereGeometry(.047,10,8),new T.MeshBasicMaterial({color:eventColor,transparent:true,opacity:0,depthWrite:false}));
+          dot.position.copy(curve.getPoint(0));
+          globeGroup.add(line,dot);
+          trails.push({curve,line,dot,color:eventColor,age:-index*.18,duration:2.0+(n%100)/110,hit:false});
+          // Evita acumular geometria em sessoes com alta atividade.
+          while(trails.length>18){
+            const old=trails.shift();globeGroup.remove(old.line,old.dot);
+            old.line.geometry.dispose();old.line.material.dispose();
+            old.dot.geometry.dispose();old.dot.material.dispose();
+          }
+        });
+      };
+    }catch(e){console.warn('Falha no globo 3D, SVG mantido',e);stage.classList.remove('fs-webgl-ready');}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
+  else init();
+})();
+
+</script></body></html>'''
+
+@bp.get('/labs/desafios')
+@authed_only
+def challenges():
+    return render_template_string(PAGE, page='desafios', title='DESAFIOS <em>CTF</em>', description='Desafios publicados no CTFd, com categorias e pontuação oficial.', section='Desafios disponíveis')
+
+@bp.get('/labs/api/ranking-individual')
+@authed_only
+def ranking_individual_api():
+    """Individual CTF points and separate Labs completion counts, read-only."""
+    from CTFd.models import Users, Solves, Challenges, db
+    from sqlalchemy import func
+    from sqlalchemy.orm import aliased
+
+    # Hidden/banned/admin users must never appear, including at zero points.
+    students = (db.session.query(Users.id, Users.name)
+                .filter(Users.type == 'user', Users.hidden == False,
+                        Users.banned == False).all())
+
+    # Score every valid challenge solve per user, regardless of team mode.
+    # Keep the same value convention as the installed CTFd challenges.
+    points = dict(db.session.query(Solves.user_id, func.coalesce(func.sum(Challenges.value), 0))
+                  .join(Challenges, Solves.challenge_id == Challenges.id)
+                  .filter(Challenges.state == 'visible')
+                  .group_by(Solves.user_id).all())
+
+    # Optional read-only SQLite mount. Missing DB must not break the CTF ranking.
+    lab_counts = {}
+    labs_db = os.environ.get('FS_LABS_SOLVES_DB', '/var/lib/fortifysec-labs/solves.sqlite3')
+    try:
+        with sqlite3.connect('file:' + labs_db + '?mode=ro', uri=True, timeout=1) as conn:
+            lab_counts = {student: count for student, count in conn.execute(
+                'SELECT student, COUNT(*) FROM solves GROUP BY student')}
+    except (OSError, sqlite3.Error):
+        pass
+
+    entries = [dict(id=uid, name=name, score=int(points.get(uid, 0)),
+                    labs_completed=int(lab_counts.get('ctfd-' + str(uid), 0)))
+               for uid, name in students]
+    entries.sort(key=lambda x: (-x['labs_completed'], x['name'].casefold(), x['id']))
+    for rank, entry in enumerate(entries, 1):
+        entry['pos'] = rank
+    response = jsonify(success=True, data=entries)
+    response.headers['Cache-Control'] = 'no-store'
+    return response
+
+
+@bp.get('/labs/ranking')
+@authed_only
+def ranking():
+    return render_template_string(PAGE, page='ranking', title='RANKING <em>LABS</em>', description='Classificação individual exclusiva por laboratórios concluídos. ', section='Classificação atual')
+
+@bp.get('/labs/live-attacks')
+@authed_only
+def live():
+    return render_template_string(PAGE, page='live', title='LIVE <em>ATTACKS</em>', description='Atividade HTTP real dos laboratórios autorizados, sem IPs, URLs ou flags.', section='Feed de atividade')
+
+@bp.get('/labs/live-attacks/api/events')
+@authed_only
+def events():
+    user = get_current_user()
+    if not user:
+        return jsonify(success=False), 401
+    admin = is_admin()
+    since = max(0, int(time.time()) - 3600)
+    student = 'ctfd-' + str(user.id)
+    result = []
+    try:
+        con = sqlite3.connect('file:' + DB + '?mode=ro', uri=True, timeout=1)
+        try:
+            if admin:
+                rows = con.execute('SELECT id,ts,student,lab,status_class,latency_bucket,method,route_class,event_category,http_status,rule_id FROM events WHERE ts>=? ORDER BY id DESC LIMIT 150', (since,)).fetchall()
+                total = con.execute('SELECT count(*) FROM events').fetchone()[0]
+                last = con.execute('SELECT count(*) FROM events WHERE ts>=?', (int(time.time())-60,)).fetchone()[0]
+                active = con.execute('SELECT count(DISTINCT student) FROM events WHERE ts>=?', (int(time.time())-300,)).fetchone()[0]
+            else:
+                rows = con.execute('SELECT id,ts,student,lab,status_class,latency_bucket,method,route_class,event_category,http_status,rule_id FROM events WHERE student=? AND ts>=? ORDER BY id DESC LIMIT 150', (student,since)).fetchall()
+                total = con.execute('SELECT count(*) FROM events WHERE student=?', (student,)).fetchone()[0]
+                last = con.execute('SELECT count(*) FROM events WHERE student=? AND ts>=?', (student,int(time.time())-60)).fetchone()[0]
+                active = 1 if con.execute('SELECT 1 FROM events WHERE student=? AND ts>=? LIMIT 1', (student,int(time.time())-300)).fetchone() else 0
+            result = [dict(id=r[0],ts=r[1],kind='lab_request',lab=r[3],status_class=r[4],latency_bucket=r[5],method=r[6],route_class=r[7],event_category=r[8] or 'legacy',http_status=r[9],rule_id=r[10]) for r in reversed(rows)]
+        finally:
+            con.close()
+    except (OSError,sqlite3.Error):
+        return jsonify(success=False,error='collector_unavailable'), 503
+    response = jsonify(success=True,data=dict(events=result,total=total,last_minute=last,active_students=active))
+    response.headers['Cache-Control'] = 'no-store'
+    return response
+
+@bp.get('/labs/perfil')
+@authed_only
+def profile():
+    from flask import redirect
+    return redirect('/profile')
+
+
+def load(app):
+    app.register_blueprint(bp)

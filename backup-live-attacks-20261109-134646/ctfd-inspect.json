@@ -1,0 +1,334 @@
+[
+    {
+        "Id": "902cb3caa9c7222ea5c29978bcacdb0f8241663233ac1fad698acc33e631e972",
+        "Created": "2026-11-09T19:00:40.838030051Z",
+        "Path": "/opt/CTFd/docker-entrypoint.sh",
+        "Args": [],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 184967,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-11-09T19:00:42.926450441Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:367e849c0c644cfb801682266e40a573aa068702eb04a44cac039d84d81b2bfd",
+        "ResolvConfPath": "/var/lib/docker/containers/902cb3caa9c7222ea5c29978bcacdb0f8241663233ac1fad698acc33e631e972/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/902cb3caa9c7222ea5c29978bcacdb0f8241663233ac1fad698acc33e631e972/hostname",
+        "HostsPath": "/var/lib/docker/containers/902cb3caa9c7222ea5c29978bcacdb0f8241663233ac1fad698acc33e631e972/hosts",
+        "LogPath": "/var/lib/docker/containers/902cb3caa9c7222ea5c29978bcacdb0f8241663233ac1fad698acc33e631e972/902cb3caa9c7222ea5c29978bcacdb0f8241663233ac1fad698acc33e631e972-json.log",
+        "Name": "/fortifysec-ctf-ctfd-1",
+        "RestartCount": 0,
+        "Driver": "overlay2",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "docker-default",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": [
+                "fortifysec-ctf_logs:/var/log/CTFd:rw",
+                "/run/fortifysec-labs:/run/fortifysec-labs-host:ro",
+                "/etc/fortifysec-labs/manager.key:/run/fortifysec-labs/manager.key:ro",
+                "/etc/fortifysec-labs/ctfd-gateway.key:/run/fortifysec-labs/ctfd-gateway.key:ro",
+                "/run/fortifysec-labs/homolog-proxy.sock:/run/fortifysec-labs/homolog-proxy.sock:rw",
+                "fortifysec-ctf_uploads:/var/uploads:rw"
+            ],
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "fortifysec-ctf_internal",
+            "PortBindings": {
+                "8000/tcp": [
+                    {
+                        "HostIp": "127.0.0.1",
+                        "HostPort": "8000"
+                    }
+                ]
+            },
+            "RestartPolicy": {
+                "Name": "unless-stopped",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": null,
+            "DnsOptions": null,
+            "DnsSearch": null,
+            "ExtraHosts": [],
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": [
+                "no-new-privileges:true"
+            ],
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": null,
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": null,
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/asound",
+                "/proc/acpi",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/sys/firmware",
+                "/sys/devices/virtual/powercap"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "GraphDriver": {
+            "Data": {
+                "ID": "902cb3caa9c7222ea5c29978bcacdb0f8241663233ac1fad698acc33e631e972",
+                "LowerDir": "/var/lib/docker/overlay2/ad8aa15b77a577956cba59eeac0e472e5e22561d6366b1f590b5a7cf22553a3c-init/diff:/var/lib/docker/overlay2/nz8xuoi3mdq157988pxtigkl8/diff:/var/lib/docker/overlay2/f7t3m5g8ld5qwy34oqh9ybszs/diff:/var/lib/docker/overlay2/m0tesswt3wpmrp3x7nilnq1u3/diff:/var/lib/docker/overlay2/artjob5i0zfjyr6qop35yte0j/diff:/var/lib/docker/overlay2/qsh33u5s51rfyi9pysyexjp2i/diff:/var/lib/docker/overlay2/z2ezpiu033m25cc8nrqf45og8/diff:/var/lib/docker/overlay2/jwagmgwklkpworh3evoa42wye/diff:/var/lib/docker/overlay2/ogrjoubxhbe618bv3ovf2wvac/diff:/var/lib/docker/overlay2/9myz6z2favgxn5gju6c0is7o0/diff:/var/lib/docker/overlay2/pe7w8hej1ojcamg39f6a693cf/diff:/var/lib/docker/overlay2/eckglkmbqtoq0zrda0ixn9gug/diff:/var/lib/docker/overlay2/woiz0xi997zcpgze810kabt0n/diff:/var/lib/docker/overlay2/sf6k19b07d4hg3o8iky9ptv0l/diff:/var/lib/docker/overlay2/w7qjeg5rpnrgy8keqpi9uw5nt/diff:/var/lib/docker/overlay2/57d05hxymy3zd6o2ek0ot92t3/diff:/var/lib/docker/overlay2/mpg0qqhyg890jensi8nbmzqaa/diff:/var/lib/docker/overlay2/vs35pm60z3x5ehfdfoh8az682/diff:/var/lib/docker/overlay2/xpnnie9zlxz9ob4hkwbhgzsod/diff:/var/lib/docker/overlay2/kfxlsf6ufljkycio5vvescg2m/diff:/var/lib/docker/overlay2/wqp3k3f8ngpg1i039617r8y72/diff:/var/lib/docker/overlay2/x93ifkkmdoh5xh58c5mv1y7fu/diff:/var/lib/docker/overlay2/hx7vj99ud0frzju3gzxmoao8x/diff:/var/lib/docker/overlay2/r3y1wniwwmosy4zaef0470r40/diff:/var/lib/docker/overlay2/nvn98bvz1nstmt7oxlmmczfq0/diff:/var/lib/docker/overlay2/yhov61r21b3czd5wsk74vif8k/diff:/var/lib/docker/overlay2/vm8qatl17lsyx25pu5pkwmjxo/diff:/var/lib/docker/overlay2/tkdw5al6z1q4x7gpqvd415zq6/diff:/var/lib/docker/overlay2/9skklmhw3us68cnkp2lpt5gx5/diff:/var/lib/docker/overlay2/6f28faefbd1a9467cc6d9743c5170eecd52bbbd9d5e0f29598ceebe99ccc810e/diff:/var/lib/docker/overlay2/e26696831640f5377af2ab54e0cbb47bcc0f30c873c823eadebd1ecedb15b474/diff:/var/lib/docker/overlay2/4be693dce3726911ed6c7589cdba6fc49f84fcddf6ba0f10d56fbfecc13295c3/diff:/var/lib/docker/overlay2/effba1c5e3880b4ac629336a748d428901500278fa73318d7e7016a7467fcfc5/diff:/var/lib/docker/overlay2/ff3d186950e644234c3d0bc9cc3b8f9fa52a64f60e38957f13d968ca7210fc1b/diff:/var/lib/docker/overlay2/3e916e0cb14d42b30f1a5fe2a559ef40e70245bf426447f0737c30ffd00616a7/diff:/var/lib/docker/overlay2/f6c6dd6fcee903a0ca523d7564e0094d3c1bff568fd30716f291f900e91283b9/diff:/var/lib/docker/overlay2/d4d169c8479685edcd3d33f057c1f27e819af2f8cc472d996f9e55f08897edf4/diff:/var/lib/docker/overlay2/6c49eea29452f82b6772ef9a6214c0f0f1acd9e28e5a1ba4372a34b1b6319ff2/diff:/var/lib/docker/overlay2/23edc8ceb7ea250556ad0f4e73c1f580d404b1b9db8344aaeb823181fffcadf1/diff",
+                "MergedDir": "/var/lib/docker/overlay2/ad8aa15b77a577956cba59eeac0e472e5e22561d6366b1f590b5a7cf22553a3c/merged",
+                "UpperDir": "/var/lib/docker/overlay2/ad8aa15b77a577956cba59eeac0e472e5e22561d6366b1f590b5a7cf22553a3c/diff",
+                "WorkDir": "/var/lib/docker/overlay2/ad8aa15b77a577956cba59eeac0e472e5e22561d6366b1f590b5a7cf22553a3c/work"
+            },
+            "Name": "overlay2"
+        },
+        "Mounts": [
+            {
+                "Type": "bind",
+                "Source": "/etc/fortifysec-labs/ctfd-gateway.key",
+                "Destination": "/run/fortifysec-labs/ctfd-gateway.key",
+                "Mode": "ro",
+                "RW": false,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/run/fortifysec-labs/homolog-proxy.sock",
+                "Destination": "/run/fortifysec-labs/homolog-proxy.sock",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "volume",
+                "Name": "fortifysec-ctf_uploads",
+                "Source": "/var/lib/docker/volumes/fortifysec-ctf_uploads/_data",
+                "Destination": "/var/uploads",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            },
+            {
+                "Type": "volume",
+                "Name": "fortifysec-ctf_logs",
+                "Source": "/var/lib/docker/volumes/fortifysec-ctf_logs/_data",
+                "Destination": "/var/log/CTFd",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            },
+            {
+                "Type": "bind",
+                "Source": "/run/fortifysec-labs",
+                "Destination": "/run/fortifysec-labs-host",
+                "Mode": "ro",
+                "RW": false,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/etc/fortifysec-labs/manager.key",
+                "Destination": "/run/fortifysec-labs/manager.key",
+                "Mode": "ro",
+                "RW": false,
+                "Propagation": "rprivate"
+            }
+        ],
+        "Config": {
+            "Hostname": "902cb3caa9c7",
+            "Domainname": "",
+            "User": "ctfd",
+            "AttachStdin": false,
+            "AttachStdout": true,
+            "AttachStderr": true,
+            "ExposedPorts": {
+                "8000/tcp": {}
+            },
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "SECRET_KEY=CHANGE_ME_LONG_RANDOM_SECRET_KEY",
+                "UPLOAD_FOLDER=/var/uploads",
+                "LOG_FOLDER=/var/log/CTFd",
+                "ACCESS_LOG=-",
+                "REVERSE_PROXY=true",
+                "ERROR_LOG=-",
+                "WORKERS=2",
+                "DATABASE_URL=mysql+pymysql://ctfd:CHANGE_ME_DB_PASSWORD@db:3306/ctfd",
+                "REDIS_URL=redis://redis:6379/0",
+                "PATH=/opt/venv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "LANG=C.UTF-8",
+                "GPG_KEY=A035C8C19219BA821ECEA86B64E628F8D684696D",
+                "PYTHON_VERSION=3.11.17",
+                "PYTHON_SHA256=bfb74ad39efae27cda510f134ab408e00f9992c56851cfc0b1cdb5646da11599"
+            ],
+            "Cmd": null,
+            "Image": "fortifysec-ctf-ctfd:socket-fix-20261109",
+            "Volumes": null,
+            "WorkingDir": "/opt/CTFd",
+            "Entrypoint": [
+                "/opt/CTFd/docker-entrypoint.sh"
+            ],
+            "OnBuild": null,
+            "Labels": {
+                "com.docker.compose.config-hash": "41eebde709ab14a261372dc8e063eb4c198b56274041c524997af11bbed9456f",
+                "com.docker.compose.container-number": "1",
+                "com.docker.compose.depends_on": "",
+                "com.docker.compose.image": "sha256:367e849c0c644cfb801682266e40a573aa068702eb04a44cac039d84d81b2bfd",
+                "com.docker.compose.oneoff": "False",
+                "com.docker.compose.project": "fortifysec-ctf",
+                "com.docker.compose.project.config_files": "/home/kali/Documents/fortifysec/fortifysec-ctf-arena/docker-compose.yml,/home/kali/Documents/fortifysec/fortifysec-ctf-arena/docker-compose.labs-v3-prod.yml,/home/kali/Documents/fortifysec/fortifysec-ctf-arena/docker-compose.db-recovery.yml,/home/kali/Documents/fortifysec/fortifysec-ctf-arena/docker-compose.ctfd-auth-recovery.yml",
+                "com.docker.compose.project.working_dir": "/home/kali/Documents/fortifysec/fortifysec-ctf-arena",
+                "com.docker.compose.replace": "ctfd-1",
+                "com.docker.compose.service": "ctfd",
+                "com.docker.compose.version": "2.40.3"
+            }
+        },
+        "NetworkSettings": {
+            "Bridge": "",
+            "SandboxID": "fedcd39449d8cb23b2ff0f2cdaa0a5bde7d792f04d4ca275239afde64859cd11",
+            "SandboxKey": "/var/run/docker/netns/fedcd39449d8",
+            "Ports": {
+                "8000/tcp": [
+                    {
+                        "HostIp": "127.0.0.1",
+                        "HostPort": "8000"
+                    }
+                ]
+            },
+            "HairpinMode": false,
+            "LinkLocalIPv6Address": "",
+            "LinkLocalIPv6PrefixLen": 0,
+            "SecondaryIPAddresses": null,
+            "SecondaryIPv6Addresses": null,
+            "EndpointID": "",
+            "Gateway": "",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "IPAddress": "",
+            "IPPrefixLen": 0,
+            "IPv6Gateway": "",
+            "MacAddress": "",
+            "Networks": {
+                "fortifysec-ctf_internal": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": [
+                        "fortifysec-ctf-ctfd-1",
+                        "ctfd"
+                    ],
+                    "MacAddress": "fe:13:de:a4:e2:c2",
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "5b8c6f47099073382e17e42c7bed6efe6c35a40727ca53b13c3dcebddb611a2f",
+                    "EndpointID": "c913ded78bf2fb128eda0e40bd4c0031bb4155e925111d116d316c10d0105f78",
+                    "Gateway": "",
+                    "IPAddress": "172.18.0.4",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": [
+                        "fortifysec-ctf-ctfd-1",
+                        "ctfd",
+                        "902cb3caa9c7"
+                    ]
+                },
+                "fortifysec-ctf_proxy": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": [
+                        "fortifysec-ctf-ctfd-1",
+                        "ctfd"
+                    ],
+                    "MacAddress": "8e:15:72:97:74:f7",
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "026c4bd22e3b4edc4f66ef9012f6c24d1c22372bf12558eb54e3719b7cdf697a",
+                    "EndpointID": "2408275adbe52ab9a52f7c3121ebdc27ba2999407898ccfb2c272584ea1c15c1",
+                    "Gateway": "172.20.0.1",
+                    "IPAddress": "172.20.0.3",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": [
+                        "fortifysec-ctf-ctfd-1",
+                        "ctfd",
+                        "902cb3caa9c7"
+                    ]
+                }
+            }
+        }
+    }
+]
