@@ -1,0 +1,1 @@
+'use client';import {useRouter} from 'next/navigation';export default function Logout(){const router=useRouter();return <button className="corp-ghost" onClick={async()=>{await fetch('/api/empresas/logout',{method:'POST'});router.replace('/empresas');router.refresh()}}>Sair da conta</button>}

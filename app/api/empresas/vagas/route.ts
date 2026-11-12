@@ -1,0 +1,5 @@
+import { companyContext,errorResponse } from '@/lib/empresas-auth';
+export async function GET(){const ctx=await companyContext();if(!ctx)return errorResponse('Não autorizado',401);const {data,error}=await ctx.admin.from('jobs').select('*').eq('company_id',ctx.company.id).order('created_at',{ascending:false}).limit(100);return error?errorResponse('Erro ao consultar vagas',500):Response.json({items:data});}
+export async function POST(req:Request){const ctx=await companyContext();if(!ctx)return errorResponse('Não autorizado',401);
+ const b=await req.json().catch(()=>({}));const title=String(b.title||'').trim(),description=String(b.description||'').trim();if(title.length<4||title.length>140||description.length<15||description.length>10000)return errorResponse('Título ou descrição inválidos');
+ const {data,error}=await ctx.admin.from('jobs').insert({company_id:ctx.company.id,created_by:ctx.user.id,title,description,status:'draft'}).select('*').single();return error?errorResponse('Não foi possível criar vaga; confira os campos obrigatórios do esquema',500):Response.json({item:data},{status:201});}
