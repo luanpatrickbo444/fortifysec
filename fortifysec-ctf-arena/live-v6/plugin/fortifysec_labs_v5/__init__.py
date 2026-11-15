@@ -169,3 +169,6 @@ def profile():
 
 def load(app):
     app.register_blueprint(bp)
+
+    from .enterprise_talents import enterprise_bp
+    app.register_blueprint(enterprise_bp)

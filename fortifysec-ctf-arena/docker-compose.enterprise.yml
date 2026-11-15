@@ -1,0 +1,6 @@
+services:
+  ctfd:
+    image: fortifysec-ctf-ctfd:enterprise-safe
+    environment:
+      FORTIFYSEC_ARENA_READ_TOKEN: ${FORTIFYSEC_ARENA_READ_TOKEN:?Token empresarial não configurado}
+      FORTIFYSEC_ENTERPRISE_ELIGIBLE_IDS: ${FORTIFYSEC_ENTERPRISE_ELIGIBLE_IDS:-}

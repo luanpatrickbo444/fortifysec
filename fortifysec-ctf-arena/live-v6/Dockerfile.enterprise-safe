@@ -1,0 +1,43 @@
+FROM fortifysec-ctf-ctfd:ranking-labs-clean
+
+USER root
+
+COPY plugin/fortifysec_labs_v5/enterprise_talents.py \
+  /opt/CTFd/CTFd/plugins/fortifysec_labs_v5/enterprise_talents.py
+
+RUN python - <<'PY'
+from pathlib import Path
+
+p = Path(
+    "/opt/CTFd/CTFd/plugins/fortifysec_labs_v5/__init__.py"
+)
+
+s = p.read_text()
+
+if "enterprise_bp" in s:
+    raise SystemExit("Blueprint empresarial já registrado; revisar manualmente")
+
+marker = "    app.register_blueprint(bp)"
+
+if s.count(marker) != 1:
+    raise SystemExit("Ponto de registro não identificado de forma única")
+
+s = s.replace(
+    marker,
+    marker + "\n"
+    "    from .enterprise_talents import enterprise_bp\n"
+    "    app.register_blueprint(enterprise_bp)",
+    1
+)
+
+p.write_text(s)
+PY
+
+RUN python -m py_compile \
+  /opt/CTFd/CTFd/plugins/fortifysec_labs_v5/__init__.py \
+  /opt/CTFd/CTFd/plugins/fortifysec_labs_v5/enterprise_talents.py
+
+RUN chown -R ctfd:ctfd \
+  /opt/CTFd/CTFd/plugins/fortifysec_labs_v5
+
+USER ctfd
