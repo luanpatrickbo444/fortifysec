@@ -55,7 +55,12 @@ export async function GET(req: Request) {
       configured: true,
       items,
     });
-  } catch {
+  } catch (error) {
+    console.error('FORTIFYSEC_TALENTS_ERROR', {
+      type: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Erro desconhecido',
+    });
+
     return errorResponse('Falha ao consultar talentos', 502);
   }
 }
