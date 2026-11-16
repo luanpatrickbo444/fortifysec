@@ -135,13 +135,20 @@ export default function Talentos() {
         técnico em desafios CTF.
       </p>
 
-      <input
-        type="search"
-        placeholder="Pesquisar por nome ou especialidade"
-        value={q}
-        onChange={e => setQ(e.target.value)}
-        aria-label="Pesquisar talentos"
-      />
+      <div className="fs-talent-toolbar">
+        <div className="fs-talent-search">
+          <input
+            type="search"
+            placeholder="Buscar talentos por nome ou especialidade..."
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            aria-label="Pesquisar talentos"
+          />
+        </div>
+        <span className="fs-talent-count">
+          {loading ? 'Atualizando...' : `${items.length} talentos encontrados`}
+        </span>
+      </div>
 
       {!configured && (
         <div className="corp-tile">
@@ -153,69 +160,15 @@ export default function Talentos() {
 
       {message && <p role="status">{message}</p>}
 
-      {loading && <p>Carregando talentos...</p>}
+      {loading && (
+        <div className="fs-talent-loading" role="status">
+          <span className="fs-spinner" aria-hidden="true" />
+          Carregando talentos...
+        </div>
+      )}
 
       {!loading && configured && !error && items.length === 0 && (
         <p>Nenhum talento disponível para esta pesquisa.</p>
-      )}
-
-      {interviewTalent && (
-        <section className="corp-tile" aria-label="Solicitar entrevista">
-          <h2>Solicitar entrevista</h2>
-          <p>Participante: <strong>{interviewTalent.name}</strong></p>
-
-          <form onSubmit={e => {
-            e.preventDefault();
-            void requestInterview();
-          }}>
-            <label htmlFor="interview-job">Título da vaga</label>
-            <input
-              id="interview-job"
-              value={jobTitle}
-              onChange={e => setJobTitle(e.target.value)}
-              minLength={5}
-              maxLength={120}
-              required
-              placeholder="Analista de Segurança da Informação"
-            />
-
-            <label htmlFor="interview-message">Mensagem ao candidato</label>
-            <textarea
-              id="interview-message"
-              value={interviewMessage}
-              onChange={e => setInterviewMessage(e.target.value)}
-              minLength={15}
-              maxLength={2000}
-              required
-              rows={5}
-              placeholder="Descreva a oportunidade e o motivo do convite."
-            />
-
-            <div>
-              <button
-                type="submit"
-                className="corp-button"
-                disabled={sending}
-              >
-                {sending ? 'Enviando...' : 'Registrar solicitação'}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setInterviewTalent(null)}
-                disabled={sending}
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
-
-          <p className="corp-muted">
-            O contato pessoal do participante não será compartilhado.
-            A solicitação ficará pendente até que exista um mecanismo
-            autenticado para o aluno responder.
-          </p>
-        </section>
       )}
 
       <div className="corp-grid">
@@ -265,6 +218,90 @@ export default function Talentos() {
           </article>
         ))}
       </div>
+      {interviewTalent && (
+        <div
+          className="fs-interview-overlay"
+          onMouseDown={e => {
+            if (e.target === e.currentTarget && !sending) {
+              setInterviewTalent(null);
+            }
+          }}
+        >
+          <section
+            className="fs-interview-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="fs-interview-title"
+          >
+            <div className="fs-interview-header">
+              <div>
+                <p className="corp-overline">FORTIFYSEC RECRUITMENT</p>
+                <h2 id="fs-interview-title">Solicitar entrevista</h2>
+                <p className="corp-muted">
+                  Convide <strong>{interviewTalent.name}</strong> para uma oportunidade.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="fs-interview-close"
+                aria-label="Fechar formulário"
+                disabled={sending}
+                onClick={() => setInterviewTalent(null)}
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={e => {
+              e.preventDefault();
+              void requestInterview();
+            }}>
+              <label htmlFor="fs-job-title">Título da oportunidade</label>
+              <input
+                id="fs-job-title"
+                value={jobTitle}
+                onChange={e => setJobTitle(e.target.value)}
+                minLength={5}
+                maxLength={120}
+                required
+                placeholder="Ex.: Analista de Segurança da Informação"
+              />
+
+              <label htmlFor="fs-job-message">Mensagem ao participante</label>
+              <textarea
+                id="fs-job-message"
+                value={interviewMessage}
+                onChange={e => setInterviewMessage(e.target.value)}
+                minLength={15}
+                maxLength={2000}
+                rows={5}
+                required
+                placeholder="Apresente a oportunidade e explique por que deseja conversar com este talento."
+              />
+
+              <div className="fs-interview-actions">
+                <button
+                  type="button"
+                  className="fs-interview-cancel"
+                  disabled={sending}
+                  onClick={() => setInterviewTalent(null)}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  className="corp-button"
+                  disabled={sending}
+                >
+                  {sending && <span className="fs-spinner" aria-hidden="true" />}
+                  {sending ? 'Registrando...' : 'Enviar solicitação'}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
     </>
   );
 }
