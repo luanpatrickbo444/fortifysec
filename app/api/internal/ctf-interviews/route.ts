@@ -48,7 +48,12 @@ export async function GET(req: NextRequest) {
       { items: data || [] },
       { headers: { 'Cache-Control': 'no-store' } }
     );
-  } catch {
+  } catch (error) {
+    console.error('[CTF Interviews GET]', {
+      type: error instanceof Error ? error.name : 'UnknownError',
+      message: error instanceof Error ? error.message : 'Erro desconhecido',
+    });
+
     return NextResponse.json(
       { error: 'Falha ao consultar entrevistas' },
       { status: 500 }
