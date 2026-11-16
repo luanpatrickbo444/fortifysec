@@ -31,7 +31,7 @@ export async function GET(req: Request) {
         details: profiles.error.details,
         hint: profiles.error.hint,
       });
-      return errorResponse('Falha ao consultar perfis', 500);
+      console.warn('Consulta complementar de perfis indisponível; mantendo talentos do CTFd');
     }
 
     const ctfItems = ctf.items.map(t => ({
