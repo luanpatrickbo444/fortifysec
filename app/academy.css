@@ -443,3 +443,39 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
 }
+
+.academy-loading {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #b9bac5;
+}
+
+.academy-loading .fs-spinner {
+  width: 32px;
+  height: 32px;
+  border-width: 3px;
+  border-top-color: #e72834;
+}
+
+.academy-loading .fs-spinner {
+  display: inline-block;
+  border-style: solid;
+  border-color: rgba(255,255,255,.2);
+  border-top-color: #e72834;
+  border-radius: 50%;
+  animation: academy-spin .75s linear infinite;
+}
+
+@keyframes academy-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .academy-loading .fs-spinner {
+    animation: none;
+  }
+}
