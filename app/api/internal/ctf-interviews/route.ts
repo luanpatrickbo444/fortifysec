@@ -49,9 +49,17 @@ export async function GET(req: NextRequest) {
       { headers: { 'Cache-Control': 'no-store' } }
     );
   } catch (error) {
+    const err = error as Record<string, unknown> | null;
+
     console.error('[CTF Interviews GET]', {
-      type: error instanceof Error ? error.name : 'UnknownError',
-      message: error instanceof Error ? error.message : 'Erro desconhecido',
+      type: error instanceof Error ? error.name : typeof error,
+      code: typeof err?.code === 'string' ? err.code : null,
+      message: typeof err?.message === 'string'
+        ? err.message.slice(0, 300)
+        : 'Mensagem indisponível',
+      hint: typeof err?.hint === 'string'
+        ? err.hint.slice(0, 200)
+        : null,
     });
 
     return NextResponse.json(
