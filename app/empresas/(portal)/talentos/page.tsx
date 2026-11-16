@@ -19,6 +19,47 @@ export default function Talentos() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [interviewTalent, setInterviewTalent] = useState<Talent | null>(null);
+  const [jobTitle, setJobTitle] = useState('');
+  const [interviewMessage, setInterviewMessage] = useState('');
+  const [sending, setSending] = useState(false);
+
+  async function requestInterview() {
+    if (!interviewTalent || sending) return;
+
+    setSending(true);
+    setMessage('');
+
+    try {
+      const response = await fetch('/api/empresas/ctf-entrevistas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          talent_id: interviewTalent.id,
+          job_title: jobTitle,
+          message: interviewMessage,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao solicitar entrevista');
+      }
+
+      setMessage('Solicitação de entrevista registrada com sucesso.');
+      setInterviewTalent(null);
+      setJobTitle('');
+      setInterviewMessage('');
+    } catch (err) {
+      setMessage(
+        err instanceof Error ? err.message : 'Erro inesperado'
+      );
+    } finally {
+      setSending(false);
+    }
+  }
+
 
   useEffect(() => {
     let active = true;
@@ -118,6 +159,65 @@ export default function Talentos() {
         <p>Nenhum talento disponível para esta pesquisa.</p>
       )}
 
+      {interviewTalent && (
+        <section className="corp-tile" aria-label="Solicitar entrevista">
+          <h2>Solicitar entrevista</h2>
+          <p>Participante: <strong>{interviewTalent.name}</strong></p>
+
+          <form onSubmit={e => {
+            e.preventDefault();
+            void requestInterview();
+          }}>
+            <label htmlFor="interview-job">Título da vaga</label>
+            <input
+              id="interview-job"
+              value={jobTitle}
+              onChange={e => setJobTitle(e.target.value)}
+              minLength={5}
+              maxLength={120}
+              required
+              placeholder="Analista de Segurança da Informação"
+            />
+
+            <label htmlFor="interview-message">Mensagem ao candidato</label>
+            <textarea
+              id="interview-message"
+              value={interviewMessage}
+              onChange={e => setInterviewMessage(e.target.value)}
+              minLength={15}
+              maxLength={2000}
+              required
+              rows={5}
+              placeholder="Descreva a oportunidade e o motivo do convite."
+            />
+
+            <div>
+              <button
+                type="submit"
+                className="corp-button"
+                disabled={sending}
+              >
+                {sending ? 'Enviando...' : 'Registrar solicitação'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setInterviewTalent(null)}
+                disabled={sending}
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+
+          <p className="corp-muted">
+            O contato pessoal do participante não será compartilhado.
+            A solicitação ficará pendente até que exista um mecanismo
+            autenticado para o aluno responder.
+          </p>
+        </section>
+      )}
+
       <div className="corp-grid">
         {items.map(t => (
           <article className="corp-tile" key={t.id}>
@@ -143,9 +243,17 @@ export default function Talentos() {
             </p>
 
             {t.id.startsWith('ctf:') ? (
-              <p className="corp-muted">
-                Participante CTF — contato profissional indisponível
-              </p>
+              <button
+                className="corp-button"
+                onClick={() => {
+                  setInterviewTalent(t);
+                  setJobTitle('');
+                  setInterviewMessage('');
+                  setMessage('');
+                }}
+              >
+                Solicitar entrevista
+              </button>
             ) : (
               <button
                 className="corp-button"
