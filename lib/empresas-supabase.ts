@@ -16,6 +16,19 @@ export function empresasAdmin() {
     throw new Error('Supabase empresarial não configurado');
   }
 
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error('FS_EMPRESAS_SUPABASE_URL possui formato inválido');
+  }
+  if (
+    parsed.protocol !== 'https:' ||
+    parsed.hostname !== 'upmfshdspdkhrqmvmmgl.supabase.co'
+  ) {
+    throw new Error('FS_EMPRESAS_SUPABASE_URL aponta para projeto inesperado');
+  }
+
   return createClient(url, key, authOptions);
 }
 
@@ -25,6 +38,19 @@ export function empresasAuth() {
 
   if (!url || !key) {
     throw new Error('Supabase empresarial não configurado');
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error('FS_EMPRESAS_SUPABASE_URL possui formato inválido');
+  }
+  if (
+    parsed.protocol !== 'https:' ||
+    parsed.hostname !== 'upmfshdspdkhrqmvmmgl.supabase.co'
+  ) {
+    throw new Error('FS_EMPRESAS_SUPABASE_URL aponta para projeto inesperado');
   }
 
   return createClient(url, key, authOptions);
