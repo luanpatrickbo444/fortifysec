@@ -25,7 +25,12 @@ export async function GET(req: Request) {
     ]);
 
     if (profiles.error) {
-      console.error('Falha Supabase:', profiles.error.code);
+      console.error('FORTIFYSEC_PROFILES_ERROR', {
+        code: profiles.error.code,
+        message: profiles.error.message,
+        details: profiles.error.details,
+        hint: profiles.error.hint,
+      });
       return errorResponse('Falha ao consultar perfis', 500);
     }
 
