@@ -142,12 +142,18 @@ export default function Talentos() {
               {t.labs_completed} laboratórios concluídos
             </p>
 
-            <button
-              className="corp-button"
-              onClick={() => select(t.id)}
-            >
-              Selecionar talento
-            </button>
+            {t.id.startsWith('ctf:') ? (
+              <p className="corp-muted">
+                Participante CTF — contato profissional indisponível
+              </p>
+            ) : (
+              <button
+                className="corp-button"
+                onClick={() => select(t.id)}
+              >
+                Selecionar talento
+              </button>
+            )}
           </article>
         ))}
       </div>

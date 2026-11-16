@@ -1,7 +1,61 @@
-import {companyContext,errorResponse} from '@/lib/empresas-auth';
-import {arenaTalents} from '@/lib/empresas-arena';
-export async function GET(req:Request){
- const c=await companyContext();if(!c)return errorResponse('Não autorizado',401);
- try{const result=await arenaTalents();const q=(new URL(req.url).searchParams.get('q')||'').toLocaleLowerCase('pt-BR').slice(0,80);return Response.json({...result,items:result.items.filter(t=>(t.name+' '+(t.headline||'')).toLocaleLowerCase('pt-BR').includes(q))});}
- catch{return errorResponse('Não foi possível consultar a Arena',502)}
+import { companyContext, errorResponse } from '@/lib/empresas-auth';
+import { arenaTalents } from '@/lib/empresas-arena';
+
+export async function GET(req: Request) {
+  const context = await companyContext();
+  if (!context) return errorResponse('Não autorizado', 401);
+
+  const q = (new URL(req.url).searchParams.get('q') || '')
+    .trim()
+    .toLocaleLowerCase('pt-BR')
+    .slice(0, 80);
+
+  try {
+    const [ctf, profiles] = await Promise.all([
+      arenaTalents(),
+      context.admin
+        .from('profiles')
+        .select('id,name,full_name,headline,xp')
+        .eq('role', 'student')
+        .eq('blocked', false)
+        .eq('profile_public', true)
+        .eq('open_to_work', true)
+        .order('xp', { ascending: false })
+        .limit(500),
+    ]);
+
+    if (profiles.error) {
+      console.error('Falha Supabase:', profiles.error.code);
+      return errorResponse('Falha ao consultar perfis', 500);
+    }
+
+    const ctfItems = ctf.items.map(t => ({
+      ...t,
+      id: `ctf:${t.id}`,
+    }));
+
+    const profileItems = (profiles.data || []).map(p => ({
+      id: p.id,
+      name: p.full_name?.trim() || p.name || 'Aluno',
+      headline: p.headline || null,
+      score: p.xp || 0,
+      solved_challenges: 0,
+      labs_completed: 0,
+      position: 0,
+    }));
+
+    const items = [...ctfItems, ...profileItems]
+      .filter(t =>
+        `${t.name} ${t.headline || ''}`
+          .toLocaleLowerCase('pt-BR')
+          .includes(q)
+      );
+
+    return Response.json({
+      configured: true,
+      items,
+    });
+  } catch {
+    return errorResponse('Falha ao consultar talentos', 502);
+  }
 }

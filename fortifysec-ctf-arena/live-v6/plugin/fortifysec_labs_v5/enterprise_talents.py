@@ -91,19 +91,15 @@ def enterprise_talents():
     items = []
 
     for uid, name in students:
-        if uid not in allowed_ids:
-            continue
+        authorized = uid in allowed_ids
 
         score = int(points.get(uid, 0))
         completed = int(lab_counts.get(f"ctfd-{uid}", 0))
         solved = int(solves.get(uid, 0))
 
-        if score <= 0 and completed <= 0:
-            continue
-
         items.append({
             "id": str(uid),
-            "name": name,
+            "name": name if authorized else f"Participante CTF #{uid}",
             "headline": None,
             "xp": score,
             "score": score,
