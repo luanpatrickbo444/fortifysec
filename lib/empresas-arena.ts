@@ -39,7 +39,13 @@ export async function arenaTalents(): Promise<{
   });
 
   if (!response.ok) {
-    throw new Error('CTF indisponível');
+    console.error('FORTIFYSEC_CTF_HTTP_ERROR', {
+      status: response.status,
+      contentType: response.headers.get('content-type'),
+      server: response.headers.get('server'),
+    });
+
+    throw new Error(`CTF indisponível (HTTP ${response.status})`);
   }
 
   const payload: unknown = await response.json();
