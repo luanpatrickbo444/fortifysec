@@ -105,3 +105,10 @@ button, a {
     min-width: 0;
   }
 }
+
+/* Identidade visual oficial FortifySec */
+.fs-official-header{display:block;width:clamp(130px,14vw,190px);height:auto;object-fit:contain;}
+.fs-official-small{display:inline-block;width:30px;height:30px;object-fit:contain;vertical-align:middle;flex-shrink:0;}
+.fs-official-emblem{display:block;width:min(180px,70%);height:auto;max-height:190px;object-fit:contain;margin:auto;}
+.emblem-center .fs-official-emblem{width:clamp(85px,12vw,145px);max-height:145px;}
+@media(max-width:640px){.fs-official-header{width:130px}.emblem-center .fs-official-emblem{width:90px}}

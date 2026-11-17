@@ -11,7 +11,7 @@ export default async function PortalLayout({children}:{children:React.ReactNode}
   const company=context.company.name;
   return <div className="corp-shell fse-shell">
     <aside className="corp-sidebar fse-sidebar">
-      <div className="fse-brand"><div className="fse-brand-icon"><ShieldCheck size={24}/></div><div className="fse-brand-name">FORTIFY<span>SEC</span><small>EMPRESAS</small></div></div>
+      <div className="fse-brand"><div className="fse-brand-icon"><img src="/images/fortifysec-escudo.png" alt="FortifySec" className="fs-official-small" /></div><div className="fse-brand-name">FORTIFY<span>SEC</span><small>EMPRESAS</small></div></div>
       <div className="fse-sidebar-line"/>
       <PortalNav/>
       <div className="fse-sidebar-bottom">
