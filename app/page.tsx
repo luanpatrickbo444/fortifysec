@@ -21,7 +21,21 @@ const steps = [
   {n:'04',title:'Conecte-se a oportunidades',text:'Seu perfil permanece privado; empresas verificadas com acesso pago podem enviar convites, respeitando suas escolhas.'},
 ];
 
-function Logo({light=false}:{light?:boolean}) {return <a className="brand" href="#inicio" aria-label="FortifySec — início"><img src="/images/fortifysec-escudo.png" alt="FortifySec" className="fs-official-header" /></a>}
+function Logo({light=false}:{light?:boolean}) {
+  return (
+    <a className="brand fs-brand-official" href="#inicio" aria-label="FortifySec — início">
+      <img
+        src="/images/fortifysec-escudo.png"
+        alt=""
+        className="fs-official-header"
+      />
+      <span className="fs-brand-text">
+        FORTIFY<span>SEC</span>
+        <small>CYBER TALENT NETWORK</small>
+      </span>
+    </a>
+  );
+}
 
 export default function Home() {
   const [mobile,setMobile] = useState(false);

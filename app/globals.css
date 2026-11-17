@@ -112,3 +112,90 @@ button, a {
 .fs-official-emblem{display:block;width:min(180px,70%);height:auto;max-height:190px;object-fit:contain;margin:auto;}
 .emblem-center .fs-official-emblem{width:clamp(85px,12vw,145px);max-height:145px;}
 @media(max-width:640px){.fs-official-header{width:130px}.emblem-center .fs-official-emblem{width:90px}}
+
+
+/* FORTIFYSEC — AJUSTE DA IDENTIDADE VISUAL */
+.fs-brand-official {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.fs-brand-official .fs-official-header {
+  display: block;
+  width: 44px !important;
+  height: 52px !important;
+  max-width: 44px !important;
+  max-height: 52px !important;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.fs-brand-text {
+  display: flex;
+  flex-direction: column;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  color: #f5f5f5;
+  white-space: nowrap;
+}
+
+.fs-brand-text > span {
+  color: #ed2441;
+  display: inline;
+}
+
+.fs-brand-text small {
+  margin-top: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.19em;
+  color: #92949b;
+}
+
+.fs-brand-text {
+  display: block;
+}
+
+/* Escudo central da Arena */
+.emblem-center .fs-official-emblem {
+  display: block;
+  width: 145px !important;
+  height: 170px !important;
+  max-width: 145px !important;
+  max-height: 170px !important;
+  object-fit: contain;
+  position: relative;
+  z-index: 2;
+}
+
+/* Rodapé: proporção equilibrada */
+.footer-top .fs-brand-official .fs-official-header {
+  width: 55px !important;
+  height: 65px !important;
+  max-width: 55px !important;
+  max-height: 65px !important;
+}
+
+@media (max-width: 600px) {
+  .fs-brand-official .fs-official-header {
+    width: 36px !important;
+    height: 44px !important;
+    max-width: 36px !important;
+    max-height: 44px !important;
+  }
+
+  .fs-brand-text {
+    font-size: 18px;
+  }
+
+  .fs-brand-text small {
+    font-size: 6px;
+  }
+}
