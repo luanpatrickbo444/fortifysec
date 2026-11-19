@@ -479,3 +479,413 @@
     animation: none;
   }
 }
+
+/* FortifySec Academy — Roadmap */
+.academy-public .fs-roadmap {
+  margin: 45px 0 80px;
+}
+
+.academy-public .fs-roadmap-heading {
+  margin-bottom: 45px;
+}
+
+.academy-public .fs-roadmap-heading > span {
+  color: #ef3047;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .18em;
+}
+
+.academy-public .fs-roadmap-heading h2 {
+  font-size: clamp(28px, 4vw, 44px);
+  letter-spacing: -.04em;
+  margin: 12px 0;
+}
+
+.academy-public .fs-roadmap-heading p {
+  color: #a7acb8;
+}
+
+.academy-public .fs-roadmap-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 42px 48px;
+  position: relative;
+}
+
+.academy-public .fs-roadmap-node {
+  position: relative;
+  min-width: 0;
+}
+
+.academy-public .fs-roadmap-node:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  width: 48px;
+  height: 2px;
+  background: #48505d;
+  right: -48px;
+  top: 50%;
+}
+
+.academy-public .fs-roadmap-node:nth-child(3n)::after {
+  display: none;
+}
+
+.academy-public .fs-roadmap-card {
+  width: 100%;
+  min-height: 135px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 17px;
+  border: 1px solid;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #171e2a, #0d1017);
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+}
+
+.academy-public .fs-roadmap-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 25px color-mix(
+    in srgb,
+    var(--roadmap-color) 25%,
+    transparent
+  );
+}
+
+.academy-public .fs-roadmap-art {
+  width: 75px;
+  height: 75px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  color: var(--roadmap-color);
+}
+
+.academy-public .fs-roadmap-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.academy-public .fs-roadmap-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.academy-public .fs-roadmap-info small {
+  color: var(--roadmap-color);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.academy-public .fs-roadmap-info h3 {
+  font-size: 16px;
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+
+.academy-public .fs-roadmap-info span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #aab4c4;
+  font-size: 12px;
+}
+
+.academy-public .fs-roadmap-arrow {
+  color: var(--roadmap-color);
+  flex-shrink: 0;
+}
+
+@media(max-width: 950px) {
+  .academy-public .fs-roadmap-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .academy-public .fs-roadmap-node::after {
+    display: none;
+  }
+}
+
+@media(max-width: 620px) {
+  .academy-public .fs-roadmap-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+@media(prefers-reduced-motion: reduce) {
+  .academy-public .fs-roadmap-card {
+    transition: none;
+  }
+}
+
+/* FortifySec Academy 2026 visual refresh — public page only */
+.fs-academy-v2{background:#090b10;color:#f6f7fa;min-height:100vh;background-image:radial-gradient(ellipse at 90% 72%,rgba(139,17,35,.09),transparent 48%)}
+.fs-academy-v2 .fs-v2-header{background:#0c0e14;border-bottom:1px solid #222630;position:relative;z-index:2}
+.fs-academy-v2 .fs-v2-header em{font-style:normal;color:#e2e4eb}
+.fs-academy-v2 .fs-v2-hero{position:relative;min-height:425px;overflow:hidden;border-bottom:1px solid #27232c;background:linear-gradient(110deg,#0b0b10 12%,#150b10 60%,#090b10)}
+.fs-academy-v2 .fs-v2-hero-image{position:absolute;inset:0 0 0 40%;background-image:linear-gradient(90deg,#0b0b10 0%,rgba(11,11,16,.05) 28%,rgba(11,11,16,.04) 75%,#0b0b10 100%),url('/images/academy/academy-hero.webp');background-position:center,right center;background-size:cover,cover;opacity:.94}
+.fs-academy-v2 .fs-v2-hero::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,rgba(9,11,16,.75),transparent 28%);pointer-events:none}
+.fs-academy-v2 .fs-v2-hero-inner{max-width:1350px;margin:auto;min-height:425px;padding:75px 30px;position:relative;z-index:1;display:flex;align-items:center}
+.fs-academy-v2 .fs-v2-hero-content{max-width:620px}
+.fs-academy-v2 .fs-v2-eyebrow{font-size:12px;font-weight:800;letter-spacing:.16em;color:#ff4658;text-transform:uppercase}
+.fs-academy-v2 .fs-v2-dot{display:inline-block;width:7px;height:7px;background:#ff344a;border-radius:50%;margin-right:8px;box-shadow:0 0 12px #ff344a}
+.fs-academy-v2 .fs-v2-hero h1{font-size:clamp(44px,5vw,75px);letter-spacing:-.06em;line-height:1.05;margin:20px 0 18px;font-weight:800}
+.fs-academy-v2 .fs-v2-hero h1 span{color:#f43149}
+.fs-academy-v2 .fs-v2-hero p{color:#d3d3dc;font-size:18px;line-height:1.65;max-width:515px}
+.fs-academy-v2 .fs-v2-hero-actions{display:flex;gap:13px;flex-wrap:wrap;margin-top:30px}
+.fs-academy-v2 .fs-v2-primary,.fs-academy-v2 .fs-v2-secondary{display:inline-flex;gap:10px;align-items:center;justify-content:center;padding:14px 22px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;transition:transform .2s,filter .2s}
+.fs-academy-v2 .fs-v2-primary{background:linear-gradient(125deg,#ff3649,#a5001d);border:1px solid #fa5b69;color:white;box-shadow:0 7px 28px rgba(225,25,49,.19)}
+.fs-academy-v2 .fs-v2-secondary{border:1px solid #81818c;background:rgba(8,10,15,.6);color:white}
+.fs-academy-v2 .fs-v2-primary:hover,.fs-academy-v2 .fs-v2-secondary:hover{transform:translateY(-2px);filter:brightness(1.15)}
+.fs-academy-v2 .fs-v2-benefits{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));max-width:1350px;margin:0 auto;border-bottom:1px solid #262932;padding:24px 28px;gap:15px}
+.fs-academy-v2 .fs-v2-benefits>div{display:flex;align-items:center;gap:15px;padding:5px 20px;border-right:1px solid #30303a}
+.fs-academy-v2 .fs-v2-benefits>div:last-child{border-right:0}
+.fs-academy-v2 .fs-v2-benefits svg{width:32px;height:32px;color:#ff3c4f;flex-shrink:0;filter:drop-shadow(0 0 8px rgba(255,55,75,.35))}
+.fs-academy-v2 .fs-v2-benefits span{display:grid;gap:5px}
+.fs-academy-v2 .fs-v2-benefits strong{font-size:13px}
+.fs-academy-v2 .fs-v2-benefits small{font-size:12px;color:#a7abb6}
+.fs-academy-v2 .fs-v2-content{padding-top:54px}
+.fs-academy-v2 .fs-v2-section-heading{margin-bottom:34px;position:relative}
+.fs-academy-v2 .fs-v2-section-heading h2{font-size:clamp(32px,4vw,49px);letter-spacing:-.045em;margin:12px 0}
+.fs-academy-v2 .fs-v2-section-heading p{color:#a9acb8;font-size:15px;line-height:1.6;max-width:760px}
+.fs-academy-v2 .fs-v2-course-total{display:inline-flex;color:#f0a5ad;background:#29131c;border:1px solid #5e2632;padding:7px 12px;border-radius:30px;font-size:12px;margin-top:9px}
+.fs-academy-v2 .fs-v2-roadmap-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:46px 38px;margin-top:45px}
+.fs-academy-v2 .fs-v2-node{position:relative;min-width:0}
+.fs-academy-v2 .fs-v2-node:not(:nth-child(3n))::after{content:'';position:absolute;left:100%;top:50%;width:38px;border-top:2px dashed #576073;pointer-events:none}
+.fs-academy-v2 .fs-v2-track{display:flex;position:relative;align-items:center;gap:15px;width:100%;min-height:155px;text-align:left;border:1px solid var(--track-color);border-radius:14px;color:#f5f7ff;background:radial-gradient(ellipse at 90% 50%,color-mix(in srgb,var(--track-color) 19%,transparent),transparent 60%),linear-gradient(125deg,#121b29,#10131c 70%);box-shadow:inset 0 0 25px color-mix(in srgb,var(--track-color) 5%,transparent),0 10px 28px rgba(0,0,0,.22);padding:18px 14px;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.fs-academy-v2 .fs-v2-track:hover,.fs-academy-v2 .fs-v2-track:focus-visible{transform:translateY(-5px);box-shadow:0 10px 32px color-mix(in srgb,var(--track-color) 23%,transparent);outline-offset:3px}
+.fs-academy-v2 .fs-v2-track-illustration{width:100px;height:100px;flex-shrink:0;display:grid;place-items:center;overflow:hidden}
+.fs-academy-v2 .fs-v2-track-illustration img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 12px color-mix(in srgb,var(--track-color) 35%,transparent))}
+.fs-academy-v2 .fs-v2-track-graphic{width:90px;height:90px;display:grid;place-items:center;position:relative;color:var(--track-color);background:radial-gradient(circle,color-mix(in srgb,var(--track-color) 20%,transparent),transparent 70%)}
+.fs-academy-v2 .fs-v2-track-graphic>svg{filter:drop-shadow(0 0 12px color-mix(in srgb,var(--track-color) 70%,transparent));position:relative;z-index:1}
+.fs-academy-v2 .fs-v2-orbit{position:absolute;border:1px solid color-mix(in srgb,var(--track-color) 40%,transparent);border-radius:50%;inset:9px;transform:rotate(-22deg) scaleY(.7)}
+.fs-academy-v2 .fs-v2-orbit-b{transform:rotate(38deg) scaleY(.7);inset:17px}
+.fs-academy-v2 .fs-v2-track-copy{min-width:0;flex:1}
+.fs-academy-v2 .fs-v2-track-copy small{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--track-color);font-weight:800}
+.fs-academy-v2 .fs-v2-track-copy h3{font-size:18px;line-height:1.2;margin:9px 0 13px;overflow-wrap:anywhere}
+.fs-academy-v2 .fs-v2-track-copy span{display:flex;align-items:center;gap:7px;font-size:12px;color:#c0c7d6}
+.fs-academy-v2 .fs-v2-track-arrow{color:var(--track-color);align-self:flex-start;flex-shrink:0}
+.fs-academy-v2 .fs-v2-arena{margin-top:70px;display:flex;align-items:center;gap:22px;padding:27px 32px;border:1px solid #60303b;border-radius:14px;background:linear-gradient(115deg,#17161f,#31121d 62%,#12131b)}
+.fs-academy-v2 .fs-v2-arena-symbol{color:#ff4258}
+.fs-academy-v2 .fs-v2-arena>div:nth-child(2){flex:1}
+.fs-academy-v2 .fs-v2-arena h2{font-size:23px;margin:0 0 8px}
+.fs-academy-v2 .fs-v2-arena p{color:#c4b8c1;margin:0;font-size:14px}
+.fs-academy-v2 .fs-v2-arena>a{display:flex;gap:9px;align-items:center;justify-content:center;padding:14px 19px;border:1px solid #fb4254;background:#b80e28;color:white;text-decoration:none;font-weight:700;border-radius:8px;white-space:nowrap;font-size:13px}
+.fs-academy-v2 .fs-v2-course-view{padding-top:50px}
+.fs-academy-v2 .fs-v2-course-head{background:linear-gradient(125deg,#191b26,#1c1018);border:1px solid #34303b;border-radius:14px;padding:35px}
+.fs-academy-v2 .fs-v2-course-head h1{font-size:clamp(30px,4vw,52px);margin:13px 0}
+.fs-academy-v2 .fs-v2-course-head p{color:#b5b8c4;line-height:1.6}
+.fs-academy-v2 .fs-v2-count{display:inline-flex;align-items:center;gap:8px;color:#ef7784;font-size:13px;margin-top:12px}
+.fs-academy-v2 .academy-player,.fs-academy-v2 .academy-playlist{border-radius:12px}
+@media(max-width:1050px){.fs-academy-v2 .fs-v2-roadmap-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fs-academy-v2 .fs-v2-node::after{display:none}.fs-academy-v2 .fs-v2-benefits{grid-template-columns:repeat(2,minmax(0,1fr))}.fs-academy-v2 .fs-v2-benefits>div:nth-child(2){border-right:0}}
+@media(max-width:700px){.fs-academy-v2 .fs-v2-hero{min-height:480px}.fs-academy-v2 .fs-v2-hero-inner{min-height:480px;padding:70px 20px}.fs-academy-v2 .fs-v2-hero-image{inset:0;opacity:.4;background-image:linear-gradient(90deg,rgba(9,10,15,.8),rgba(9,10,15,.4)),url('/images/academy/academy-hero.webp')}.fs-academy-v2 .fs-v2-benefits{padding:20px 12px;gap:16px}.fs-academy-v2 .fs-v2-benefits>div{padding:8px;gap:8px}.fs-academy-v2 .fs-v2-benefits svg{width:24px;height:24px}.fs-academy-v2 .fs-v2-benefits strong{font-size:11px}.fs-academy-v2 .fs-v2-benefits small{font-size:10px}.fs-academy-v2 .fs-v2-roadmap-grid{grid-template-columns:1fr;gap:18px}.fs-academy-v2 .fs-v2-arena{flex-wrap:wrap;padding:24px}.fs-academy-v2 .fs-v2-arena>a{width:100%}.fs-academy-v2 .fs-v2-hero h1{font-size:48px}.fs-academy-v2 .fs-v2-hero p{font-size:16px}}
+@media(prefers-reduced-motion:reduce){.fs-academy-v2 .fs-v2-track,.fs-academy-v2 .fs-v2-primary,.fs-academy-v2 .fs-v2-secondary{transition:none}}
+
+/* FORTIFYSEC ACADEMY — RED CYBER EFFECTS */
+
+.academy-public {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+  background:
+    radial-gradient(ellipse 42% 22% at 0% 48%, rgba(190,0,25,.12), transparent 80%),
+    radial-gradient(ellipse 42% 22% at 100% 75%, rgba(190,0,25,.12), transparent 80%),
+    #090b10;
+}
+
+.academy-public .fs-roadmap {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Painéis geométricos vermelhos nas laterais */
+.academy-public .fs-roadmap::before,
+.academy-public .fs-roadmap::after {
+  content: "";
+  position: absolute;
+  width: clamp(130px, 19vw, 330px);
+  height: 420px;
+  pointer-events: none;
+  z-index: -1;
+  opacity: .8;
+  background:
+    linear-gradient(135deg,
+      transparent 19%,
+      rgba(120,0,15,.12) 20%,
+      rgba(255,20,48,.45) 21%,
+      rgba(80,0,12,.17) 23%,
+      transparent 26%),
+    linear-gradient(135deg,
+      transparent 37%,
+      rgba(240,15,40,.12) 38%,
+      rgba(255,32,55,.55) 39%,
+      rgba(120,0,22,.2) 41%,
+      transparent 44%),
+    linear-gradient(135deg,
+      transparent 61%,
+      rgba(255,25,45,.18) 62%,
+      rgba(255,40,65,.7) 63%,
+      rgba(90,0,15,.18) 65%,
+      transparent 68%);
+  filter: drop-shadow(0 0 24px rgba(255,0,40,.22));
+}
+
+.academy-public .fs-roadmap::before {
+  top: 45px;
+  left: max(-19vw, -300px);
+}
+
+.academy-public .fs-roadmap::after {
+  bottom: -90px;
+  right: max(-19vw, -300px);
+  transform: rotate(180deg);
+}
+
+/* Iluminação ambiente */
+.academy-public .fs-roadmap-grid {
+  position: relative;
+}
+
+.academy-public .fs-roadmap-grid::before {
+  content: "";
+  position: absolute;
+  inset: -55px -50px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 5% 65%, rgba(200,0,35,.09), transparent 40%),
+    radial-gradient(ellipse at 95% 25%, rgba(230,0,40,.10), transparent 40%);
+}
+
+/* Acabamento dos cartões */
+.academy-public .fs-roadmap-card {
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+}
+
+.academy-public .fs-roadmap-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    color-mix(in srgb, var(--roadmap-color) 12%, transparent) 75%,
+    transparent 100%
+  );
+}
+
+@media(max-width: 620px) {
+  .academy-public .fs-roadmap::before,
+  .academy-public .fs-roadmap::after {
+    width: 140px;
+    opacity: .35;
+  }
+}
+
+@media(prefers-reduced-motion: reduce) {
+  .academy-public .fs-roadmap-card {
+    transition: none;
+  }
+}
+
+/* FORTIFYSEC — PAINÉIS GEOMÉTRICOS VERMELHOS V2 */
+
+.academy-public .fs-roadmap {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Desativa as faixas anteriores */
+.academy-public .fs-roadmap::before,
+.academy-public .fs-roadmap::after {
+  content: none;
+}
+
+/* Blocos vermelhos laterais */
+.academy-public .fs-roadmap-grid::before,
+.academy-public .fs-roadmap-grid::after {
+  content: "";
+  position: absolute;
+  width: 310px;
+  height: 420px;
+  pointer-events: none;
+  z-index: -1;
+  border: 0;
+  border-radius: 0;
+  background:
+    linear-gradient(135deg,
+      transparent 0 10%,
+      #490711 10% 26%,
+      transparent 26% 31%,
+      #920d22 31% 48%,
+      transparent 48% 54%,
+      #d51a32 54% 68%,
+      transparent 68% 73%,
+      #600715 73% 88%,
+      transparent 88%),
+    linear-gradient(135deg,
+      transparent 0 34%,
+      rgba(255,45,70,.75) 34% 35%,
+      transparent 35% 62%,
+      rgba(255,45,70,.65) 62% 63%,
+      transparent 63%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  filter: drop-shadow(0 0 18px rgba(230,0,40,.3));
+  opacity: .85;
+}
+
+.academy-public .fs-roadmap-grid::before {
+  top: -100px;
+  left: -340px;
+}
+
+.academy-public .fs-roadmap-grid::after {
+  right: -340px;
+  bottom: -120px;
+  transform: rotate(180deg);
+}
+
+/* Garante que os cartões fiquem acima dos blocos */
+.academy-public .fs-roadmap-node {
+  position: relative;
+  z-index: 1;
+}
+
+@media(max-width: 950px) {
+  .academy-public .fs-roadmap-grid::before {
+    left: -260px;
+    opacity: .45;
+  }
+
+  .academy-public .fs-roadmap-grid::after {
+    right: -260px;
+    opacity: .45;
+  }
+}
+
+@media(max-width: 620px) {
+  .academy-public .fs-roadmap-grid::before,
+  .academy-public .fs-roadmap-grid::after {
+    width: 180px;
+    height: 260px;
+    opacity: .25;
+  }
+
+  .academy-public .fs-roadmap-grid::before {
+    left: -140px;
+  }
+
+  .academy-public .fs-roadmap-grid::after {
+    right: -140px;
+  }
+}
